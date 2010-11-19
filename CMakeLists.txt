@@ -1,0 +1,30 @@
+cmake_minimum_required(VERSION 2.6)
+project(fubar)
+enable_testing()
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+
+set(TAGLIB_MIN_VERSION "1.6")
+find_package(Taglib REQUIRED)
+find_package(ProtocolBuffers REQUIRED)
+find_package(Qt4 4.5 COMPONENTS QtCore QtGui QtTest Phonon REQUIRED)
+include(${QT_USE_FILE})
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+function(add_qtest name src libs)
+    qt4_automoc(${${src}})
+    add_executable(${name} ${${src}})
+    target_link_libraries(${name} ${${libs}})
+    add_test(${name} ${name})
+endfunction()
+
+add_subdirectory(ui)
+add_subdirectory(library)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+qt4_add_resources(ui_RC ui/icons/icons.qrc)
+add_executable(fubar main.cpp ${ui_RC})
+target_link_libraries(fubar ui library ${QT_LIBRARIES})
+

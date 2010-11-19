@@ -1,0 +1,23 @@
+package proto;
+
+message AudioProperties {
+  optional int32 length = 1;
+  optional int32 bitrate = 2;
+  optional int32 samplerate = 3;
+  optional int32 channels = 4;
+}
+
+message MetadataItem {
+  required string name = 1;
+  required bytes value = 2;
+}
+
+message Metadata {
+  repeated MetadataItem fields = 1;
+}
+
+message Track {
+  optional string location = 1;
+  optional Metadata metadata = 2;
+  optional AudioProperties audioproperties = 3;
+}
