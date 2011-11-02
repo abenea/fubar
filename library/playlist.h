@@ -1,29 +1,10 @@
 #ifndef PLAYLIST_H
 #define PLAYLIST_H
 
+#include "track.h"
 #include <boost/shared_ptr.hpp>
 #include <QString>
-#include <QMap>
-#include <QDir>
-
-namespace proto {
-    class Track;
-}
-
-struct Track
-{
-    QString location;
-    struct AudioProperties {
-        int length;
-        int bitrate;
-        int samplerate;
-        int channels;
-    } audioproperties;
-    QMap<QString, QString> metadata;
-
-    Track() {}
-    Track(proto::Track ptrack);
-};
+#include <QFileInfo>
 
 class Playlist
 {

@@ -1,7 +1,10 @@
 #include "playlist.h"
 #include "track.pb.h"
+#include "track.h"
 #include <QDebug>
+#include <QDir>
 #include <boost/scoped_array.hpp>
+#include <sstream>
 #include <fstream>
 #include <exception>
 #include <stdexcept>
@@ -11,40 +14,10 @@
 using namespace std;
 using namespace boost;
 
-// TODO this code is really bad, but I'm too lazy to change it
-bool readTrack(FILE *f, proto::Track &track)
-{
-    int len;
-    if (fread(&len, 4, 1, f) != 1)
-        return false;
-    // qDebug() << "read " << len << "size";
-    if (len > (1 << 20)) {
-        qDebug() << "OOps, huge len";
-        return false;
-    }
-    scoped_array<char> tmp(new char[len]);
-    if (fread(tmp.get(), len, 1, f) != 1) {
-        qDebug() << "OOps, failed read for pb";
-        return false;
-    }
-    return track.ParseFromArray(tmp.get(), len);
-}
-
-
-Track::Track(proto::Track ptrack)
-{
-    location = QString::fromUtf8(ptrack.location().c_str());
-    for (int i = 0; i < ptrack.metadata().fields_size(); i++)
-    {
-        const proto::MetadataItem &field = ptrack.metadata().fields(i);
-        metadata[QString::fromUtf8(field.name().c_str())] = QString::fromUtf8(field.value().c_str());
-    }
-}
-
-
 void Playlist::load(const char *fileName)
 {
-    FILE *f = fopen(fileName, "rb");
+    // TODO: code moar pls
+/*    FILE *f = fopen(fileName, "rb");
     if (f == NULL) {
         throw runtime_error("Couldn't open " + string(fileName));
     }
@@ -52,7 +25,7 @@ void Playlist::load(const char *fileName)
     proto::Track ptrack;
     while (!feof(f))
     {
-        if (readTrack(f, ptrack)) {
+        if (Track::readProtoTrack(f, ptrack)) {
             tracks.append(shared_ptr<Track>(new Track(ptrack)));
         } else {
             if (!feof(f)) {
@@ -62,7 +35,7 @@ void Playlist::load(const char *fileName)
             break;
         }
     }
-    fclose(f);
+    fclose(f);*/
 }
 
 void Playlist::addDirectory(const QString &path)
@@ -80,7 +53,6 @@ void Playlist::addDirectory(const QString &path)
 
 void Playlist::addFile(const QFileInfo& file)
 {
-    // qDebug() << "addFile " << file.filePath();
     TagLib::FileRef fileref;
     QByteArray encodedName = QFile::encodeName(file.filePath());
     fileref = TagLib::FileRef(encodedName.constData(), true);

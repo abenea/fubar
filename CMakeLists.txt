@@ -26,5 +26,7 @@ add_subdirectory(library)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 qt4_add_resources(ui_RC ui/icons/icons.qrc)
 add_executable(fubar main.cpp ${ui_RC})
+add_executable(testlib testlib.cpp ${ui_RC})
+target_link_libraries(testlib ui library ${QT_LIBRARIES})
 target_link_libraries(fubar ui library ${QT_LIBRARIES})
 
