@@ -6,6 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 
 set(TAGLIB_MIN_VERSION "1.6")
+find_package(Boost REQUIRED)
 find_package(Taglib REQUIRED)
 find_package(ProtocolBuffers REQUIRED)
 find_package(Qt4 4.5 COMPONENTS QtCore QtGui QtTest Phonon REQUIRED)
