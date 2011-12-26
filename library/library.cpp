@@ -114,17 +114,51 @@ void Library::saveToDisk()
 
 void Library::scanDirectory(const QString& path)
 {
-    addDirectory(shared_ptr<Directory>(new Directory(path, QFileInfo(path).lastModified().toTime_t())));
-
-    QDir dir(path);
-    dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
-    foreach (QFileInfo info, dir.entryInfoList()) {
-        if (info.isFile()) {
-            scanFile(info.filePath());
-        } else {
-            scanDirectory(info.filePath());
-        }
-    }
+	shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, QFileInfo(path).lastModified().toTime_t()));
+    addDirectory(directory);
+	DirectoryMap::const_iterator it = old_directories_.find(path);
+	if (it != old_directories_.end()) {
+		shared_ptr<Directory> old_directory = it->second;
+		// Nothing changed in this dir
+		if (directory->mtime() == old_directory->mtime()) {
+			directory->addFilesFromDirectory(old_directory);
+			std::vector<QString> subdirs = old_directory->getSubdirectories();
+			BOOST_FOREACH (QString& subdir, subdirs) {
+				scanDirectory(QFileInfo(path, subdir).absoluteFilePath());
+			}
+		// Stuff changed
+		} else {
+			QDir dir(path);
+			dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
+			foreach (QFileInfo info, dir.entryInfoList()) {
+				if (info.isFile()) {
+					bool rescan = true;
+					if (old_directory) {
+						shared_ptr<Track> file = old_directory->getFile(info.fileName());
+						if (file and file->mtime == info.lastModified().toTime_t()) {
+							directory->addFile(file);
+							rescan = false;
+						}
+					}
+					if (rescan)
+						scanFile(info.filePath());
+				} else {
+					scanDirectory(info.filePath());
+				}
+			}
+		}
+	// Full scan
+	} else {
+		QDir dir(path);
+		dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
+		foreach (QFileInfo info, dir.entryInfoList()) {
+			if (info.isFile()) {
+				scanFile(info.filePath());
+			} else {
+				scanDirectory(info.filePath());
+			}
+		}
+	}
 }
 
 void Library::scanFile(const QString& path)
@@ -152,6 +186,7 @@ void Library::scanFile(const QString& path)
             track->audioproperties.samplerate = audioProperties->sampleRate();
             track->audioproperties.channels = audioProperties->channels();
         }
+        track->mtime = QFileInfo(path).lastModified().toTime_t();
         addFile(track);
     }
 }
@@ -159,20 +194,14 @@ void Library::scanFile(const QString& path)
 void Library::setMusicFolders(const vector<QString>& folders)
 {
     music_folders_ = folders;
-    //TODO: rescan
-    if (directories_.size()) {
-        qDebug() << "Dumping read database";
-    } else {
-        qDebug() << "Scanning media files";
-        scan();
-    }
+	qDebug() << "Scanning media files";
+	scan();
 }
 
 void Library::scan()
 {
-    if (directories_.size())
-        return;
-
+	old_directories_.clear();
+	directories_.swap(old_directories_);
     BOOST_FOREACH (QString path, music_folders_) {
         scanDirectory(path);
     }

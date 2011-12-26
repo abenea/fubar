@@ -4,6 +4,7 @@
 #include "track.h"
 #include <QString>
 #include <boost/shared_ptr.hpp>
+#include <vector>
 
 namespace proto {
     class Directory;
@@ -17,9 +18,12 @@ public:
 
     void addSubdirectory(boost::shared_ptr<Directory> directory);
     void addFile(boost::shared_ptr<Track> file);
+	void addFilesFromDirectory(boost::shared_ptr<Directory> directory);
+
+	std::vector<QString> getSubdirectories();
+	boost::shared_ptr<Track> getFile(QString name);
 
     void addFilesToProto(proto::Library& library);
-
     void dump();
 
     QString path() { return location_; }

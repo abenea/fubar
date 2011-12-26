@@ -48,3 +48,27 @@ void Directory::dump()
         p.second->dump();
     }
 }
+
+void Directory::addFilesFromDirectory(shared_ptr<Directory> directory)
+{
+	files_ = directory->files_;
+}
+
+std::vector<QString> Directory::getSubdirectories()
+{
+	std:vector<QString> subdirs;
+	subdirs.reserve(subdirs_.size());
+	for (SubdirectoryMap::const_iterator it = subdirs_.begin(); it != subdirs_.end(); ++it) {
+		subdirs.push_back(it->first);
+	}
+	return subdirs;
+}
+
+shared_ptr<Track> Directory::getFile(QString name)
+{
+	shared_ptr<Track> result;
+	FileMap::iterator it = files_.find(name);
+	if (it != files_.end())
+		result = it->second;
+	return result;
+}

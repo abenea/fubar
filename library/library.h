@@ -35,7 +35,7 @@ private:
     std::vector<QString> music_folders_;
 
     typedef std::map<QString, boost::shared_ptr<Directory> > DirectoryMap;
-    DirectoryMap directories_;
+    DirectoryMap directories_, old_directories_;
 };
 
 #endif // LIBRARY_H
