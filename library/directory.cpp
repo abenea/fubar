@@ -1,6 +1,7 @@
 #include "directory.h"
 #include "track.pb.h"
 #include <QFileInfo>
+#include <QDebug>
 #include <boost/foreach.hpp>
 
 using namespace std;
@@ -25,9 +26,28 @@ void Directory::addFile(shared_ptr<Track> file)
     files_.insert(make_pair(QFileInfo(file->location).fileName(), file));
 }
 
+void Directory::removeFile(QString fileName)
+{
+	FileMap::iterator it = files_.find(fileName);
+	if (it != files_.end())
+		files_.erase(it);
+	else
+		// May be a non-audio file
+		qDebug() << "Tried to delete " << fileName << " from " << location_ << ". No dice";
+}
+
 void Directory::addSubdirectory(shared_ptr<Directory> directory)
 {
     subdirs_.insert(make_pair(QFileInfo(directory->location_).fileName(), directory));
+}
+
+void Directory::removeSubdirectory(QString subdirName)
+{
+	SubdirectoryMap::iterator it = subdirs_.find(subdirName);
+	if (it != subdirs_.end())
+		subdirs_.erase(it);
+	else
+		qDebug() << location_ << " wanted to remove subdir " << subdirName << ". No dice";
 }
 
 void Directory::addFilesToProto(proto::Library& library)

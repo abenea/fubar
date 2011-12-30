@@ -6,6 +6,7 @@
 #include <taglib/tag.h>
 #include <boost/foreach.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/bind.hpp>
 #include <QDir>
 #include <QDebug>
 #include <qdatetime.h>
@@ -33,10 +34,33 @@ void Library::addDirectory(boost::shared_ptr<Directory> directory)
 
     // Add child to father
     QFileInfo dir_path(directory->path());
-    std::map<QString, boost::shared_ptr<Directory> >::iterator it = directories_.find(dir_path.absolutePath());
+    DirectoryMap::iterator it = directories_.find(dir_path.absolutePath());
     if (it != directories_.end()) {
         it->second->addSubdirectory(directory);
     }
+}
+
+void Library::removeDirectory(QString path)
+{
+	DirectoryMap::iterator it = directories_.find(path);
+	if (it == directories_.end()) {
+		qDebug() << "Wanted to remove directory " << path << ". No dice";
+		return;
+	}
+	std::vector<QString> subdirs = it->second->getSubdirectories();
+	BOOST_FOREACH (QString subdir, subdirs) {
+		removeDirectory(QFileInfo(QDir(path), subdir).absoluteFilePath());
+	}
+	watcher_->removeWatch(path);
+
+    // Remove child from father
+    QFileInfo info(path);
+    DirectoryMap::iterator father_it = directories_.find(info.absolutePath());
+    if (father_it
+		!= directories_.end()) {
+        father_it->second->removeSubdirectory(info.fileName());
+    }
+	directories_.erase(it);
 }
 
 void Library::addFile(shared_ptr<Track> track)
@@ -48,6 +72,17 @@ void Library::addFile(shared_ptr<Track> track)
         it->second->addFile(track);
     } else {
         qDebug() << "Library::addFile tried to add a file for an unadded directory!!111";
+    }
+}
+
+void Library::removeFile(QString path)
+{
+    QFileInfo file_info(path);
+    std::map<QString, boost::shared_ptr<Directory> >::iterator it = directories_.find(file_info.absolutePath());
+    if (it != directories_.end()) {
+        it->second->removeFile(file_info.fileName());
+    } else {
+        qDebug() << "Library::addFile tried to add a file for an unadded directory!!111" << path;
     }
 }
 
@@ -116,6 +151,8 @@ void Library::scanDirectory(const QString& path)
 {
 	shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, QFileInfo(path).lastModified().toTime_t()));
     addDirectory(directory);
+    watcher_->addWatch(path);
+
 	DirectoryMap::const_iterator it = old_directories_.find(path);
 	if (it != old_directories_.end()) {
 		shared_ptr<Directory> old_directory = it->second;
@@ -195,6 +232,9 @@ void Library::setMusicFolders(const vector<QString>& folders)
 {
     music_folders_ = folders;
 	qDebug() << "Scanning media files";
+	watcher_.reset(new DirectoryWatcher);
+	watcher_->setFileCallback(boost::bind(&Library::fileCallback, this, _1, _2));
+	watcher_->setDirectoryCallback(boost::bind(&Library::directoryCallback, this, _1, _2));
 	scan();
 }
 
@@ -207,6 +247,11 @@ void Library::scan()
     }
 }
 
+void Library::watch()
+{
+    watcher_->watch();
+}
+
 void Library::dumpDatabase() const
 {
     BOOST_FOREACH (QString music_folder, music_folders_) {
@@ -214,4 +259,26 @@ void Library::dumpDatabase() const
         if (it != directories_.end())
             it->second->dump();
     }
+}
+
+void Library::directoryCallback(QString path, WatchEvent event)
+{
+	qDebug() << (event == CREATE ? "DIR ADD " : "DIR RM ") << path;
+	if (event == CREATE) {
+		scanDirectory(path);
+	} else if (event == DELETE) {
+		removeDirectory(path);
+	}
+	//dumpDatabase();
+}
+
+void Library::fileCallback(QString path, WatchEvent event)
+{
+	qDebug() << (event == CREATE ? "FILE ADD " : "FILE RM ") << path;
+	if (event == CREATE) {
+		scanFile(path);
+	} else if (event == DELETE) {
+		removeFile(path);
+	}
+//	dumpDatabase();
 }
