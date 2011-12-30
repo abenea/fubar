@@ -29,8 +29,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
     ui_->mainToolBar->addWidget(seekSlider_);
     ui_->mainToolBar->addWidget(volumeSlider_);
 
-    ui_->playlistTabs->addTab(new PlaylistTab(this), "~/tmp/test");
-    current()->addDirectory("/home/andrei/tmp/test");
+    ui_->playlistTabs->addTab(new PlaylistTab(this), "~/music");
+    current()->addDirectory("/home/bogdan/music");
 
     connect(ui_->actionAdd_directory, SIGNAL(triggered(bool)), this, SLOT(addDirectory()));
 

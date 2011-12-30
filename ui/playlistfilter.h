@@ -15,6 +15,10 @@ public:
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
 
     virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+
+protected:
+	virtual bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
+
 private:
     QStringList filter_;
     mutable QHash<int, Grouping::Mode> groupingMode_;
