@@ -17,13 +17,13 @@ public:
     Directory(QString path, int mtime);
 
     void addSubdirectory(boost::shared_ptr<Directory> directory);
-	void removeSubdirectory(QString subdirName);
+    void removeSubdirectory(QString subdirName);
     void addFile(boost::shared_ptr<Track> file);
-	void removeFile(QString fileName);
-	void addFilesFromDirectory(boost::shared_ptr<Directory> directory);
+    void removeFile(QString fileName);
+    void addFilesFromDirectory(boost::shared_ptr<Directory> directory);
 
-	std::vector<QString> getSubdirectories();
-	boost::shared_ptr<Track> getFile(QString name);
+    std::vector<QString> getSubdirectories();
+    boost::shared_ptr<Track> getFile(QString name);
 
     void addFilesToProto(proto::Library& library);
     void dump();

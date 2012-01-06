@@ -28,12 +28,12 @@ void Directory::addFile(shared_ptr<Track> file)
 
 void Directory::removeFile(QString fileName)
 {
-	FileMap::iterator it = files_.find(fileName);
-	if (it != files_.end())
-		files_.erase(it);
-	else
-		// May be a non-audio file
-		qDebug() << "Tried to delete " << fileName << " from " << location_ << ". No dice";
+    FileMap::iterator it = files_.find(fileName);
+    if (it != files_.end())
+        files_.erase(it);
+    else
+        // May be a non-audio file
+        qDebug() << "Tried to delete " << fileName << " from " << location_ << ". No dice";
 }
 
 void Directory::addSubdirectory(shared_ptr<Directory> directory)
@@ -43,11 +43,11 @@ void Directory::addSubdirectory(shared_ptr<Directory> directory)
 
 void Directory::removeSubdirectory(QString subdirName)
 {
-	SubdirectoryMap::iterator it = subdirs_.find(subdirName);
-	if (it != subdirs_.end())
-		subdirs_.erase(it);
-	else
-		qDebug() << location_ << " wanted to remove subdir " << subdirName << ". No dice";
+    SubdirectoryMap::iterator it = subdirs_.find(subdirName);
+    if (it != subdirs_.end())
+        subdirs_.erase(it);
+    else
+        qDebug() << location_ << " wanted to remove subdir " << subdirName << ". No dice";
 }
 
 void Directory::addFilesToProto(proto::Library& library)
@@ -71,24 +71,24 @@ void Directory::dump()
 
 void Directory::addFilesFromDirectory(shared_ptr<Directory> directory)
 {
-	files_ = directory->files_;
+    files_ = directory->files_;
 }
 
 std::vector<QString> Directory::getSubdirectories()
 {
-	std:vector<QString> subdirs;
-	subdirs.reserve(subdirs_.size());
-	for (SubdirectoryMap::const_iterator it = subdirs_.begin(); it != subdirs_.end(); ++it) {
-		subdirs.push_back(it->first);
-	}
-	return subdirs;
+    std:vector<QString> subdirs;
+    subdirs.reserve(subdirs_.size());
+    for (SubdirectoryMap::const_iterator it = subdirs_.begin(); it != subdirs_.end(); ++it) {
+        subdirs.push_back(it->first);
+    }
+    return subdirs;
 }
 
 shared_ptr<Track> Directory::getFile(QString name)
 {
-	shared_ptr<Track> result;
-	FileMap::iterator it = files_.find(name);
-	if (it != files_.end())
-		result = it->second;
-	return result;
+    shared_ptr<Track> result;
+    FileMap::iterator it = files_.find(name);
+    if (it != files_.end())
+        result = it->second;
+    return result;
 }

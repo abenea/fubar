@@ -17,7 +17,7 @@ public:
     virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
 protected:
-	virtual bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
+    virtual bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
 
 private:
     QStringList filter_;

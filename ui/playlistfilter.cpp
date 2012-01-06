@@ -112,9 +112,9 @@ QVariant PlaylistFilter::data(const QModelIndex& index, int role) const
 
 bool PlaylistFilter::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
-	boost::shared_ptr<Track> leftTrack = left.data(TrackRole).value<shared_ptr<Track> >();
-	boost::shared_ptr<Track> rightTrack = right.data(TrackRole).value<shared_ptr<Track> >();
-	return leftTrack->location < rightTrack->location;
+    boost::shared_ptr<Track> leftTrack = left.data(TrackRole).value<shared_ptr<Track> >();
+    boost::shared_ptr<Track> rightTrack = right.data(TrackRole).value<shared_ptr<Track> >();
+    return leftTrack->location < rightTrack->location;
 }
 
 #include "playlistfilter.moc"

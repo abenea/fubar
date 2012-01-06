@@ -7,8 +7,8 @@ PlaylistTab::PlaylistTab(QWidget* parent_): QWidget(parent_), model_(playlist_)
 {
     ui_.setupUi(this);
     filterModel_.setSourceModel(&model_);
-	filterModel_.setDynamicSortFilter(true);
-	filterModel_.sort(0);
+    filterModel_.setDynamicSortFilter(true);
+    filterModel_.sort(0);
     ui_.playlist->setModel(&filterModel_);
     /*
     try {

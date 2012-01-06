@@ -42,25 +42,25 @@ void Library::addDirectory(boost::shared_ptr<Directory> directory)
 
 void Library::removeDirectory(QString path)
 {
-	DirectoryMap::iterator it = directories_.find(path);
-	if (it == directories_.end()) {
-		qDebug() << "Wanted to remove directory " << path << ". No dice";
-		return;
-	}
-	std::vector<QString> subdirs = it->second->getSubdirectories();
-	BOOST_FOREACH (QString subdir, subdirs) {
-		removeDirectory(QFileInfo(QDir(path), subdir).absoluteFilePath());
-	}
-	watcher_->removeWatch(path);
+    DirectoryMap::iterator it = directories_.find(path);
+    if (it == directories_.end()) {
+        qDebug() << "Wanted to remove directory " << path << ". No dice";
+        return;
+    }
+    std::vector<QString> subdirs = it->second->getSubdirectories();
+    BOOST_FOREACH (QString subdir, subdirs) {
+        removeDirectory(QFileInfo(QDir(path), subdir).absoluteFilePath());
+    }
+    watcher_->removeWatch(path);
 
     // Remove child from father
     QFileInfo info(path);
     DirectoryMap::iterator father_it = directories_.find(info.absolutePath());
     if (father_it
-		!= directories_.end()) {
+        != directories_.end()) {
         father_it->second->removeSubdirectory(info.fileName());
     }
-	directories_.erase(it);
+    directories_.erase(it);
 }
 
 void Library::addFile(shared_ptr<Track> track)
@@ -149,53 +149,53 @@ void Library::saveToDisk()
 
 void Library::scanDirectory(const QString& path)
 {
-	shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, QFileInfo(path).lastModified().toTime_t()));
+    shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, QFileInfo(path).lastModified().toTime_t()));
     addDirectory(directory);
     watcher_->addWatch(path);
 
-	DirectoryMap::const_iterator it = old_directories_.find(path);
-	if (it != old_directories_.end()) {
-		shared_ptr<Directory> old_directory = it->second;
-		// Nothing changed in this dir
-		if (directory->mtime() == old_directory->mtime()) {
-			directory->addFilesFromDirectory(old_directory);
-			std::vector<QString> subdirs = old_directory->getSubdirectories();
-			BOOST_FOREACH (QString& subdir, subdirs) {
-				scanDirectory(QFileInfo(path, subdir).absoluteFilePath());
-			}
-		// Stuff changed
-		} else {
-			QDir dir(path);
-			dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
-			foreach (QFileInfo info, dir.entryInfoList()) {
-				if (info.isFile()) {
-					bool rescan = true;
-					if (old_directory) {
-						shared_ptr<Track> file = old_directory->getFile(info.fileName());
-						if (file and file->mtime == info.lastModified().toTime_t()) {
-							directory->addFile(file);
-							rescan = false;
-						}
-					}
-					if (rescan)
-						scanFile(info.filePath());
-				} else {
-					scanDirectory(info.filePath());
-				}
-			}
-		}
-	// Full scan
-	} else {
-		QDir dir(path);
-		dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
-		foreach (QFileInfo info, dir.entryInfoList()) {
-			if (info.isFile()) {
-				scanFile(info.filePath());
-			} else {
-				scanDirectory(info.filePath());
-			}
-		}
-	}
+    DirectoryMap::const_iterator it = old_directories_.find(path);
+    if (it != old_directories_.end()) {
+        shared_ptr<Directory> old_directory = it->second;
+        // Nothing changed in this dir
+        if (directory->mtime() == old_directory->mtime()) {
+            directory->addFilesFromDirectory(old_directory);
+            std::vector<QString> subdirs = old_directory->getSubdirectories();
+            BOOST_FOREACH (QString& subdir, subdirs) {
+                scanDirectory(QFileInfo(path, subdir).absoluteFilePath());
+            }
+        // Stuff changed
+        } else {
+            QDir dir(path);
+            dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
+            foreach (QFileInfo info, dir.entryInfoList()) {
+                if (info.isFile()) {
+                    bool rescan = true;
+                    if (old_directory) {
+                        shared_ptr<Track> file = old_directory->getFile(info.fileName());
+                        if (file and file->mtime == info.lastModified().toTime_t()) {
+                            directory->addFile(file);
+                            rescan = false;
+                        }
+                    }
+                    if (rescan)
+                        scanFile(info.filePath());
+                } else {
+                    scanDirectory(info.filePath());
+                }
+            }
+        }
+    // Full scan
+    } else {
+        QDir dir(path);
+        dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
+        foreach (QFileInfo info, dir.entryInfoList()) {
+            if (info.isFile()) {
+                scanFile(info.filePath());
+            } else {
+                scanDirectory(info.filePath());
+            }
+        }
+    }
 }
 
 void Library::scanFile(const QString& path)
@@ -231,17 +231,17 @@ void Library::scanFile(const QString& path)
 void Library::setMusicFolders(const vector<QString>& folders)
 {
     music_folders_ = folders;
-	qDebug() << "Scanning media files";
-	watcher_.reset(new DirectoryWatcher);
-	watcher_->setFileCallback(boost::bind(&Library::fileCallback, this, _1, _2));
-	watcher_->setDirectoryCallback(boost::bind(&Library::directoryCallback, this, _1, _2));
-	scan();
+    qDebug() << "Scanning media files";
+    watcher_.reset(new DirectoryWatcher);
+    watcher_->setFileCallback(boost::bind(&Library::fileCallback, this, _1, _2));
+    watcher_->setDirectoryCallback(boost::bind(&Library::directoryCallback, this, _1, _2));
+    scan();
 }
 
 void Library::scan()
 {
-	old_directories_.clear();
-	directories_.swap(old_directories_);
+    old_directories_.clear();
+    directories_.swap(old_directories_);
     BOOST_FOREACH (QString path, music_folders_) {
         scanDirectory(path);
     }
@@ -263,22 +263,22 @@ void Library::dumpDatabase() const
 
 void Library::directoryCallback(QString path, WatchEvent event)
 {
-	qDebug() << (event == CREATE ? "DIR ADD " : "DIR RM ") << path;
-	if (event == CREATE) {
-		scanDirectory(path);
-	} else if (event == DELETE) {
-		removeDirectory(path);
-	}
-	//dumpDatabase();
+    qDebug() << (event == CREATE ? "DIR ADD " : "DIR RM ") << path;
+    if (event == CREATE) {
+        scanDirectory(path);
+    } else if (event == DELETE) {
+        removeDirectory(path);
+    }
+    //dumpDatabase();
 }
 
 void Library::fileCallback(QString path, WatchEvent event)
 {
-	qDebug() << (event == CREATE ? "FILE ADD " : "FILE RM ") << path;
-	if (event == CREATE) {
-		scanFile(path);
-	} else if (event == DELETE) {
-		removeFile(path);
-	}
-//	dumpDatabase();
+    qDebug() << (event == CREATE ? "FILE ADD " : "FILE RM ") << path;
+    if (event == CREATE) {
+        scanFile(path);
+    } else if (event == DELETE) {
+        removeFile(path);
+    }
+//  dumpDatabase();
 }
