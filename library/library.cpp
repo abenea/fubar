@@ -18,7 +18,22 @@ using namespace boost;
 const char* library_filename = "media_library";
 
 
-Library::Library()
+string LibraryEvent::op2str()
+{
+    switch(op) {
+        case CREATE:
+            return "Add";
+        case DELETE:
+            return "Delete";
+        case MODIFY:
+            return "Modify";
+        case UNKNOWN:
+        default:
+            return "Unknown";
+    }
+}
+
+Library::Library(QObject * parent) : QThread(parent)
 {
     loadFromDisk();
 }
@@ -26,6 +41,17 @@ Library::Library()
 Library::~Library()
 {
     saveToDisk();
+}
+
+void Library::run()
+{
+    watch();
+}
+
+void Library::quit()
+{
+    stopWatch();
+    //exit(0);
 }
 
 void Library::addDirectory(boost::shared_ptr<Directory> directory)
@@ -53,6 +79,13 @@ void Library::removeDirectory(QString path)
     }
     watcher_->removeWatch(path);
 
+    // Delete tracks from views
+    QList<PTrack> tracks = it->second->getTracks();
+    foreach (PTrack track, tracks) {
+        emit libraryChanged(LibraryEvent(track, DELETE));
+    }
+    it->second->clearFiles();
+
     // Remove child from father
     QFileInfo info(path);
     DirectoryMap::iterator father_it = directories_.find(info.absolutePath());
@@ -70,6 +103,7 @@ void Library::addFile(shared_ptr<Track> track)
     std::map<QString, boost::shared_ptr<Directory> >::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
         it->second->addFile(track);
+        emit libraryChanged(LibraryEvent(track, CREATE));
     } else {
         qDebug() << "Library::addFile tried to add a file for an unadded directory!!111";
     }
@@ -80,7 +114,8 @@ void Library::removeFile(QString path)
     QFileInfo file_info(path);
     std::map<QString, boost::shared_ptr<Directory> >::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
-        it->second->removeFile(file_info.fileName());
+        boost::shared_ptr<Track> track = it->second->removeFile(file_info.fileName());
+        emit libraryChanged(LibraryEvent(track, DELETE));
     } else {
         qDebug() << "Library::addFile tried to add a file for an unadded directory!!111" << path;
     }
@@ -177,8 +212,11 @@ void Library::scanDirectory(const QString& path)
                             rescan = false;
                         }
                     }
-                    if (rescan)
-                        scanFile(info.filePath());
+                    if (rescan) {
+                        boost::shared_ptr<Track> track = scanFile(info.filePath());
+                        if (track)
+                            addFile(track);
+                    }
                 } else {
                     scanDirectory(info.filePath());
                 }
@@ -190,7 +228,9 @@ void Library::scanDirectory(const QString& path)
         dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
         foreach (QFileInfo info, dir.entryInfoList()) {
             if (info.isFile()) {
-                scanFile(info.filePath());
+                boost::shared_ptr<Track> track = scanFile(info.filePath());
+                if (track)
+                    addFile(track);
             } else {
                 scanDirectory(info.filePath());
             }
@@ -198,15 +238,16 @@ void Library::scanDirectory(const QString& path)
     }
 }
 
-void Library::scanFile(const QString& path)
+boost::shared_ptr<Track> Library::scanFile(const QString& path)
 {
     //qDebug() << "addFile " << path;
     TagLib::FileRef fileref;
     QByteArray encodedName = QFile::encodeName(path);
     fileref = TagLib::FileRef(encodedName.constData(), true);
 
+    shared_ptr<Track> track;
     if (!fileref.isNull()) {
-        shared_ptr<Track> track(new Track());
+        track.reset(new Track());
         track->location = path;
         if (TagLib::Tag *tag = fileref.tag()) {
             track->metadata["title"] = TStringToQString(tag->title());
@@ -224,8 +265,11 @@ void Library::scanFile(const QString& path)
             track->audioproperties.channels = audioProperties->channels();
         }
         track->mtime = QFileInfo(path).lastModified().toTime_t();
-        addFile(track);
+/*        qDebug() << "LIBRARY: " << track->metadata["artist"] << " " << track->metadata["title"] <<
+            " " << track->audioproperties.length;*/
+        track->accessed_by_taglib = true;
     }
+    return track;
 }
 
 void Library::setMusicFolders(const vector<QString>& folders)
@@ -240,16 +284,25 @@ void Library::setMusicFolders(const vector<QString>& folders)
 
 void Library::scan()
 {
+    QMutexLocker locker(&mutex_);
     old_directories_.clear();
     directories_.swap(old_directories_);
     BOOST_FOREACH (QString path, music_folders_) {
         scanDirectory(path);
     }
+    // Now clean the old info so we won't waste time
+    // when adding new directories following an inotify event
+    old_directories_.clear();
 }
 
 void Library::watch()
 {
     watcher_->watch();
+}
+
+void Library::stopWatch()
+{
+    watcher_->stop();
 }
 
 void Library::dumpDatabase() const
@@ -261,8 +314,9 @@ void Library::dumpDatabase() const
     }
 }
 
-void Library::directoryCallback(QString path, WatchEvent event)
+void Library::directoryCallback(QString path, LibraryEventType event)
 {
+    QMutexLocker locker(&mutex_);
     qDebug() << (event == CREATE ? "DIR ADD " : "DIR RM ") << path;
     if (event == CREATE) {
         scanDirectory(path);
@@ -272,13 +326,47 @@ void Library::directoryCallback(QString path, WatchEvent event)
     //dumpDatabase();
 }
 
-void Library::fileCallback(QString path, WatchEvent event)
+void Library::fileCallback(QString path, LibraryEventType event)
 {
-    qDebug() << (event == CREATE ? "FILE ADD " : "FILE RM ") << path;
+    QMutexLocker locker(&mutex_);
     if (event == CREATE) {
-        scanFile(path);
+        qDebug() << "FILE ADD " << path;
+        boost::shared_ptr<Track> track = scanFile(path);
+        if (track)
+            addFile(track);
     } else if (event == DELETE) {
+        qDebug() << "FILE RM " << path;
         removeFile(path);
+    } else if (event == MODIFY) {
+        QFileInfo fileInfo(path);
+        DirectoryMap::iterator it = directories_.find(fileInfo.absolutePath());
+        if (it != directories_.end()) {
+            PTrack oldTrack = it->second->getFile(fileInfo.fileName());
+            if (oldTrack) {
+                if (!oldTrack->accessed_by_taglib) {
+                    qDebug() << "FILE MODIFY " << path;
+                    PTrack track = scanFile(path);
+                    it->second->addFile(track);
+                    emit libraryChanged(LibraryEvent(track, MODIFY));
+                } else {
+                    oldTrack->accessed_by_taglib = false;
+                }
+            } else {
+                qDebug() << "Modified file did not exist";
+            }
+        } else {
+            qDebug() << "Couldnt find the directory where the file was modified";
+        }
     }
-//  dumpDatabase();
+    //dumpDatabase();
 }
+
+void Library::getPlaylist(Playlist& playlist)
+{
+    QMutexLocker locker(&mutex_);
+    for (DirectoryMap::iterator it = directories_.begin(); it != directories_.end(); ++it) {
+        playlist.tracks.append(it->second->getTracks());
+    }
+}
+
+#include "library.moc"

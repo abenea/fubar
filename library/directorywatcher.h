@@ -1,6 +1,7 @@
 #ifndef DIRECTORYWATCHER_H
 #define DIRECTORYWATCHER_H
 
+#include "library/libraryeventtype.h"
 #include <QString>
 #include <boost/function.hpp>
 #include <boost/bimap.hpp>
@@ -9,15 +10,13 @@
 
 struct inotify_event;
 
-enum WatchEvent {DELETE, CREATE};
-
 class DirectoryWatcher
 {
 public:
     DirectoryWatcher();
     virtual ~DirectoryWatcher();
 
-    typedef boost::function<void (QString, WatchEvent)> WatchCallback;
+    typedef boost::function<void (QString, LibraryEventType)> WatchCallback;
     void setDirectoryCallback(WatchCallback callback) { directory_callback_ = callback; }
     void setFileCallback(WatchCallback callback) { file_callback_ = callback; }
 
@@ -25,6 +24,7 @@ public:
     void removeWatch(QString path);
     // reads the inotify events; it neva eva ends - nap
     void watch();
+    void stop();
 
 private:
     void readEvents();
@@ -37,6 +37,8 @@ private:
 
     typedef boost::bimap<int, QString> WatchMap;
     WatchMap watches_;
+
+    volatile bool stop_;
 };
 
 #endif // DIRECTORYWATCHER_H

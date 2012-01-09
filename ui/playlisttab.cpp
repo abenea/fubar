@@ -39,4 +39,14 @@ void PlaylistTab::addDirectory(const QString& directory)
     model_.addDirectory(directory);
 }
 
+void PlaylistTab::updateView(QList<LibraryEvent> events)
+{
+    model_.updateView(events);
+}
+
+void PlaylistTab::yunorefresh()
+{
+    model_.yunorefresh();
+}
+
 #include "playlisttab.moc"

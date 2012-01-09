@@ -13,6 +13,7 @@ void myperror(std::string message)
 }
 
 DirectoryWatcher::DirectoryWatcher()
+: stop_(false)
 {
     fd_ = inotify_init();
     if (fd_ < 0)
@@ -29,10 +30,11 @@ DirectoryWatcher::~DirectoryWatcher()
 
 void DirectoryWatcher::addWatch(QString path)
 {
-    int wd = inotify_add_watch(fd_, path.toStdString().c_str(), IN_CREATE | IN_DELETE | IN_DELETE_SELF
-        | IN_MOVE /*| IN_IGNORED */| IN_MOVE_SELF);
+    int wd = inotify_add_watch(fd_, path.toUtf8().constData(), IN_CREATE | IN_DELETE | IN_DELETE_SELF
+        | IN_MOVE /*| IN_IGNORED */| IN_MOVE_SELF | IN_CLOSE_WRITE);
     if (wd < 0) {
         myperror("inotify_add_watch");
+        qDebug() << "Cannot monitor " << path;
     } else {
         watches_.left.insert(std::make_pair(wd, path));
     }
@@ -50,25 +52,28 @@ void DirectoryWatcher::removeWatch(QString path)
     watches_.right.erase(it);
 }
 
+void DirectoryWatcher::stop()
+{
+    stop_ = true;
+}
+
 void DirectoryWatcher::watch()
 {
-/*  struct timeval time;*/
+    while (!stop_) {
+    struct timeval time;
     fd_set rfds;
     int ret;
-/*
-    time.tv_sec = 5;
-    time.tv_usec = 0;*/
 
     FD_ZERO(&rfds);
     FD_SET(fd_, &rfds);
 
-    while (true) {
-        ret = select(fd_ + 1, &rfds, NULL, NULL, NULL);
+        time.tv_sec = 1;
+        time.tv_usec = 0;
+        ret = select(fd_ + 1, &rfds, NULL, NULL, &time);
+        if (stop_)
+            return;
         if (ret < 0)
             myperror("select");
-        else if (!ret)
-            // timed out! no timeout though so should neva eva eva eva eva eva happen
-            continue;
         else if (FD_ISSET(fd_, &rfds))
             /* inotify events are available! */
             readEvents();
@@ -124,6 +129,8 @@ std::string mask2str(int m)
         r += "IN_MOVE_SELF ";
     if (m & IN_IGNORED)
         r += "IN_IGNORED ";
+    if (m & IN_CLOSE_WRITE)
+        r += "IN_CLOSE_WRITE ";
     return r;
 }
 
@@ -133,31 +140,41 @@ void DirectoryWatcher::handleEvent(inotify_event* event)
         qDebug() << "inotify event queue overflow!!1";
         return;
     }
-//  qDebug() << "wd=" << event->wd << "mask=" << event->mask << "cookie="
-//          << event->cookie << "len=" << event->len
-//          << (event->len ? event->name : "")
-//          << mask2str(event->mask).c_str();
+    qDebug() << "wd=" << event->wd << "mask=" << event->mask << "cookie="
+            << event->cookie << "len=" << event->len
+            << (event->len ? event->name : "")
+            << mask2str(event->mask).c_str();
 
     WatchMap::left_iterator it = watches_.left.find(event->wd);
-    bool create_event = event->mask & IN_CREATE || event->mask & IN_MOVED_TO;
-    bool delete_event = event->mask & IN_DELETE || event->mask & IN_MOVED_FROM;
-    if (create_event || delete_event) {
-        if (it == watches_.left.end())
-            qDebug() << "ffs can't map the inotify wd to path";
+    if (it == watches_.left.end()) {
+        qDebug() << "ffs can't map the inotify wd to path";
+        return;
+    }
+    LibraryEventType eventType = UNKNOWN;
+    if (event->mask & IN_CLOSE_WRITE) {
+        eventType = MODIFY;
+    } else if (event->mask & IN_CREATE || event->mask & IN_MOVED_TO) {
+        eventType = CREATE;
+    } else if (event->mask & IN_DELETE || event->mask & IN_MOVED_FROM) {
+        eventType = DELETE;
+    }
+    if (eventType != UNKNOWN) {
         if (event->len == 0)
             qDebug() << "wtf no event->name";
         QString path = QFileInfo(QDir(it->second), QString(event->name)).absoluteFilePath();
-        if (event->mask & IN_ISDIR)
-            directory_callback_(path, create_event ? CREATE : DELETE);
-        else
-            file_callback_(path, create_event ? CREATE : DELETE);
+        if (event->mask & IN_ISDIR) {
+            if (eventType != MODIFY)
+                directory_callback_(path, eventType);
+        } else {
+            file_callback_(path, eventType);
+        }
     }
     if (event->mask & IN_MOVE_SELF || event->mask & IN_DELETE_SELF) {
         if (it != watches_.left.end()) {
             directory_callback_(it->second, DELETE);
         }
     }
-//  dumpWatches();
+    //dumpWatches();
 }
 
 void DirectoryWatcher::dumpWatches()

@@ -2,7 +2,6 @@
 #include "track.pb.h"
 #include <QFileInfo>
 #include <QDebug>
-#include <boost/foreach.hpp>
 
 using namespace std;
 using namespace boost;
@@ -23,22 +22,26 @@ Directory::Directory(QString path, int mtime)
 
 void Directory::addFile(shared_ptr<Track> file)
 {
-    files_.insert(make_pair(QFileInfo(file->location).fileName(), file));
+    files_.insert(QFileInfo(file->location).fileName(), file);
 }
 
-void Directory::removeFile(QString fileName)
+boost::shared_ptr<Track> Directory::removeFile(QString fileName)
 {
+    boost::shared_ptr<Track> track;
     FileMap::iterator it = files_.find(fileName);
-    if (it != files_.end())
+    if (it != files_.end()) {
+        track = it.value();
         files_.erase(it);
-    else
+    } else {
         // May be a non-audio file
         qDebug() << "Tried to delete " << fileName << " from " << location_ << ". No dice";
+    }
+    return track;
 }
 
 void Directory::addSubdirectory(shared_ptr<Directory> directory)
 {
-    subdirs_.insert(make_pair(QFileInfo(directory->location_).fileName(), directory));
+    subdirs_.insert(QFileInfo(directory->location_).fileName(), directory);
 }
 
 void Directory::removeSubdirectory(QString subdirName)
@@ -54,18 +57,18 @@ void Directory::addFilesToProto(proto::Library& library)
 {
     for (FileMap::const_iterator it = files_.begin(); it != files_.end(); ++it) {
         proto::Track* track = library.add_tracks();
-        it->second->fillProtoTrack(*track);
+        it.value()->fillProtoTrack(*track);
     }
 }
 
 void Directory::dump()
 {
-    BOOST_FOREACH (FileMap::value_type &p, files_) {
-        printf("%s\n", p.second->location.toStdString().c_str());
+    foreach (FileMap::mapped_type p, files_) {
+        printf("%s\n", p->location.toStdString().c_str());
     }
-    BOOST_FOREACH (SubdirectoryMap::value_type &p, subdirs_) {
-        printf("%s\n", p.second->path().toStdString().c_str());
-        p.second->dump();
+    foreach (SubdirectoryMap::mapped_type p, subdirs_) {
+        printf("%s\n", p->path().toStdString().c_str());
+        p->dump();
     }
 }
 
@@ -76,10 +79,10 @@ void Directory::addFilesFromDirectory(shared_ptr<Directory> directory)
 
 std::vector<QString> Directory::getSubdirectories()
 {
-    std:vector<QString> subdirs;
+    std::vector<QString> subdirs;
     subdirs.reserve(subdirs_.size());
     for (SubdirectoryMap::const_iterator it = subdirs_.begin(); it != subdirs_.end(); ++it) {
-        subdirs.push_back(it->first);
+        subdirs.push_back(it.key());
     }
     return subdirs;
 }
@@ -89,6 +92,20 @@ shared_ptr<Track> Directory::getFile(QString name)
     shared_ptr<Track> result;
     FileMap::iterator it = files_.find(name);
     if (it != files_.end())
-        result = it->second;
+        result = it.value();
     return result;
+}
+
+QList<boost::shared_ptr<Track> > Directory::getTracks()
+{
+    QList<boost::shared_ptr<Track> > tracks;
+    foreach (boost::shared_ptr<Track> track, files_) {
+        tracks.append(track);
+    }
+    return tracks;
+}
+
+void Directory::clearFiles()
+{
+    files_.clear();
 }

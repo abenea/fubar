@@ -1,7 +1,9 @@
 wrap_proto(PROTO_GENERATED track.proto)
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${TAGLIB_INCLUDES})
+qt4_automoc(viewmanager.cpp library.cpp)
 add_library(library
-			directorywatcher.cpp
+            viewmanager.cpp
+            directorywatcher.cpp
             directory.cpp
             track.cpp
             library.cpp

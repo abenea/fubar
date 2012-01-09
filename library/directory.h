@@ -3,6 +3,8 @@
 
 #include "track.h"
 #include <QString>
+#include <QList>
+#include <QMap>
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
@@ -19,11 +21,13 @@ public:
     void addSubdirectory(boost::shared_ptr<Directory> directory);
     void removeSubdirectory(QString subdirName);
     void addFile(boost::shared_ptr<Track> file);
-    void removeFile(QString fileName);
+    boost::shared_ptr<Track> removeFile(QString fileName);
     void addFilesFromDirectory(boost::shared_ptr<Directory> directory);
 
     std::vector<QString> getSubdirectories();
     boost::shared_ptr<Track> getFile(QString name);
+    QList<boost::shared_ptr<Track> > getTracks();
+    void clearFiles();
 
     void addFilesToProto(proto::Library& library);
     void dump();
@@ -33,8 +37,8 @@ public:
 
 private:
     // Change to QMap?
-    typedef std::map<QString, boost::shared_ptr<Directory> > SubdirectoryMap;
-    typedef std::map<QString, boost::shared_ptr<Track> > FileMap;
+    typedef QMap<QString, boost::shared_ptr<Directory> > SubdirectoryMap;
+    typedef QMap<QString, boost::shared_ptr<Track> > FileMap;
 
     QString location_;
     int mtime_;

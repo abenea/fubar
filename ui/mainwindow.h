@@ -15,6 +15,8 @@ namespace Ui {
 class MainWindowClass;
 }
 
+class PlaylistTab;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -28,6 +30,7 @@ public:
     static MainWindow *instance;
 public slots:
     void addDirectory();
+    void addView(PlaylistTab* playlistTab, const QString& name);
 
 protected:
     virtual void closeEvent(QCloseEvent* );

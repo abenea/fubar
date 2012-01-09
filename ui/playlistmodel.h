@@ -5,6 +5,8 @@
 #include <library/playlist.h>
 #include <QStringList>
 
+class LibraryEvent;
+
 class PlaylistModel : public QAbstractItemModel
 {
     Q_OBJECT
@@ -20,6 +22,8 @@ public:
 
     Playlist &playlist() { return playlist_; }
     void addDirectory(const QString &path);
+    void updateView(QList<LibraryEvent> events);
+    void yunorefresh();
 private:
     Playlist &playlist_;
 };

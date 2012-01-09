@@ -23,13 +23,16 @@ public:
     QMap<QString, QString> metadata;
     int32_t mtime;
 
-    Track() {}
+    Track() : accessed_by_taglib(false) {}
     Track(proto::Track ptrack);
 
     QString path() { return location; }
 
     void fillProtoTrack(proto::Track& ptrack);
+
+    bool accessed_by_taglib;
 };
 
+typedef boost::shared_ptr<Track> PTrack;
 
 #endif // TRACK_H

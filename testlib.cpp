@@ -7,9 +7,9 @@ int main()
     Library library;
 
     std::vector<QString> folders;
-    folders.push_back("/home/bogdan/music");
+    folders.push_back("/home/bogdan/music_test");
     library.setMusicFolders(folders);
     library.dumpDatabase();
-	library.watch();
+    library.watch();
     return 0;
 }

@@ -29,8 +29,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
     ui_->mainToolBar->addWidget(seekSlider_);
     ui_->mainToolBar->addWidget(volumeSlider_);
 
-    ui_->playlistTabs->addTab(new PlaylistTab(this), "~/music");
-    current()->addDirectory("/home/bogdan/music");
+//     ui_->playlistTabs->addTab(new PlaylistTab(this), "~/music_test");
+//     current()->addDirectory("/home/bogdan/music_test");
 
     connect(ui_->actionAdd_directory, SIGNAL(triggered(bool)), this, SLOT(addDirectory()));
 
@@ -83,6 +83,11 @@ void MainWindow::writeSettings()
 {
     QSettings settings;
     settings.setValue("mainwindow/geometry", saveGeometry());
+}
+
+void MainWindow::addView(PlaylistTab* playlistTab, const QString& name)
+{
+    ui_->playlistTabs->addTab(playlistTab, name);
 }
 
 #include "mainwindow.moc"
