@@ -9,8 +9,11 @@
 #include <QList>
 
 struct LibraryEvent;
-struct ViewManager;
+class Library;
 
+// TODO: There should be a subclass of PlaylistTab called ViewTab or AutoSyncedPlaylistTab or smth
+// that is non-editable and has the updateView based on library chages through signals and ***REMOVED***,
+// and another class that is editable and doesnt care about library (the classic playlist).
 class PlaylistTab : public QWidget
 {
     Q_OBJECT
@@ -20,10 +23,10 @@ public:
 public slots:
     void play(const QModelIndex &index);
     void addDirectory(const QString &directory);
-    // should be a separate class?
 
-    void updateView(QList<LibraryEvent> events);
-    // lol QNap
+    void updateView(LibraryEvent event);
+    // TODO: This code is probably bad/retarded, need to learn a bit more about qt to do it
+    // But I'm too lazy atm
     void yunorefresh();
 
 private:
@@ -35,7 +38,7 @@ private:
 private slots:
     void changedFilter(const QString &filter);
 
-    friend class ViewManager;
+    friend class Library;
 };
 
 #endif // PLAYLISTTAB_H

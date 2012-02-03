@@ -11,9 +11,11 @@
 #include <QString>
 #include <QThread>
 #include <QMutex>
+#include <QWaitCondition>
 #include <vector>
 #include <map>
 
+class PlaylistTab;
 
 struct LibraryEvent {
     boost::shared_ptr<Track> track;
@@ -32,28 +34,31 @@ public:
     Library(QObject * parent = 0);
     ~Library();
 
-    void run();
-
-    void setMusicFolders(const std::vector<QString>& folders);
     void dumpDatabase() const;
 
     void watch();
     void stopWatch();
 
-    void getPlaylist(Playlist& playlist);
+    void registerView(PlaylistTab* view);
 
 public slots:
+    void setMusicFolders(const std::vector<QString>& folders);
     void quit();
 
 signals:
     // idea: make this a vector<events>
     void libraryChanged(LibraryEvent event);
 
+protected:
+    void run();
+
 private:
     void saveToDisk();
     void loadFromDisk();
 
-    void scan();
+    // Rescan monitored directories and update data structures
+    void rescan();
+    bool stopRescan() { return stop_ || restart_; }
     void scanDirectory(const QString& path);
     boost::shared_ptr<Track> scanFile(const QString& path);
 
@@ -72,6 +77,11 @@ private:
 
     boost::shared_ptr<DirectoryWatcher> watcher_;
     QMutex mutex_;
+    bool stop_, restart_;
+
+    QMutex stop_mutex_;
+    QWaitCondition stop_rescan_;
+    bool rescanning_;
 };
 
 #endif // LIBRARY_H

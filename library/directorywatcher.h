@@ -3,6 +3,8 @@
 
 #include "library/libraryeventtype.h"
 #include <QString>
+#include <QMutex>
+#include <QWaitCondition>
 #include <boost/function.hpp>
 #include <boost/bimap.hpp>
 #include <map>
@@ -39,6 +41,8 @@ private:
     WatchMap watches_;
 
     volatile bool stop_;
+    QMutex mutex_;
+    QWaitCondition stop_condition_;
 };
 
 #endif // DIRECTORYWATCHER_H

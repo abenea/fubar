@@ -22,7 +22,7 @@ public:
 
     Playlist &playlist() { return playlist_; }
     void addDirectory(const QString &path);
-    void updateView(QList<LibraryEvent> events);
+    void updateView(LibraryEvent event);
     void yunorefresh();
 private:
     Playlist &playlist_;

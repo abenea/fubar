@@ -68,42 +68,40 @@ void PlaylistModel::addDirectory(const QString& path)
     }
 }
 
-void PlaylistModel::updateView(QList<LibraryEvent> events)
+void PlaylistModel::updateView(LibraryEvent event)
 {
-    foreach (LibraryEvent event, events) {
-        // treat all consecutive "add" events in one swoop
-        if (event.op == CREATE) {
-            beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size());
-            playlist_.tracks.append(event.track);
-            qDebug() << "UPDATING MODEL: " << event.track->metadata["artist"] << " " << event.track->metadata["title"] <<
-            " " << event.track->audioproperties.length;
-            endInsertRows();
-        } else if (event.op == MODIFY) {
-            int i = 0;
-            // todo should probably use setData()
-            foreach (PTrack track, playlist_.tracks) {
-                if (track->location == event.track->location) {
-                    playlist_.tracks.replace(i, event.track);
-                    qDebug() << "dataChanged(" << i << ")";
-                    emit dataChanged(index(i, 0, QModelIndex()), index(i, 0, QModelIndex()));
-                    break;
-                }
-                ++i;
+    // treat all consecutive "add" events in one swoop
+    if (event.op == CREATE) {
+        beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size());
+        playlist_.tracks.append(event.track);
+        qDebug() << "UPDATING MODEL: " << event.track->metadata["artist"] << " " << event.track->metadata["title"] <<
+        " " << event.track->audioproperties.length;
+        endInsertRows();
+    } else if (event.op == MODIFY) {
+        int i = 0;
+        // todo should probably use setData()
+        foreach (PTrack track, playlist_.tracks) {
+            if (track->location == event.track->location) {
+                playlist_.tracks.replace(i, event.track);
+                qDebug() << "dataChanged(" << i << ")";
+                emit dataChanged(index(i, 0, QModelIndex()), index(i, 0, QModelIndex()));
+                break;
             }
-        } else if (event.op == DELETE) {
-            int i = 0;
-            // todo should probably use setData()
-            for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end(); ++it) {
-                PTrack track = *it;
-                if (track->location == event.track->location) {
-                    beginRemoveRows(QModelIndex(), i, i);
-                    playlist_.tracks.erase(it);
-                    endRemoveRows();
-                    qDebug() << "dataRemoved(" << i << ")";
-                    break;
-                }
-                ++i;
+            ++i;
+        }
+    } else if (event.op == DELETE) {
+        int i = 0;
+        // todo should probably use setData()
+        for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end(); ++it) {
+            PTrack track = *it;
+            if (track->location == event.track->location) {
+                beginRemoveRows(QModelIndex(), i, i);
+                playlist_.tracks.erase(it);
+                endRemoveRows();
+                qDebug() << "dataRemoved(" << i << ")";
+                break;
             }
+            ++i;
         }
     }
 }

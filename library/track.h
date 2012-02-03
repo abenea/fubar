@@ -30,6 +30,7 @@ public:
 
     void fillProtoTrack(proto::Track& ptrack);
 
+    // TODO: should rename this really
     bool accessed_by_taglib;
 };
 

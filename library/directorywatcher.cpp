@@ -55,23 +55,27 @@ void DirectoryWatcher::removeWatch(QString path)
 void DirectoryWatcher::stop()
 {
     stop_ = true;
+    mutex_.lock();
+    stop_condition_.wait(&mutex_);
+    mutex_.unlock();
 }
 
 void DirectoryWatcher::watch()
 {
     while (!stop_) {
-    struct timeval time;
-    fd_set rfds;
-    int ret;
-
-    FD_ZERO(&rfds);
-    FD_SET(fd_, &rfds);
+        struct timeval time;
+        fd_set rfds;
+        int ret;
+        FD_ZERO(&rfds);
+        FD_SET(fd_, &rfds);
 
         time.tv_sec = 1;
         time.tv_usec = 0;
         ret = select(fd_ + 1, &rfds, NULL, NULL, &time);
-        if (stop_)
+        if (stop_) {
+            stop_condition_.wakeAll();
             return;
+        }
         if (ret < 0)
             myperror("select");
         else if (FD_ISSET(fd_, &rfds))
