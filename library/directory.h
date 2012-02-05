@@ -5,8 +5,8 @@
 #include <QString>
 #include <QList>
 #include <QMap>
+#include <QSet>
 #include <boost/shared_ptr.hpp>
-#include <vector>
 
 namespace proto {
     class Directory;
@@ -24,9 +24,11 @@ public:
     boost::shared_ptr<Track> removeFile(QString fileName);
     void addFilesFromDirectory(boost::shared_ptr<Directory> directory);
 
-    std::vector<QString> getSubdirectories();
+    QList<QString> getSubdirectories();
     boost::shared_ptr<Track> getFile(QString name);
     QList<boost::shared_ptr<Track> > getTracks();
+    QSet<QString> getFileSet();
+    QSet<QString> getSubdirectorySet();
     void clearFiles();
 
     void addFilesToProto(proto::Library& library);

@@ -91,13 +91,13 @@ void Library::quit()
 
 void Library::addDirectory(boost::shared_ptr<Directory> directory)
 {
-    directories_.insert(make_pair(directory->path(), directory));
+    directories_.insert(directory->path(), directory);
 
     // Add child to father
     QFileInfo dir_path(directory->path());
     DirectoryMap::iterator it = directories_.find(dir_path.absolutePath());
     if (it != directories_.end()) {
-        it->second->addSubdirectory(directory);
+        it.value()->addSubdirectory(directory);
     }
 }
 
@@ -108,25 +108,24 @@ void Library::removeDirectory(QString path)
         qDebug() << "Wanted to remove directory " << path << ". No dice";
         return;
     }
-    std::vector<QString> subdirs = it->second->getSubdirectories();
-    BOOST_FOREACH (QString subdir, subdirs) {
+    QList<QString> subdirs = it.value()->getSubdirectories();
+    foreach (QString subdir, subdirs) {
         removeDirectory(QFileInfo(QDir(path), subdir).absoluteFilePath());
     }
     watcher_->removeWatch(path);
 
     // Delete tracks from views
-    QList<PTrack> tracks = it->second->getTracks();
+    QList<PTrack> tracks = it.value()->getTracks();
     foreach (PTrack track, tracks) {
         emit libraryChanged(LibraryEvent(track, DELETE));
     }
-    it->second->clearFiles();
+    it.value()->clearFiles();
 
     // Remove child from father
     QFileInfo info(path);
     DirectoryMap::iterator father_it = directories_.find(info.absolutePath());
-    if (father_it
-        != directories_.end()) {
-        father_it->second->removeSubdirectory(info.fileName());
+    if (father_it != directories_.end()) {
+        father_it.value()->removeSubdirectory(info.fileName());
     }
     directories_.erase(it);
 }
@@ -135,9 +134,9 @@ void Library::addFile(shared_ptr<Track> track)
 {
     // Add to directory
     QFileInfo file_info(track->location);
-    std::map<QString, boost::shared_ptr<Directory> >::iterator it = directories_.find(file_info.absolutePath());
+    DirectoryMap::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
-        it->second->addFile(track);
+        it.value()->addFile(track);
         emit libraryChanged(LibraryEvent(track, CREATE));
     } else {
         qDebug() << "Library::addFile tried to add a file for an unadded directory!!111";
@@ -147,9 +146,9 @@ void Library::addFile(shared_ptr<Track> track)
 void Library::removeFile(QString path)
 {
     QFileInfo file_info(path);
-    std::map<QString, boost::shared_ptr<Directory> >::iterator it = directories_.find(file_info.absolutePath());
+    DirectoryMap::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
-        boost::shared_ptr<Track> track = it->second->removeFile(file_info.fileName());
+        boost::shared_ptr<Track> track = it.value()->removeFile(file_info.fileName());
         if (track) {
             emit libraryChanged(LibraryEvent(track, DELETE));
         }
@@ -199,9 +198,9 @@ void Library::saveToDisk()
     for (DirectoryMap::const_iterator it = directories_.begin(); it != directories_.end(); ++it) {
         proto::Directory* dir = plibrary.add_directories();
         dir->Clear();
-        dir->set_location(it->first.toUtf8().constData());
-        dir->set_mtime(it->second->mtime());
-        it->second->addFilesToProto(plibrary);
+        dir->set_location(it.key().toUtf8().constData());
+        dir->set_mtime(it.value()->mtime());
+        it.value()->addFilesToProto(plibrary);
     }
 
     int len = plibrary.ByteSize();
@@ -223,50 +222,62 @@ void Library::scanDirectory(const QString& path)
 {
     if (stopRescan())
         return;
-    shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, QFileInfo(path).lastModified().toTime_t()));
-    addDirectory(directory);
+    DirectoryMap::const_iterator it = directories_.find(path);
     watcher_->addWatch(path);
+    uint mtime = QFileInfo(path).lastModified().toTime_t();
 
-    DirectoryMap::const_iterator it = old_directories_.find(path);
-    if (it != old_directories_.end()) {
-        shared_ptr<Directory> old_directory = it->second;
+    if (it != directories_.end()) {
+        shared_ptr<Directory> directory = it.value();
         // Nothing changed in this dir
-        if (directory->mtime() == old_directory->mtime()) {
-            directory->addFilesFromDirectory(old_directory);
-            std::vector<QString> subdirs = old_directory->getSubdirectories();
-            BOOST_FOREACH (QString& subdir, subdirs) {
+        if (mtime == directory->mtime()) {
+            QList<QString> subdirs = directory->getSubdirectories();
+            foreach (QString subdir, subdirs) {
                 scanDirectory(QFileInfo(path, subdir).absoluteFilePath());
                 if (stopRescan())
                     return;
             }
         // Stuff changed
         } else {
+            QSet<QString> old_files = directory->getFileSet();
+            shared_ptr<Directory> new_directory = shared_ptr<Directory>(new Directory(path, mtime));
+            addDirectory(new_directory);
             QDir dir(path);
             dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
+            QList<QString> subdirs;
+            QSet<QString> old_subdirs = directory->getSubdirectorySet();
             foreach (QFileInfo info, dir.entryInfoList()) {
-                if (stopRescan())
-                    return;
                 if (info.isFile()) {
-                    bool rescan = true;
-                    if (old_directory) {
-                        shared_ptr<Track> file = old_directory->getFile(info.fileName());
-                        if (file and file->mtime == info.lastModified().toTime_t()) {
-                            directory->addFile(file);
-                            rescan = false;
+                    shared_ptr<Track> file = directory->getFile(info.fileName());
+                    if (file) {
+                        if (file->mtime != info.lastModified().toTime_t()) {
+                            file = scanFile(info.filePath());
+                            emit libraryChanged(LibraryEvent(file, MODIFY));
                         }
-                    }
-                    if (rescan) {
-                        boost::shared_ptr<Track> track = scanFile(info.filePath());
-                        if (track)
-                            addFile(track);
+                        new_directory->addFile(file);
+                        old_files.erase(old_files.find(file->location));
+                    } else {
+                        file = scanFile(info.filePath());
+                        if (file)
+                            addFile(file);
                     }
                 } else {
-                    scanDirectory(info.filePath());
+                    subdirs.append(info.absoluteFilePath());
                 }
+            }
+            foreach (QString deleted_file, old_files) {
+                emit libraryChanged(LibraryEvent(directory->getFile(deleted_file), DELETE));
+            }
+            foreach (QString deleted_dir, old_subdirs) {
+                removeDirectory(deleted_dir);
+            }
+            foreach (QFileInfo info, subdirs) {
+                scanDirectory(info.filePath());
             }
         }
     // Full scan
     } else {
+        shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, mtime));
+        addDirectory(directory);
         QDir dir(path);
         dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
         foreach (QFileInfo info, dir.entryInfoList()) {
@@ -324,23 +335,32 @@ void Library::setMusicFolders(const vector<QString>& folders)
 
 void Library::rescan()
 {
-    // TODO: this ***REMOVED*** lock must go away, smaller granularity required
-    QMutexLocker locker(&mutex_);
     {
         QMutexLocker locker(&stop_mutex_);
         rescanning_ = true;
     }
-    old_directories_.clear();
-    directories_.swap(old_directories_);
-    // TODO: first delete dirs that we don't care about anymore
+    // Delete all dirs that are not monitored
+    QList<QString> old_dirs;
+    foreach (QString dir, directories_.keys()) {
+        bool deleted = false;
+        BOOST_FOREACH (QString path, music_folders_) {
+            if (dir.startsWith(path)) {
+                deleted = true;
+                break;
+            }
+        }
+        if (deleted)
+            old_dirs.append(dir);
+    }
+    foreach (QString old_dir, old_dirs) {
+        removeDirectory(old_dir);
+    }
+
     BOOST_FOREACH (QString path, music_folders_) {
         scanDirectory(path);
         if (stopRescan())
             break;
     }
-    // Now clean the old info so we won't waste time
-    // when adding new directories following an inotify event
-    old_directories_.clear();
     {
         QMutexLocker locker(&stop_mutex_);
         rescanning_ = false;
@@ -363,7 +383,7 @@ void Library::dumpDatabase() const
     BOOST_FOREACH (QString music_folder, music_folders_) {
         DirectoryMap::const_iterator it = directories_.find(music_folder);
         if (it != directories_.end())
-            it->second->dump();
+            it.value()->dump();
     }
 }
 
@@ -394,12 +414,12 @@ void Library::fileCallback(QString path, LibraryEventType event)
         QFileInfo fileInfo(path);
         DirectoryMap::iterator it = directories_.find(fileInfo.absolutePath());
         if (it != directories_.end()) {
-            PTrack oldTrack = it->second->getFile(fileInfo.fileName());
+            PTrack oldTrack = it.value()->getFile(fileInfo.fileName());
             if (oldTrack) {
                 if (!oldTrack->accessed_by_taglib) {
                     qDebug() << "FILE MODIFY " << path;
                     PTrack track = scanFile(path);
-                    it->second->addFile(track);
+                    it.value()->addFile(track);
                     emit libraryChanged(LibraryEvent(track, MODIFY));
                 } else {
                     oldTrack->accessed_by_taglib = false;
@@ -418,7 +438,7 @@ void Library::registerView(PlaylistTab* view)
 {
     QMutexLocker locker(&mutex_);
     for (DirectoryMap::iterator it = directories_.begin(); it != directories_.end(); ++it) {
-        view->playlist_.tracks.append(it->second->getTracks());
+        view->playlist_.tracks.append(it.value()->getTracks());
     }
     QObject::connect(this, SIGNAL(libraryChanged(LibraryEvent)), view, SLOT(updateView(LibraryEvent)));
 }

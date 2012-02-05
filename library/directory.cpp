@@ -77,12 +77,12 @@ void Directory::addFilesFromDirectory(shared_ptr<Directory> directory)
     files_ = directory->files_;
 }
 
-std::vector<QString> Directory::getSubdirectories()
+QList<QString> Directory::getSubdirectories()
 {
-    std::vector<QString> subdirs;
+    QList<QString> subdirs;
     subdirs.reserve(subdirs_.size());
-    for (SubdirectoryMap::const_iterator it = subdirs_.begin(); it != subdirs_.end(); ++it) {
-        subdirs.push_back(it.key());
+    foreach (QString dir, subdirs_.keys()) {
+        subdirs.append(dir);
     }
     return subdirs;
 }
@@ -103,6 +103,24 @@ QList<boost::shared_ptr<Track> > Directory::getTracks()
         tracks.append(track);
     }
     return tracks;
+}
+
+QSet<QString> Directory::getFileSet()
+{
+    QSet<QString> files;
+    foreach (QString path, files_.keys()) {
+        files.insert(path);
+    }
+    return files;
+}
+
+QSet<QString> Directory::getSubdirectorySet()
+{
+    QSet<QString> subdirectories;
+    foreach (QString path, subdirs_.keys()) {
+        subdirectories.insert(path);
+    }
+    return subdirectories;
 }
 
 void Directory::clearFiles()

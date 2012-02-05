@@ -72,8 +72,8 @@ private:
 private:
     std::vector<QString> music_folders_;
 
-    typedef std::map<QString, boost::shared_ptr<Directory> > DirectoryMap;
-    DirectoryMap directories_, old_directories_;
+    typedef QMap<QString, boost::shared_ptr<Directory> > DirectoryMap;
+    DirectoryMap directories_;
 
     boost::shared_ptr<DirectoryWatcher> watcher_;
     QMutex mutex_;
