@@ -83,7 +83,6 @@ void PlaylistModel::updateView(LibraryEvent event)
         foreach (PTrack track, playlist_.tracks) {
             if (track->location == event.track->location) {
                 playlist_.tracks.replace(i, event.track);
-                qDebug() << "dataChanged(" << i << ")";
                 emit dataChanged(index(i, 0, QModelIndex()), index(i, 0, QModelIndex()));
                 break;
             }
@@ -98,7 +97,6 @@ void PlaylistModel::updateView(LibraryEvent event)
                 beginRemoveRows(QModelIndex(), i, i);
                 playlist_.tracks.erase(it);
                 endRemoveRows();
-                qDebug() << "dataRemoved(" << i << ")";
                 break;
             }
             ++i;

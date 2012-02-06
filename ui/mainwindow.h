@@ -21,7 +21,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(Library& library, QWidget *parent = 0);
     ~MainWindow();
 
     Phonon::MediaObject *mediaObject;
@@ -30,6 +30,7 @@ public:
     static MainWindow *instance;
 public slots:
     void addDirectory();
+    void libraryPreferences();
     void addView(PlaylistTab* playlistTab, const QString& name);
 
 protected:
@@ -39,6 +40,8 @@ private:
     boost::scoped_ptr<Ui::MainWindowClass> ui_;
     Phonon::SeekSlider *seekSlider_;
     Phonon::VolumeSlider *volumeSlider_;
+
+    Library& library_;
 
     PlaylistTab *current();
     void writeSettings();

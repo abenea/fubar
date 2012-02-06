@@ -21,7 +21,7 @@ public:
         int channels;
     } audioproperties;
     QMap<QString, QString> metadata;
-    int32_t mtime;
+    uint mtime;
 
     Track() : accessed_by_taglib(false) {}
     Track(proto::Track ptrack);

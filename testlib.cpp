@@ -1,13 +1,14 @@
 #include "library/library.h"
 #include <QString>
+#include <QList>
 #include <cstdio>
 
 int main()
 {
     Library library;
 
-    std::vector<QString> folders;
-    folders.push_back("/home/bogdan/music_test");
+    QList<QString> folders;
+    folders << "/home/bogdan/music_test";
     library.setMusicFolders(folders);
     library.dumpDatabase();
     library.watch();

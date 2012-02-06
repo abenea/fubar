@@ -144,10 +144,10 @@ void DirectoryWatcher::handleEvent(inotify_event* event)
         qDebug() << "inotify event queue overflow!!1";
         return;
     }
-    qDebug() << "wd=" << event->wd << "mask=" << event->mask << "cookie="
-            << event->cookie << "len=" << event->len
-            << (event->len ? event->name : "")
-            << mask2str(event->mask).c_str();
+//     qDebug() << "wd=" << event->wd << "mask=" << event->mask << "cookie="
+//             << event->cookie << "len=" << event->len
+//             << (event->len ? event->name : "")
+//             << mask2str(event->mask).c_str();
 
     WatchMap::left_iterator it = watches_.left.find(event->wd);
     if (it == watches_.left.end()) {
@@ -165,7 +165,7 @@ void DirectoryWatcher::handleEvent(inotify_event* event)
     if (eventType != UNKNOWN) {
         if (event->len == 0)
             qDebug() << "wtf no event->name";
-        QString path = QFileInfo(QDir(it->second), QString(event->name)).absoluteFilePath();
+        QString path = QFileInfo(QDir(it->second), QString::fromUtf8(event->name)).absoluteFilePath();
         if (event->mask & IN_ISDIR) {
             if (eventType != MODIFY)
                 directory_callback_(path, eventType);

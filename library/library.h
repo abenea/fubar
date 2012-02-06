@@ -9,11 +9,12 @@
 
 #include <boost/shared_ptr.hpp>
 #include <QString>
+#include <QStringList>
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
-#include <vector>
-#include <map>
+#include <QList>
+#include <QMap>
 
 class PlaylistTab;
 
@@ -41,8 +42,15 @@ public:
 
     void registerView(PlaylistTab* view);
 
+    QStringList getMusicFolders();
+
 public slots:
-    void setMusicFolders(const std::vector<QString>& folders);
+    void setMusicFolders(QStringList folders);
+
+    void startMonitoring();
+    void stopMonitoring();
+    void restartMonitoring();
+
     void quit();
 
 signals:
@@ -53,12 +61,17 @@ protected:
     void run();
 
 private:
+    void getFoldersFromSettings();
+    void setFoldersInSettings();
     void saveToDisk();
     void loadFromDisk();
 
+    void waitForMonitoringStart();
+
     // Rescan monitored directories and update data structures
     void rescan();
-    bool stopRescan() { return stop_ || restart_; }
+    void stopRescanning();
+    bool stopRescan() { return quit_ || !should_be_working_; }
     void scanDirectory(const QString& path);
     boost::shared_ptr<Track> scanFile(const QString& path);
 
@@ -70,18 +83,20 @@ private:
     void fileCallback(QString path, LibraryEventType event);
     void directoryCallback(QString path, LibraryEventType event);
 private:
-    std::vector<QString> music_folders_;
+    QStringList music_folders_;
 
     typedef QMap<QString, boost::shared_ptr<Directory> > DirectoryMap;
     DirectoryMap directories_;
 
     boost::shared_ptr<DirectoryWatcher> watcher_;
     QMutex mutex_;
-    bool stop_, restart_;
+    bool quit_;
 
-    QMutex stop_mutex_;
-    QWaitCondition stop_rescan_;
-    bool rescanning_;
+    QMutex stop_rescan_mutex_, pause_monitoring_mutex_;
+    QWaitCondition stop_rescan_, pause_monitoring_;
+    bool rescanning_; // library is rescanning folders
+    bool watching_;   // library is handling inotify events
+    bool should_be_working_; // library should be fucking working on something
 };
 
 #endif // LIBRARY_H

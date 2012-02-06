@@ -1,6 +1,7 @@
 #include "directory.h"
 #include "track.pb.h"
 #include <QFileInfo>
+#include <QDir>
 #include <QDebug>
 
 using namespace std;
@@ -108,8 +109,8 @@ QList<boost::shared_ptr<Track> > Directory::getTracks()
 QSet<QString> Directory::getFileSet()
 {
     QSet<QString> files;
-    foreach (QString path, files_.keys()) {
-        files.insert(path);
+    foreach (PTrack track, files_) {
+        files.insert(track->location);
     }
     return files;
 }
@@ -118,7 +119,7 @@ QSet<QString> Directory::getSubdirectorySet()
 {
     QSet<QString> subdirectories;
     foreach (QString path, subdirs_.keys()) {
-        subdirectories.insert(path);
+        subdirectories.insert(QFileInfo(QDir(location_), path).absoluteFilePath());
     }
     return subdirectories;
 }

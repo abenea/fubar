@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<LibraryEvent>("LibraryEvent");
     Library library;
 
-    MainWindow w;
+    MainWindow w(library);
     w.show();
 
     ViewManager viewManager(w, library);
@@ -21,10 +21,6 @@ int main(int argc, char *argv[])
 
     library.start();
     QObject::connect(&a, SIGNAL(lastWindowClosed()), &library, SLOT(quit()));
-    std::vector<QString> folders;
-    folders.push_back("/home/bogdan/music_test");
-    library.setMusicFolders(folders);
-    library.dumpDatabase();
 
     int ret = a.exec();
     library.wait();

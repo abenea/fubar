@@ -35,7 +35,7 @@ public:
     void dump();
 
     QString path() { return location_; }
-    int mtime() { return mtime_; }
+    uint mtime() { return mtime_; }
 
 private:
     // Change to QMap?
@@ -43,7 +43,7 @@ private:
     typedef QMap<QString, boost::shared_ptr<Track> > FileMap;
 
     QString location_;
-    int mtime_;
+    uint mtime_;
 
     SubdirectoryMap subdirs_;
     FileMap files_;

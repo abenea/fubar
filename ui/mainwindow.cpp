@@ -1,7 +1,8 @@
 #include "mainwindow.h"
 #include "playlistfilter.h"
 #include "playlistmodel.h"
-#include <ui/ui_mainwindow.h>
+#include "ui/ui_mainwindow.h"
+#include "ui/librarypreferencesdialog.h"
 
 #include <QTableView>
 #include <QSettings>
@@ -12,7 +13,10 @@ using namespace boost;
 
 MainWindow *MainWindow::instance = 0;
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainWindowClass)
+MainWindow::MainWindow(Library& library, QWidget *parent)
+    : QMainWindow(parent)
+    , ui_(new Ui::MainWindowClass)
+    , library_(library)
 {
     ui_->setupUi(this);
 
@@ -33,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui_(new Ui::MainW
 //     current()->addDirectory("/home/bogdan/music_test");
 
     connect(ui_->actionAdd_directory, SIGNAL(triggered(bool)), this, SLOT(addDirectory()));
+    connect(ui_->actionPreferences, SIGNAL(triggered(bool)), this, SLOT(libraryPreferences()));
 
     readSettings();
 
@@ -71,6 +76,12 @@ void MainWindow::addDirectory()
     if (tab) {
         tab->addDirectory(directory);
     }
+}
+
+void MainWindow::libraryPreferences()
+{
+    LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(library_, this);
+    widget->show();
 }
 
 void MainWindow::readSettings()

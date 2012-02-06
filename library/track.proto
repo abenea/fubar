@@ -20,7 +20,7 @@ message Track {
   optional string location = 1;
   optional Metadata metadata = 2;
   optional AudioProperties audioproperties = 3;
-  optional int32 mtime = 4;
+  optional uint32 mtime = 4;
 }
 
 message Directory {
