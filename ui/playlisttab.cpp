@@ -27,6 +27,11 @@ void PlaylistTab::changedFilter(const QString &filter)
     filterModel_.setFilter(filter);
 }
 
+void PlaylistTab::play()
+{
+    play(ui_.playlist->currentIndex());
+}
+
 void PlaylistTab::play(const QModelIndex& index)
 {
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track> >();

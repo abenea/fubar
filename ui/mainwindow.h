@@ -33,6 +33,8 @@ public slots:
     void libraryPreferences();
     void addView(PlaylistTab* playlistTab, const QString& name);
 
+    void on_mainToolBar_actionTriggered(QAction* action);
+
 protected:
     virtual void closeEvent(QCloseEvent* );
 

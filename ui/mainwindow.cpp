@@ -101,4 +101,20 @@ void MainWindow::addView(PlaylistTab* playlistTab, const QString& name)
     ui_->playlistTabs->addTab(playlistTab, name);
 }
 
+void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
+{
+    if (action->text().toLower().contains("play")) {
+        current()->play();
+    } else if (action->text().toLower().contains("pause")) {
+        if (mediaObject->state() == Phonon::PausedState)
+            mediaObject->play();
+        else
+            mediaObject->pause();
+    } else if (action->text().toLower().contains("stop")) {
+        mediaObject->stop();
+    } else if (action->text().toLower().contains("prev")) {
+    } else if (action->text().toLower().contains("next")) {
+    }
+}
+
 #include "mainwindow.moc"
