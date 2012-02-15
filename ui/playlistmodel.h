@@ -24,6 +24,9 @@ public:
     void addDirectory(const QString &path);
     void updateView(LibraryEvent event);
     void yunorefresh();
+
+    QModelIndex getIndex(QString path);
+
 private:
     Playlist &playlist_;
 };

@@ -114,6 +114,7 @@ void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
         mediaObject->stop();
     } else if (action->text().toLower().contains("prev")) {
     } else if (action->text().toLower().contains("next")) {
+        current()->playNext(mediaObject->currentSource().fileName());
     }
 }
 

@@ -39,6 +39,16 @@ void PlaylistTab::play(const QModelIndex& index)
     MainWindow::instance->mediaObject->play();
 }
 
+void PlaylistTab::playNext(QString path)
+{
+    QModelIndex index = model_.getIndex(path);
+    QModelIndex indexMapped = filterModel_.mapFromSource(index);
+    QModelIndex nextIndex = model_.index(indexMapped.row() + 1, 0);
+    QModelIndex mappedNextIndex = filterModel_.mapFromSource(nextIndex);
+    if (mappedNextIndex != QModelIndex())
+        play(mappedNextIndex);
+}
+
 void PlaylistTab::addDirectory(const QString& directory)
 {
     model_.addDirectory(directory);

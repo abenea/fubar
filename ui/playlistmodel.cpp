@@ -110,4 +110,17 @@ void PlaylistModel::yunorefresh()
     endInsertRows();
 }
 
+QModelIndex PlaylistModel::getIndex(QString path)
+{
+    int i = 0;
+    for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end(); ++it) {
+        PTrack track = *it;
+        if (track->location == path) {
+            return index(i, 0);
+        }
+        ++i;
+    }
+    return QModelIndex();
+}
+
 #include "playlistmodel.moc"
