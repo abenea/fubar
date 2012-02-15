@@ -23,7 +23,7 @@ public:
 public slots:
     void play(const QModelIndex &index);
     void play();
-    void playNext(QString path);
+    void playNext(QString path, int offset);
     void addDirectory(const QString &directory);
 
     void updateView(LibraryEvent event);

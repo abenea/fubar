@@ -17,6 +17,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     : QMainWindow(parent)
     , ui_(new Ui::MainWindowClass)
     , library_(library)
+    , currentlyPlayingPlaylist_(0)
 {
     ui_->setupUi(this);
 
@@ -101,10 +102,17 @@ void MainWindow::addView(PlaylistTab* playlistTab, const QString& name)
     ui_->playlistTabs->addTab(playlistTab, name);
 }
 
+void MainWindow::setCurrentPlayingPlaylist(PlaylistTab* playlist)
+{
+    currentlyPlayingPlaylist_ = playlist;
+}
+
 void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
 {
     if (action->text().toLower().contains("play")) {
-        current()->play();
+        if (currentlyPlayingPlaylist_ == 0)
+            currentlyPlayingPlaylist_ = current();
+        currentlyPlayingPlaylist_->play();
     } else if (action->text().toLower().contains("pause")) {
         if (mediaObject->state() == Phonon::PausedState)
             mediaObject->play();
@@ -113,8 +121,9 @@ void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
     } else if (action->text().toLower().contains("stop")) {
         mediaObject->stop();
     } else if (action->text().toLower().contains("prev")) {
+        currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), -1);
     } else if (action->text().toLower().contains("next")) {
-        current()->playNext(mediaObject->currentSource().fileName());
+        currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), +1);
     }
 }
 

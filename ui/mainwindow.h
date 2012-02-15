@@ -28,6 +28,9 @@ public:
     Phonon::AudioOutput *audioOutput;
 
     static MainWindow *instance;
+
+    void setCurrentPlayingPlaylist(PlaylistTab *playlist);
+
 public slots:
     void addDirectory();
     void libraryPreferences();
@@ -46,6 +49,8 @@ private:
     Library& library_;
 
     PlaylistTab *current();
+    PlaylistTab *currentlyPlayingPlaylist_;
+
     void writeSettings();
     void readSettings();
 

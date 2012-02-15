@@ -29,23 +29,32 @@ void PlaylistTab::changedFilter(const QString &filter)
 
 void PlaylistTab::play()
 {
-    play(ui_.playlist->currentIndex());
+    QModelIndex index = ui_.playlist->currentIndex();
+    if (index.isValid())
+        play(index);
 }
 
 void PlaylistTab::play(const QModelIndex& index)
 {
+    MainWindow::instance->setCurrentPlayingPlaylist(this);
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track> >();
     MainWindow::instance->mediaObject->setCurrentSource(Phonon::MediaSource(track->location));
     MainWindow::instance->mediaObject->play();
 }
 
-void PlaylistTab::playNext(QString path)
+void PlaylistTab::playNext(QString path, int offset)
 {
     QModelIndex index = model_.getIndex(path);
+    if (!index.isValid())
+        return;
     QModelIndex indexMapped = filterModel_.mapFromSource(index);
-    QModelIndex nextIndex = model_.index(indexMapped.row() + 1, 0);
+    if (!indexMapped.isValid())
+        return;
+    QModelIndex nextIndex = model_.index(indexMapped.row() + offset, 0);
+    if (!nextIndex.isValid())
+        return;
     QModelIndex mappedNextIndex = filterModel_.mapFromSource(nextIndex);
-    if (mappedNextIndex != QModelIndex())
+    if (mappedNextIndex.isValid())
         play(mappedNextIndex);
 }
 
