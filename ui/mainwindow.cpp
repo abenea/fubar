@@ -3,6 +3,7 @@
 #include "playlistmodel.h"
 #include "ui/ui_mainwindow.h"
 #include "ui/librarypreferencesdialog.h"
+#include "libraryviewplaylist.h"
 
 #include <QTableView>
 #include <QSettings>
@@ -97,9 +98,9 @@ void MainWindow::writeSettings()
     settings.setValue("mainwindow/geometry", saveGeometry());
 }
 
-void MainWindow::addView(PlaylistTab* playlistTab, const QString& name)
+void MainWindow::addView(LibraryViewPlaylist* view, const QString& name)
 {
-    ui_->playlistTabs->addTab(playlistTab, name);
+    ui_->playlistTabs->addTab(view, name);
 }
 
 void MainWindow::setCurrentPlayingPlaylist(PlaylistTab* playlist)

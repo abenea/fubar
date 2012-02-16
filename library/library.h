@@ -16,7 +16,7 @@
 #include <QList>
 #include <QMap>
 
-class PlaylistTab;
+class LibraryViewPlaylist;
 
 struct LibraryEvent {
     boost::shared_ptr<Track> track;
@@ -40,7 +40,7 @@ public:
     void watch();
     void stopWatch();
 
-    void registerView(PlaylistTab* view);
+    void registerView(LibraryViewPlaylist* view);
 
     QStringList getMusicFolders();
 

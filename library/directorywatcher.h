@@ -24,7 +24,6 @@ public:
 
     void addWatch(QString path);
     void removeWatch(QString path);
-    // reads the inotify events; it neva eva ends - nap
     void watch();
     void stop();
 

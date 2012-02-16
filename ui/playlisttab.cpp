@@ -3,7 +3,7 @@
 
 using boost::shared_ptr;
 
-PlaylistTab::PlaylistTab(QWidget* parent_): QWidget(parent_), model_(playlist_)
+PlaylistTab::PlaylistTab(QWidget* parent): QWidget(parent), model_(playlist_)
 {
     ui_.setupUi(this);
     filterModel_.setSourceModel(&model_);
@@ -61,11 +61,6 @@ void PlaylistTab::playNext(QString path, int offset)
 void PlaylistTab::addDirectory(const QString& directory)
 {
     model_.addDirectory(directory);
-}
-
-void PlaylistTab::updateView(LibraryEvent event)
-{
-    model_.updateView(event);
 }
 
 void PlaylistTab::yunorefresh()

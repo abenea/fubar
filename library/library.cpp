@@ -2,7 +2,7 @@
 
 #include "playlist.h"
 #include "track.pb.h"
-#include "ui/playlisttab.h"
+#include "ui/libraryviewplaylist.h"
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
 #include <boost/foreach.hpp>
@@ -479,7 +479,7 @@ void Library::fileCallback(QString path, LibraryEventType event)
     //dumpDatabase();
 }
 
-void Library::registerView(PlaylistTab* view)
+void Library::registerView(LibraryViewPlaylist* view)
 {
     QMutexLocker locker(&mutex_);
     for (DirectoryMap::iterator it = directories_.begin(); it != directories_.end(); ++it) {

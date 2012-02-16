@@ -1,12 +1,13 @@
 #include "viewmanager.h"
 
-#include "ui/playlisttab.h"
+#include "ui/libraryviewplaylist.h"
 #include <QDebug>
 #include <QMutexLocker>
 
-PlaylistTab* ViewManager::createView()
+LibraryViewPlaylist* ViewManager::createView()
 {
-    PlaylistTab* view = new PlaylistTab(&mainwindow_);
+    LibraryViewPlaylist* view = new LibraryViewPlaylist(&mainwindow_);
+    PlaylistTab* tab = new PlaylistTab(&mainwindow_);
     library_.registerView(view);
     views_.append(view);
     view->yunorefresh();

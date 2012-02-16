@@ -9,7 +9,7 @@
 #include <QList>
 
 struct LibraryEvent;
-class PlaylistTab;
+class LibraryViewPlaylist;
 class Library;
 class MainWindow;
 
@@ -17,12 +17,12 @@ class ViewManager
 {
 public:
     ViewManager(MainWindow& mainwindow, Library& library) : mainwindow_(mainwindow), library_(library) {}
-    PlaylistTab* createView();
+    LibraryViewPlaylist* createView();
 
 private:
     MainWindow& mainwindow_;
     Library& library_;
-    QList<PlaylistTab*> views_;
+    QList<LibraryViewPlaylist*> views_;
 };
 
 #endif // VIEWMANAGER_H

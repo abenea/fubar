@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "playlisttab.h"
+#include "libraryviewplaylist.h"
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <QtGui/QMainWindow>
@@ -9,13 +11,13 @@
 #include <QModelIndex>
 #include <phonon/SeekSlider>
 #include <phonon/VolumeSlider>
-#include "playlisttab.h"
 
 namespace Ui {
 class MainWindowClass;
 }
 
 class PlaylistTab;
+class Library;
 
 class MainWindow : public QMainWindow
 {
@@ -34,7 +36,7 @@ public:
 public slots:
     void addDirectory();
     void libraryPreferences();
-    void addView(PlaylistTab* playlistTab, const QString& name);
+    void addView(LibraryViewPlaylist* view, const QString& name);
 
     void on_mainToolBar_actionTriggered(QAction* action);
 
