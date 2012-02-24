@@ -7,7 +7,6 @@
 LibraryViewPlaylist* ViewManager::createView()
 {
     LibraryViewPlaylist* view = new LibraryViewPlaylist(&mainwindow_);
-    PlaylistTab* tab = new PlaylistTab(&mainwindow_);
     library_.registerView(view);
     views_.append(view);
     view->yunorefresh();
