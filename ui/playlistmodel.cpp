@@ -68,6 +68,17 @@ void PlaylistModel::addDirectory(const QString& path)
     }
 }
 
+void PlaylistModel::addFiles(const QStringList& files)
+{
+    int oldSize = playlist_.tracks.size();
+    playlist_.addFiles(files);
+    int newSize = playlist_.tracks.size();
+    if (newSize > oldSize) {
+        beginInsertRows(QModelIndex(), oldSize, newSize - 1);
+        endInsertRows();
+    }
+}
+
 void PlaylistModel::updateView(LibraryEvent event)
 {
     // treat all consecutive "add" events in one swoop

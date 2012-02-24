@@ -22,6 +22,7 @@ public:
 
     Playlist &playlist() { return playlist_; }
     void addDirectory(const QString &path);
+    void addFiles(const QStringList& files);
     void updateView(LibraryEvent event);
     void yunorefresh();
 

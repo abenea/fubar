@@ -76,6 +76,31 @@ void MainWindow::on_addDirectoryAction_triggered()
     }
 }
 
+void MainWindow::on_addFilesAction_triggered()
+{
+    QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
+    QStringList files = QFileDialog::getOpenFileNames(this, "Select one or more files to open");
+    if (files.isEmpty())
+        return;
+
+    PlaylistTab *tab = current();
+    if (tab) {
+        // Apparently you should iterate over a copy
+        QStringList files2 = files;
+        tab->addFiles(files2);
+    }
+}
+
+void MainWindow::on_newLibraryViewAction_triggered()
+{
+
+}
+
+void MainWindow::on_newPlaylistAction_triggered()
+{
+
+}
+
 void MainWindow::on_preferencesAction_triggered()
 {
     LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(library_, this);

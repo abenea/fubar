@@ -31,8 +31,14 @@ public:
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
 
 public slots:
+    void on_newPlaylistAction_triggered();
+    void on_newLibraryViewAction_triggered();
+
     void on_addDirectoryAction_triggered();
+    void on_addFilesAction_triggered();
+
     void on_preferencesAction_triggered();
+
     void addView(LibraryViewPlaylist* view, const QString& name);
 
     void on_mainToolBar_actionTriggered(QAction* action);

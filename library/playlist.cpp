@@ -51,6 +51,14 @@ void Playlist::addDirectory(const QString &path)
     }
 }
 
+void Playlist::addFiles(const QStringList& files)
+{
+    foreach (QString file, files) {
+        QFileInfo info(file);
+        addFile(info);
+    }
+}
+
 void Playlist::addFile(const QFileInfo& file)
 {
     TagLib::FileRef fileref;

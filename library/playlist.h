@@ -14,6 +14,7 @@ public:
     void load(const char *fileName);
     void addDirectory(const QString &path);
     void addFile(const QFileInfo &file);
+    void addFiles(const QStringList& files);
 };
 
 #endif // PLAYLIST_H

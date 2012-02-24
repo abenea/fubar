@@ -63,6 +63,11 @@ void PlaylistTab::addDirectory(const QString& directory)
     model_.addDirectory(directory);
 }
 
+void PlaylistTab::addFiles(const QStringList& files)
+{
+    model_.addFiles(files);
+}
+
 void PlaylistTab::yunorefresh()
 {
     model_.yunorefresh();

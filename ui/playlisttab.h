@@ -5,6 +5,7 @@
 #include "playlistfilter.h"
 #include "ui/ui_playlist.h"
 #include <QWidget>
+#include <QStringList>
 #include <QList>
 
 class PlaylistTab : public QWidget
@@ -18,6 +19,7 @@ public slots:
     void play();
     void playNext(QString path, int offset);
     void addDirectory(const QString &directory);
+    void addFiles(const QStringList &files);
 
     // TODO: This code is probably bad/retarded, need to learn a bit more about qt to do it
     // But I'm too lazy atm
