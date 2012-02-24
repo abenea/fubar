@@ -46,15 +46,17 @@
     <property name="title">
      <string>&amp;Playlist</string>
     </property>
-    <addaction name="actionNew_playlist"/>
+    <addaction name="newPlaylistAction"/>
+    <addaction name="newLibraryViewAction"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd_directory"/>
+    <addaction name="addDirectoryAction"/>
+    <addaction name="addFilesAction"/>
    </widget>
    <widget class="QMenu" name="menuLibrary">
     <property name="title">
      <string>Library</string>
     </property>
-    <addaction name="actionPreferences"/>
+    <addaction name="preferencesAction"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuLibrary"/>
@@ -79,12 +81,12 @@
    <addaction name="actionNext"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionAdd_directory">
+  <action name="addDirectoryAction">
    <property name="text">
     <string>Add &amp;directory</string>
    </property>
   </action>
-  <action name="actionNew_playlist">
+  <action name="newPlaylistAction">
    <property name="text">
     <string>New playlist</string>
    </property>
@@ -134,9 +136,19 @@
     <string>Stop</string>
    </property>
   </action>
-  <action name="actionPreferences">
+  <action name="preferencesAction">
    <property name="text">
     <string>Preferences</string>
+   </property>
+  </action>
+  <action name="newLibraryViewAction">
+   <property name="text">
+    <string>New library view</string>
+   </property>
+  </action>
+  <action name="addFilesAction">
+   <property name="text">
+    <string>Add files</string>
    </property>
   </action>
  </widget>

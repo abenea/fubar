@@ -16,11 +16,10 @@ MainWindow *MainWindow::instance = 0;
 
 MainWindow::MainWindow(Library& library, QWidget *parent)
     : QMainWindow(parent)
-    , ui_(new Ui::MainWindowClass)
     , library_(library)
     , currentlyPlayingPlaylist_(0)
 {
-    ui_->setupUi(this);
+    setupUi(this);
 
     audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
     mediaObject = new Phonon::MediaObject(this);
@@ -32,14 +31,11 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     volumeSlider_ = new Phonon::VolumeSlider(this);
     volumeSlider_->setAudioOutput(audioOutput);
     volumeSlider_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-    ui_->mainToolBar->addWidget(seekSlider_);
-    ui_->mainToolBar->addWidget(volumeSlider_);
+    mainToolBar->addWidget(seekSlider_);
+    mainToolBar->addWidget(volumeSlider_);
 
-//     ui_->playlistTabs->addTab(new PlaylistTab(this), "~/music_test");
+//     playlistTabs->addTab(new PlaylistTab(this), "~/music_test");
 //     current()->addDirectory("/home/bogdan/music_test");
-
-    connect(ui_->actionAdd_directory, SIGNAL(triggered(bool)), this, SLOT(addDirectory()));
-    connect(ui_->actionPreferences, SIGNAL(triggered(bool)), this, SLOT(libraryPreferences()));
 
     readSettings();
 
@@ -63,10 +59,10 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 PlaylistTab* MainWindow::current()
 {
-    return dynamic_cast<PlaylistTab *>(ui_->playlistTabs->currentWidget());
+    return dynamic_cast<PlaylistTab *>(playlistTabs->currentWidget());
 }
 
-void MainWindow::addDirectory()
+void MainWindow::on_addDirectoryAction_triggered()
 {
     QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
     QString directory = QFileDialog::getExistingDirectory(this, tr("Add directory"), QString(),
@@ -80,7 +76,7 @@ void MainWindow::addDirectory()
     }
 }
 
-void MainWindow::libraryPreferences()
+void MainWindow::on_preferencesAction_triggered()
 {
     LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(library_, this);
     widget->show();
@@ -100,7 +96,7 @@ void MainWindow::writeSettings()
 
 void MainWindow::addView(LibraryViewPlaylist* view, const QString& name)
 {
-    ui_->playlistTabs->addTab(view, name);
+    playlistTabs->addTab(view, name);
 }
 
 void MainWindow::setCurrentPlayingPlaylist(PlaylistTab* playlist)

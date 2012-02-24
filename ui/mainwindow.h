@@ -3,23 +3,20 @@
 
 #include "playlisttab.h"
 #include "libraryviewplaylist.h"
-#include <boost/scoped_ptr.hpp>
+#include "ui/ui_mainwindow.h"
 #include <boost/shared_ptr.hpp>
 #include <QtGui/QMainWindow>
+#include <QModelIndex>
 #include <phonon/Phonon/MediaObject>
 #include <phonon/Phonon/AudioOutput>
-#include <QModelIndex>
 #include <phonon/SeekSlider>
 #include <phonon/VolumeSlider>
 
-namespace Ui {
-class MainWindowClass;
-}
 
 class PlaylistTab;
 class Library;
 
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {
     Q_OBJECT
 public:
@@ -34,8 +31,8 @@ public:
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
 
 public slots:
-    void addDirectory();
-    void libraryPreferences();
+    void on_addDirectoryAction_triggered();
+    void on_preferencesAction_triggered();
     void addView(LibraryViewPlaylist* view, const QString& name);
 
     void on_mainToolBar_actionTriggered(QAction* action);
@@ -44,7 +41,6 @@ protected:
     virtual void closeEvent(QCloseEvent* );
 
 private:
-    boost::scoped_ptr<Ui::MainWindowClass> ui_;
     Phonon::SeekSlider *seekSlider_;
     Phonon::VolumeSlider *volumeSlider_;
 
