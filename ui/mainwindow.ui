@@ -58,8 +58,15 @@
     </property>
     <addaction name="preferencesAction"/>
    </widget>
+   <widget class="QMenu" name="menuPlayback">
+    <property name="title">
+     <string>Playback</string>
+    </property>
+    <addaction name="cursorFollowsPlaybackAction"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuLibrary"/>
+   <addaction name="menuPlayback"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="windowTitle">
@@ -149,6 +156,14 @@
   <action name="addFilesAction">
    <property name="text">
     <string>Add &amp;files</string>
+   </property>
+  </action>
+  <action name="cursorFollowsPlaybackAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Cursor follows playback</string>
    </property>
   </action>
  </widget>

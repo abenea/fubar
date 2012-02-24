@@ -40,6 +40,8 @@ void PlaylistTab::play(const QModelIndex& index)
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track> >();
     MainWindow::instance->mediaObject->setCurrentSource(Phonon::MediaSource(track->location));
     MainWindow::instance->mediaObject->play();
+    if (MainWindow::instance->cursorFollowsPlayback())
+        ui_.playlist->setCurrentIndex(index);
 }
 
 void PlaylistTab::playNext(QString path, int offset)

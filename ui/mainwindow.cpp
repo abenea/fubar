@@ -19,6 +19,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     : QMainWindow(parent)
     , library_(library)
     , currentlyPlayingPlaylist_(0)
+    , cursorFollowsPlayback_(false)
 {
     setupUi(this);
 
@@ -106,6 +107,11 @@ void MainWindow::on_preferencesAction_triggered()
 {
     LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(library_, this);
     widget->show();
+}
+
+void MainWindow::on_cursorFollowsPlaybackAction_triggered()
+{
+    cursorFollowsPlayback_ = !cursorFollowsPlayback_;
 }
 
 void MainWindow::readSettings()

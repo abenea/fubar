@@ -30,6 +30,8 @@ public:
 
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
 
+    bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
+
 public slots:
     void on_newPlaylistAction_triggered();
     void on_newLibraryViewAction_triggered();
@@ -38,6 +40,8 @@ public slots:
     void on_addFilesAction_triggered();
 
     void on_preferencesAction_triggered();
+
+    void on_cursorFollowsPlaybackAction_triggered();
 
     void addView(LibraryViewPlaylist* view, const QString& name);
 
@@ -57,6 +61,8 @@ private:
 
     void writeSettings();
     void readSettings();
+
+    bool cursorFollowsPlayback_;
 
 private slots:
     void tick(qint64 pos);
