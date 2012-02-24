@@ -18,7 +18,6 @@ int main(int argc, char *argv[])
 
     ViewManager viewManager(w, library);
     w.addView(viewManager.createView(), "All");
-    w.addView(viewManager.createView(), "All2");
 
     library.start();
     QObject::connect(&a, SIGNAL(lastWindowClosed()), &library, SLOT(quit()));

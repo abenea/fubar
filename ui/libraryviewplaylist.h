@@ -13,6 +13,8 @@ public:
     LibraryViewPlaylist(QWidget* parent = 0);
 
 public slots:
+    void addDirectory(const QString &directory);
+    void addFiles(const QStringList &files);
     void updateView(LibraryEvent event);
 
     friend class Library;

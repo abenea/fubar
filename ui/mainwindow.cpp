@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "library/viewmanager.h"
 #include "playlistfilter.h"
 #include "playlistmodel.h"
 #include "ui/ui_mainwindow.h"
@@ -93,12 +94,12 @@ void MainWindow::on_addFilesAction_triggered()
 
 void MainWindow::on_newLibraryViewAction_triggered()
 {
-
+    addView(ViewManager::instance->createView(), "All");
 }
 
 void MainWindow::on_newPlaylistAction_triggered()
 {
-
+    playlistTabs->addTab(new PlaylistTab(this), "Unnamed playlist");
 }
 
 void MainWindow::on_preferencesAction_triggered()

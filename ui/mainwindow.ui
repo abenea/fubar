@@ -88,7 +88,7 @@
   </action>
   <action name="newPlaylistAction">
    <property name="text">
-    <string>New playlist</string>
+    <string>New &amp;playlist</string>
    </property>
   </action>
   <action name="actionPause">
@@ -143,12 +143,12 @@
   </action>
   <action name="newLibraryViewAction">
    <property name="text">
-    <string>New library view</string>
+    <string>New library &amp;view</string>
    </property>
   </action>
   <action name="addFilesAction">
    <property name="text">
-    <string>Add files</string>
+    <string>Add &amp;files</string>
    </property>
   </action>
  </widget>

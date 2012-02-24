@@ -16,8 +16,10 @@ class MainWindow;
 class ViewManager
 {
 public:
-    ViewManager(MainWindow& mainwindow, Library& library) : mainwindow_(mainwindow), library_(library) {}
+    ViewManager(MainWindow& mainwindow, Library& library);
     LibraryViewPlaylist* createView();
+
+    static ViewManager *instance;
 
 private:
     MainWindow& mainwindow_;

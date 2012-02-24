@@ -18,8 +18,8 @@ public slots:
     void play(const QModelIndex &index);
     void play();
     void playNext(QString path, int offset);
-    void addDirectory(const QString &directory);
-    void addFiles(const QStringList &files);
+    virtual void addDirectory(const QString &directory);
+    virtual void addFiles(const QStringList &files);
 
     // TODO: This code is probably bad/retarded, need to learn a bit more about qt to do it
     // But I'm too lazy atm
