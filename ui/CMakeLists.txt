@@ -1,6 +1,13 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(ui_SOURCES libraryviewplaylist.cpp librarypreferencesdialog.cpp playlisttab.cpp playlistitemdelegate.cpp mainwindow.cpp playlistview.cpp playlistmodel.cpp playlistfilter.cpp)
+set(ui_SOURCES
+    libraryviewplaylist.cpp
+    librarypreferencesdialog.cpp
+    playlisttab.cpp
+    playlistitemdelegate.cpp
+    mainwindow.cpp playlistview.cpp
+    playlistmodel.cpp
+    playlistfilter.cpp)
 qt4_automoc(${ui_SOURCES})
 qt4_wrap_ui(ui_UI mainwindow.ui playlist.ui librarypreferences.ui)
 
