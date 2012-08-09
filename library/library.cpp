@@ -14,7 +14,6 @@
 #include <qdatetime.h>
 
 using namespace std;
-using namespace boost;
 
 const char* library_filename = "media_library";
 
@@ -118,7 +117,7 @@ void Library::quit()
     stopMonitoring();
 }
 
-void Library::addDirectory(boost::shared_ptr<Directory> directory)
+void Library::addDirectory(std::shared_ptr<Directory> directory)
 {
     directories_.insert(directory->path(), directory);
 
@@ -162,7 +161,7 @@ void Library::removeDirectory(QString path)
     qDebug() << "Done deleting dir " << path;
 }
 
-void Library::addFile(shared_ptr<Track> track)
+void Library::addFile(std::shared_ptr<Track> track)
 {
     // Add to directory
     QFileInfo file_info(track->location);
@@ -180,7 +179,7 @@ void Library::removeFile(QString path)
     QFileInfo file_info(path);
     DirectoryMap::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
-        boost::shared_ptr<Track> track = it.value()->removeFile(file_info.fileName());
+        std::shared_ptr<Track> track = it.value()->removeFile(file_info.fileName());
         if (track) {
             emit libraryChanged(LibraryEvent(track, DELETE));
         }
@@ -200,7 +199,7 @@ void Library::loadFromDisk()
     if (fread(&len, 4, 1, f) != 1)
         return;
 
-    scoped_array<char> tmp(new char[len]);
+    boost::scoped_array<char> tmp(new char[len]);
     if (fread(tmp.get(), len, 1, f) != 1) {
         qDebug() << "OOps, failed read for pb";
         return;
@@ -236,7 +235,7 @@ void Library::saveToDisk()
     }
 
     int len = plibrary.ByteSize();
-    scoped_array<char> tmp(new char[len]);
+    boost::scoped_array<char> tmp(new char[len]);
     plibrary.SerializeToArray(tmp.get(), len);
 
     if (fwrite(&len, 4, 1, f) != 1) {
@@ -319,7 +318,7 @@ void Library::scanDirectory(const QString& path)
             if (stopRescan())
                 return;
             if (info.isFile()) {
-                boost::shared_ptr<Track> track = scanFile(info.filePath());
+                std::shared_ptr<Track> track = scanFile(info.filePath());
                 if (track)
                     addFile(track);
             } else {
@@ -329,7 +328,7 @@ void Library::scanDirectory(const QString& path)
     }
 }
 
-boost::shared_ptr<Track> Library::scanFile(const QString& path)
+std::shared_ptr<Track> Library::scanFile(const QString& path)
 {
     qDebug() << "Scanning file " << path;
     TagLib::FileRef fileref;
@@ -448,7 +447,7 @@ void Library::fileCallback(QString path, LibraryEventType event)
     QMutexLocker locker(&mutex_);
     if (event == CREATE) {
 //        qDebug() << "FILE ADD " << path;
-        boost::shared_ptr<Track> track = scanFile(path);
+        std::shared_ptr<Track> track = scanFile(path);
         if (track)
             addFile(track);
     } else if (event == DELETE) {

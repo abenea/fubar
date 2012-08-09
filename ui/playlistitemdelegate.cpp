@@ -30,7 +30,7 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 {
     painter->save();
 
-    boost::shared_ptr<Track> track = index.data(TrackRole).value<boost::shared_ptr<Track> >();
+    std::shared_ptr<Track> track = index.data(TrackRole).value<std::shared_ptr<Track> >();
     if (!track) {
         painter->restore();
         return;

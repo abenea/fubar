@@ -3,8 +3,8 @@
 
 #include <QString>
 #include <QMap>
-#include <boost/shared_ptr.hpp>
 #include <cstdio>
+#include <memory>
 
 namespace proto {
     class Track;
@@ -34,6 +34,6 @@ public:
     bool accessed_by_taglib;
 };
 
-typedef boost::shared_ptr<Track> PTrack;
+typedef std::shared_ptr<Track> PTrack;
 
 #endif // TRACK_H

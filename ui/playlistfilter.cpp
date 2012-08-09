@@ -2,7 +2,6 @@
 #include "playlistmodel.h"
 
 #include <boost/cast.hpp>
-using namespace boost;
 using namespace std;
 
 PlaylistFilter::PlaylistFilter(QObject *parent) :
@@ -28,7 +27,7 @@ void PlaylistFilter::setFilter(const QString& filter)
 
 bool PlaylistFilter::filterAcceptsRow(int source_row, const QModelIndex &/*source_parent*/) const
 {
-    PlaylistModel *pm = polymorphic_cast<PlaylistModel *>(sourceModel());
+    PlaylistModel *pm = boost::polymorphic_cast<PlaylistModel *>(sourceModel());
     shared_ptr<Track> track = pm->playlist().tracks[source_row];
 
     foreach (const QString &keyword, filter_) {
@@ -69,9 +68,9 @@ Grouping::Mode PlaylistFilter::groupingMode(const QModelIndex& index) const
     QModelIndex prevIndex(index.sibling(index.row() - 1, index.column()));
     QModelIndex nextIndex(index.sibling(index.row() + 1, index.column()));
 
-    boost::shared_ptr<Track> prevTrack = prevIndex.data(TrackRole).value<shared_ptr<Track> >();
-    boost::shared_ptr<Track> currentTrack = index.data(TrackRole).value<shared_ptr<Track> >();
-    boost::shared_ptr<Track> nextTrack = nextIndex.data(TrackRole).value<shared_ptr<Track> >();
+    std::shared_ptr<Track> prevTrack = prevIndex.data(TrackRole).value<shared_ptr<Track> >();
+    std::shared_ptr<Track> currentTrack = index.data(TrackRole).value<shared_ptr<Track> >();
+    std::shared_ptr<Track> nextTrack = nextIndex.data(TrackRole).value<shared_ptr<Track> >();
 
     bool prevMatch = sameGroup(prevTrack, currentTrack);
     bool nextMatch = sameGroup(currentTrack, nextTrack);
@@ -112,8 +111,8 @@ QVariant PlaylistFilter::data(const QModelIndex& index, int role) const
 
 bool PlaylistFilter::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
-    boost::shared_ptr<Track> leftTrack = left.data(TrackRole).value<shared_ptr<Track> >();
-    boost::shared_ptr<Track> rightTrack = right.data(TrackRole).value<shared_ptr<Track> >();
+    std::shared_ptr<Track> leftTrack = left.data(TrackRole).value<shared_ptr<Track> >();
+    std::shared_ptr<Track> rightTrack = right.data(TrackRole).value<shared_ptr<Track> >();
     return leftTrack->location < rightTrack->location;
 }
 

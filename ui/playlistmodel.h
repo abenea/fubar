@@ -50,7 +50,7 @@ namespace Grouping
     };
 }
 
-Q_DECLARE_METATYPE(boost::shared_ptr<Track>)
+Q_DECLARE_METATYPE(std::shared_ptr<Track>)
 Q_DECLARE_METATYPE(Grouping::Mode)
 
 #endif // PLAYLISTMODEL_H

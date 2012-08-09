@@ -3,6 +3,7 @@
 #include "ui/mainwindow.h"
 #include "library/library.h"
 #include "library/viewmanager.h"
+#include "ui/globalshortcutengine.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
     Library library;
 
     MainWindow w(library);
+    GlobalShortcutEngine gl(w);
     w.show();
 
     ViewManager viewManager(w, library);

@@ -6,7 +6,6 @@
 #include <QList>
 #include <QMap>
 #include <QSet>
-#include <boost/shared_ptr.hpp>
 
 namespace proto {
     class Directory;
@@ -18,15 +17,15 @@ public:
     Directory(proto::Directory pDirectory);
     Directory(QString path, int mtime);
 
-    void addSubdirectory(boost::shared_ptr<Directory> directory);
+    void addSubdirectory(std::shared_ptr<Directory> directory);
     void removeSubdirectory(QString subdirName);
-    void addFile(boost::shared_ptr<Track> file);
-    boost::shared_ptr<Track> removeFile(QString fileName);
-    void addFilesFromDirectory(boost::shared_ptr<Directory> directory);
+    void addFile(std::shared_ptr<Track> file);
+    std::shared_ptr<Track> removeFile(QString fileName);
+    void addFilesFromDirectory(std::shared_ptr<Directory> directory);
 
     QList<QString> getSubdirectories();
-    boost::shared_ptr<Track> getFile(QString name);
-    QList<boost::shared_ptr<Track> > getTracks();
+    std::shared_ptr<Track> getFile(QString name);
+    QList<std::shared_ptr<Track> > getTracks();
     QSet<QString> getFileSet();
     QSet<QString> getSubdirectorySet();
     void clearFiles();
@@ -39,8 +38,8 @@ public:
 
 private:
     // Change to QMap?
-    typedef QMap<QString, boost::shared_ptr<Directory> > SubdirectoryMap;
-    typedef QMap<QString, boost::shared_ptr<Track> > FileMap;
+    typedef QMap<QString, std::shared_ptr<Directory> > SubdirectoryMap;
+    typedef QMap<QString, std::shared_ptr<Track> > FileMap;
 
     QString location_;
     uint mtime_;

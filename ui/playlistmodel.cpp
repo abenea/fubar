@@ -4,7 +4,6 @@
 #include <string>
 #include <QDebug>
 
-using namespace boost;
 using namespace std;
 
 PlaylistModel::PlaylistModel(Playlist &playlist, QObject *parent)

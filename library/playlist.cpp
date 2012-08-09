@@ -12,7 +12,6 @@
 #include <taglib/tag.h>
 
 using namespace std;
-using namespace boost;
 
 void Playlist::load(const char *fileName)
 {

@@ -139,21 +139,46 @@ void MainWindow::setCurrentPlayingPlaylist(PlaylistTab* playlist)
 void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
 {
     if (action->text().toLower().contains("play")) {
-        if (currentlyPlayingPlaylist_ == 0)
-            currentlyPlayingPlaylist_ = current();
-        currentlyPlayingPlaylist_->play();
+        Play();
     } else if (action->text().toLower().contains("pause")) {
-        if (mediaObject->state() == Phonon::PausedState)
-            mediaObject->play();
-        else
-            mediaObject->pause();
+        PlayPause();
     } else if (action->text().toLower().contains("stop")) {
-        mediaObject->stop();
+        Stop();
     } else if (action->text().toLower().contains("prev")) {
-        currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), -1);
+        Prev();
     } else if (action->text().toLower().contains("next")) {
-        currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), +1);
+        Next();
     }
+}
+
+void MainWindow::Play()
+{
+    if (currentlyPlayingPlaylist_ == 0)
+        currentlyPlayingPlaylist_ = current();
+    currentlyPlayingPlaylist_->play();
+}
+
+void MainWindow::PlayPause()
+{
+    if (mediaObject->state() == Phonon::PausedState)
+        mediaObject->play();
+    else
+        mediaObject->pause();
+}
+
+void MainWindow::Next()
+{
+    currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), +1);
+}
+
+void MainWindow::Prev()
+{
+    currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), -1);
+}
+
+void MainWindow::Stop()
+{
+    mediaObject->stop();
 }
 
 #include "mainwindow.moc"

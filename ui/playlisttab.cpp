@@ -1,7 +1,8 @@
 #include "playlisttab.h"
 #include "mainwindow.h"
+#include <memory>
 
-using boost::shared_ptr;
+using std::shared_ptr;
 
 PlaylistTab::PlaylistTab(QWidget* parent): QWidget(parent), model_(playlist_)
 {

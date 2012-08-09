@@ -4,7 +4,6 @@
 #include "playlisttab.h"
 #include "libraryviewplaylist.h"
 #include "ui/ui_mainwindow.h"
-#include <boost/shared_ptr.hpp>
 #include <QtGui/QMainWindow>
 #include <QModelIndex>
 #include <phonon/Phonon/MediaObject>
@@ -46,6 +45,12 @@ public slots:
     void addView(LibraryViewPlaylist* view, const QString& name);
 
     void on_mainToolBar_actionTriggered(QAction* action);
+
+    void Play();
+    void PlayPause();
+    void Stop();
+    void Next();
+    void Prev();
 
 protected:
     virtual void closeEvent(QCloseEvent* );

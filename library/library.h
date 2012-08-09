@@ -7,7 +7,6 @@
 #include "playlist.h"
 #include "libraryeventtype.h"
 
-#include <boost/shared_ptr.hpp>
 #include <QString>
 #include <QStringList>
 #include <QThread>
@@ -19,11 +18,11 @@
 class LibraryViewPlaylist;
 
 struct LibraryEvent {
-    boost::shared_ptr<Track> track;
+    std::shared_ptr<Track> track;
     LibraryEventType op;
 
     LibraryEvent() {}
-    LibraryEvent(boost::shared_ptr<Track> t, LibraryEventType o) : track(t), op(o) {}
+    LibraryEvent(std::shared_ptr<Track> t, LibraryEventType o) : track(t), op(o) {}
 
     std::string op2str();
 };
@@ -73,10 +72,10 @@ private:
     void stopRescanning();
     bool stopRescan() { return quit_ || !should_be_working_; }
     void scanDirectory(const QString& path);
-    boost::shared_ptr<Track> scanFile(const QString& path);
+    std::shared_ptr<Track> scanFile(const QString& path);
 
-    void addDirectory(boost::shared_ptr<Directory> directory);
-    void addFile(boost::shared_ptr<Track> track);
+    void addDirectory(std::shared_ptr<Directory> directory);
+    void addFile(std::shared_ptr<Track> track);
     void removeFile(QString path);
     void removeDirectory(QString path);
 
@@ -85,10 +84,10 @@ private:
 private:
     QStringList music_folders_;
 
-    typedef QMap<QString, boost::shared_ptr<Directory> > DirectoryMap;
+    typedef QMap<QString, std::shared_ptr<Directory> > DirectoryMap;
     DirectoryMap directories_;
 
-    boost::shared_ptr<DirectoryWatcher> watcher_;
+    std::shared_ptr<DirectoryWatcher> watcher_;
     QMutex mutex_;
     bool quit_;
 
