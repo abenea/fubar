@@ -2,7 +2,6 @@
 #include <QDebug>
 #include "ui/mainwindow.h"
 #include "library/library.h"
-#include "library/viewmanager.h"
 #include "ui/globalshortcutengine.h"
 
 int main(int argc, char *argv[])
@@ -17,9 +16,6 @@ int main(int argc, char *argv[])
     MainWindow w(library);
     GlobalShortcutEngine gl(w);
     w.show();
-
-    ViewManager viewManager(w, library);
-    w.addView(viewManager.createView(), "All");
 
     library.start();
     QObject::connect(&a, SIGNAL(lastWindowClosed()), &library, SLOT(quit()));

@@ -2,7 +2,6 @@
 
 #include "playlist.h"
 #include "track.pb.h"
-#include "ui/libraryviewplaylist.h"
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
 #include <boost/foreach.hpp>
@@ -478,13 +477,13 @@ void Library::fileCallback(QString path, LibraryEventType event)
     //dumpDatabase();
 }
 
-void Library::registerView(LibraryViewPlaylist* view)
+void Library::registerWatcher(LibraryWatcher* watcher)
 {
     QMutexLocker locker(&mutex_);
     for (DirectoryMap::iterator it = directories_.begin(); it != directories_.end(); ++it) {
-        view->playlist_.tracks.append(it.value()->getTracks());
+        watcher->addTracks(it.value()->getTracks());
     }
-    QObject::connect(this, SIGNAL(libraryChanged(LibraryEvent)), view, SLOT(updateView(LibraryEvent)));
+    QObject::connect(this, SIGNAL(libraryChanged(LibraryEvent)), watcher, SLOT(libraryChanged(LibraryEvent)));
 }
 
 QStringList Library::getMusicFolders()

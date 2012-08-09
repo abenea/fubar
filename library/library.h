@@ -4,6 +4,7 @@
 #include "track.h"
 #include "directory.h"
 #include "directorywatcher.h"
+#include "librarywatcher.h"
 #include "playlist.h"
 #include "libraryeventtype.h"
 
@@ -14,8 +15,6 @@
 #include <QWaitCondition>
 #include <QList>
 #include <QMap>
-
-class LibraryViewPlaylist;
 
 struct LibraryEvent {
     std::shared_ptr<Track> track;
@@ -39,7 +38,7 @@ public:
     void watch();
     void stopWatch();
 
-    void registerView(LibraryViewPlaylist* view);
+    void registerWatcher(LibraryWatcher* watcher);
 
     QStringList getMusicFolders();
 

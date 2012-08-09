@@ -3,6 +3,7 @@
 
 #include "playlistmodel.h"
 #include "playlistfilter.h"
+#include "playlistlibrarywatcher.h"
 #include "ui/ui_playlist.h"
 #include <QWidget>
 #include <QStringList>
@@ -14,12 +15,16 @@ class PlaylistTab : public QWidget
 public:
     PlaylistTab(QWidget* parent = 0);
 
+    PlaylistLibraryWatcher watcher;
+
 public slots:
     void play(const QModelIndex &index);
     void play();
     void playNext(QString path, int offset);
     virtual void addDirectory(const QString &directory);
     virtual void addFiles(const QStringList &files);
+    virtual void addTracks(const QList<std::shared_ptr<Track> > &tracks);
+    virtual void libraryChanged(LibraryEvent event);
 
     // TODO: This code is probably bad/retarded, need to learn a bit more about qt to do it
     // But I'm too lazy atm

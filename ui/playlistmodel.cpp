@@ -78,7 +78,7 @@ void PlaylistModel::addFiles(const QStringList& files)
     }
 }
 
-void PlaylistModel::updateView(LibraryEvent event)
+void PlaylistModel::libraryChanged(LibraryEvent event)
 {
     // treat all consecutive "add" events in one swoop
     if (event.op == CREATE) {

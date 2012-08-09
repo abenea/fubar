@@ -1,10 +1,8 @@
 #include "mainwindow.h"
-#include "library/viewmanager.h"
 #include "playlistfilter.h"
 #include "playlistmodel.h"
 #include "ui/ui_mainwindow.h"
 #include "ui/librarypreferencesdialog.h"
-#include "libraryviewplaylist.h"
 
 #include <QTableView>
 #include <QSettings>
@@ -42,6 +40,8 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     readSettings();
 
     instance = this;
+
+    on_newLibraryViewAction_triggered();
 }
 
 MainWindow::~MainWindow()
@@ -95,7 +95,10 @@ void MainWindow::on_addFilesAction_triggered()
 
 void MainWindow::on_newLibraryViewAction_triggered()
 {
-    addView(ViewManager::instance->createView(), "All");
+    PlaylistTab* view = new PlaylistTab(this);
+    library_.registerWatcher(&(view->watcher));
+    view->yunorefresh();
+    playlistTabs->addTab(view, "All");
 }
 
 void MainWindow::on_newPlaylistAction_triggered()
@@ -124,11 +127,6 @@ void MainWindow::writeSettings()
 {
     QSettings settings;
     settings.setValue("mainwindow/geometry", saveGeometry());
-}
-
-void MainWindow::addView(LibraryViewPlaylist* view, const QString& name)
-{
-    playlistTabs->addTab(view, name);
 }
 
 void MainWindow::setCurrentPlayingPlaylist(PlaylistTab* playlist)

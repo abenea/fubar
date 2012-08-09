@@ -1,9 +1,9 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(ui_SOURCES
+    playlistlibrarywatcher.cpp
     mainwindow.cpp
     globalshortcutengine.cpp
-    libraryviewplaylist.cpp
     librarypreferencesdialog.cpp
     playlisttab.cpp
     playlistitemdelegate.cpp
@@ -13,7 +13,7 @@ set(ui_SOURCES
 qt4_wrap_ui(ui_UI mainwindow.ui playlist.ui librarypreferences.ui)
 qt4_automoc(${ui_SOURCES})
 
-add_library(ui ${ui_SOURCES} ${ui_UI})
+add_library(ui ${ui_UI} ${ui_SOURCES})
 target_link_libraries(ui library ${QT_LIBRARIES})
 
 add_subdirectory(tests)

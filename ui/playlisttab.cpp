@@ -1,10 +1,11 @@
 #include "playlisttab.h"
 #include "mainwindow.h"
+#include "library/library.h"
 #include <memory>
 
 using std::shared_ptr;
 
-PlaylistTab::PlaylistTab(QWidget* parent): QWidget(parent), model_(playlist_)
+PlaylistTab::PlaylistTab(QWidget* parent): QWidget(parent), model_(playlist_), watcher(this)
 {
     ui_.setupUi(this);
     filterModel_.setSourceModel(&model_);
@@ -74,6 +75,16 @@ void PlaylistTab::addFiles(const QStringList& files)
 void PlaylistTab::yunorefresh()
 {
     model_.yunorefresh();
+}
+
+void PlaylistTab::addTracks(const QList< shared_ptr< Track > >& tracks)
+{
+	model_.playlist().tracks.append(tracks);
+}
+
+void PlaylistTab::libraryChanged(LibraryEvent event)
+{
+	model_.libraryChanged(event);
 }
 
 #include "playlisttab.moc"
