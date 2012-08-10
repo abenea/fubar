@@ -3,7 +3,7 @@ project(fubar)
 enable_testing()
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG} -Wall -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
 
 set(TAGLIB_MIN_VERSION "1.6")
 find_package(Boost REQUIRED)
