@@ -15,8 +15,6 @@ class PlaylistTab : public QWidget
 public:
     PlaylistTab(QWidget* parent = 0);
 
-    PlaylistLibraryWatcher watcher;
-
 public slots:
     void play(const QModelIndex &index);
     void play();
@@ -35,6 +33,9 @@ protected:
     Playlist playlist_;
     PlaylistModel model_;
     PlaylistFilter filterModel_;
+
+public:
+    PlaylistLibraryWatcher watcher;
 
 protected slots:
     void changedFilter(const QString &filter);
