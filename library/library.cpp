@@ -477,18 +477,19 @@ void Library::fileCallback(QString path, LibraryEventType event)
     //dumpDatabase();
 }
 
-void Library::registerWatcher(LibraryWatcher* watcher)
-{
-    QMutexLocker locker(&mutex_);
-    for (DirectoryMap::iterator it = directories_.begin(); it != directories_.end(); ++it) {
-        watcher->addTracks(it.value()->getTracks());
-    }
-    QObject::connect(this, SIGNAL(libraryChanged(LibraryEvent)), watcher, SLOT(libraryChanged(LibraryEvent)));
-}
-
 QStringList Library::getMusicFolders()
 {
     return QStringList(music_folders_);
+}
+
+QList< shared_ptr< Track > > Library::getTracks()
+{
+    QMutexLocker locker(&mutex_);
+    QList<shared_ptr<Track> > result;
+    for (DirectoryMap::iterator it = directories_.begin(); it != directories_.end(); ++it) {
+        result.append(it.value()->getTracks());
+    }
+    return result;
 }
 
 void Library::getFoldersFromSettings()

@@ -4,7 +4,6 @@
 #include "track.h"
 #include "directory.h"
 #include "directorywatcher.h"
-#include "librarywatcher.h"
 #include "playlist.h"
 #include "libraryeventtype.h"
 
@@ -38,9 +37,8 @@ public:
     void watch();
     void stopWatch();
 
-    void registerWatcher(LibraryWatcher* watcher);
-
     QStringList getMusicFolders();
+    QList<std::shared_ptr<Track> > getTracks();
 
 public slots:
     void setMusicFolders(QStringList folders);

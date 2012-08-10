@@ -94,10 +94,11 @@ void MainWindow::on_addFilesAction_triggered()
 
 void MainWindow::on_newLibraryViewAction_triggered()
 {
-    PlaylistTab* view = new PlaylistTab(this);
-    library_.registerWatcher(&(view->watcher));
-    view->yunorefresh();
-    playlistTabs->addTab(view, "All");
+    PlaylistTab* tab = new PlaylistTab(this);
+    tab->addTracks(library_.getTracks());
+    QObject::connect(&library_, SIGNAL(libraryChanged(LibraryEvent)), tab, SLOT(libraryChanged(LibraryEvent)));
+    tab->yunorefresh();
+    playlistTabs->addTab(tab, "All");
 }
 
 void MainWindow::on_newPlaylistAction_triggered()

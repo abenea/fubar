@@ -5,7 +5,7 @@
 
 using std::shared_ptr;
 
-PlaylistTab::PlaylistTab(QWidget* parent): QWidget(parent), model_(playlist_), watcher(this)
+PlaylistTab::PlaylistTab(QWidget* parent): QWidget(parent), model_(playlist_)
 {
     ui_.setupUi(this);
     filterModel_.setSourceModel(&model_);

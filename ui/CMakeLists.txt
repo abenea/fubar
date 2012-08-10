@@ -1,7 +1,6 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(ui_SOURCES
-    playlistlibrarywatcher.cpp
     mainwindow.cpp
     globalshortcutengine.cpp
     librarypreferencesdialog.cpp

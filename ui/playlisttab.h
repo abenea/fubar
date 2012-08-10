@@ -3,7 +3,6 @@
 
 #include "playlistmodel.h"
 #include "playlistfilter.h"
-#include "playlistlibrarywatcher.h"
 #include "ui/ui_playlist.h"
 #include <QWidget>
 #include <QStringList>
@@ -33,9 +32,6 @@ protected:
     Playlist playlist_;
     PlaylistModel model_;
     PlaylistFilter filterModel_;
-
-public:
-    PlaylistLibraryWatcher watcher;
 
 protected slots:
     void changedFilter(const QString &filter);
