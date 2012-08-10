@@ -80,7 +80,6 @@ void MainWindow::on_addDirectoryAction_triggered()
 
 void MainWindow::on_addFilesAction_triggered()
 {
-    QFileDialog::Options options = QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
     QStringList files = QFileDialog::getOpenFileNames(this, "Select one or more files to open");
     if (files.isEmpty())
         return;
