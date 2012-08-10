@@ -178,4 +178,12 @@ void MainWindow::Stop()
     mediaObject->stop();
 }
 
+void MainWindow::ShowHide()
+{
+    if (isVisible())
+        hide();
+    else
+        show();
+}
+
 #include "mainwindow.moc"

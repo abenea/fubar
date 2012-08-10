@@ -48,6 +48,7 @@ public slots:
     void Stop();
     void Next();
     void Prev();
+    void ShowHide();
 
 protected:
     virtual void closeEvent(QCloseEvent* );

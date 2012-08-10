@@ -21,7 +21,7 @@ private:
 public:
     GlobalShortcutEngine(MainWindow& mainWindow);
     void queryXIMasterList();
-    bool handleButton(int button, bool down);
+    void handleButton(int button, bool down);
 
     Display *display;
     QSet<Window> qsRootWindows;
@@ -31,8 +31,9 @@ public:
 private:
     void SetShortcuts();
     typedef std::set<int> Shortcut;
-    std::map<Shortcut, std::function<void (void)> > shortcuts_;
+    std::map<Shortcut, std::function<void (void)>> shortcuts_;
     MainWindow& mainWindow_;
+    std::set<int> down_keys_;
 
 public slots:
     void displayReadyRead(int);

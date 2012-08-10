@@ -81,7 +81,6 @@ void GlobalShortcutEngine::queryXIMasterList() {
 // XInput2 event is ready on socketnotifier.
 void GlobalShortcutEngine::displayReadyRead(int)
 {
-    qDebug() << "Roly poly";
     XEvent evt;
 
 //    if (bNeedRemap)
@@ -115,15 +114,37 @@ void GlobalShortcutEngine::displayReadyRead(int)
     }
 }
 
-bool GlobalShortcutEngine::handleButton(int button, bool down)
+void GlobalShortcutEngine::handleButton(int button, bool down)
 {
-    qDebug() << "Roly poly: " << button << " " << (down ? "down" : "up");
+    if (down)
+        down_keys_.insert(button);
+    else
+        down_keys_.erase(button);
+
+    for (auto shortcut : shortcuts_) {
+        bool on = true;
+        for (auto key : shortcut.first) {
+            if (down_keys_.find(key) == down_keys_.end()) {
+                on = false;
+                break;
+            }
+        }
+        if (on) {
+            shortcut.second();
+        }
+    }
 }
 
 void GlobalShortcutEngine::SetShortcuts()
 {
-    // win 134 up 111 down 116 a 38 z 52 x 39 c 54 v 55 w 25
-    shortcuts_.insert({{134, 54}, std::bind(&MainWindow::PlayPause, &mainWindow_)});
+    // win_l 133 up 111 down 116 a 38 z 52 x 39 c 54 v 55 w 25
+    shortcuts_.insert({
+        {{133, 54}, std::bind(&MainWindow::PlayPause, &mainWindow_)},
+        {{133, 55}, std::bind(&MainWindow::Stop, &mainWindow_)},
+        {{133, 38}, std::bind(&MainWindow::Prev, &mainWindow_)},
+        {{133, 52}, std::bind(&MainWindow::Next, &mainWindow_)},
+        {{133, 25}, std::bind(&MainWindow::ShowHide, &mainWindow_)},
+        });
 }
 
 #include "globalshortcutengine.moc"
