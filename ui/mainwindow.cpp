@@ -151,8 +151,9 @@ void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
 
 void MainWindow::Play()
 {
-    if (currentlyPlayingPlaylist_ == 0)
-        currentlyPlayingPlaylist_ = current();
+    if (currentlyPlayingPlaylist_ == 0) {
+        setCurrentPlayingPlaylist(current());
+    }
     currentlyPlayingPlaylist_->play();
 }
 

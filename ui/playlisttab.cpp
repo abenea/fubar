@@ -34,6 +34,17 @@ void PlaylistTab::play()
     QModelIndex index = ui_.playlist->currentIndex();
     if (index.isValid())
         play(index);
+    else {
+        // Try playing first item in playlist?
+        index = model_.index(0, 0);
+        if (index.isValid()) {
+            ui_.playlist->setCurrentIndex(index);
+            play(index);
+        }
+        else {
+            qDebug() << "No clue what item in what playlist play";
+        }
+    }
 }
 
 void PlaylistTab::play(const QModelIndex& index)
