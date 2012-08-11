@@ -1,10 +1,1 @@
-Debian packages:
-libboost-all-dev
-protobuf-compiler
-libprotobuf-dev
-libqt4-dev
-libphonon-dev
-libxi-dev
-
-Compile from source:
-taglib
+libboost-all-dev protobuf-compiler libprotobuf-dev libqt4-dev libphonon-dev libxi-dev libtag1-dev
