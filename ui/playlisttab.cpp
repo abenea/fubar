@@ -36,9 +36,8 @@ void PlaylistTab::play()
         play(index);
     else {
         // Try playing first item in playlist?
-        index = model_.index(0, 0);
+        index = filterModel_.index(0, 0);
         if (index.isValid()) {
-            ui_.playlist->setCurrentIndex(index);
             play(index);
         }
         else {
@@ -47,14 +46,17 @@ void PlaylistTab::play()
     }
 }
 
+// index from QListView - mapped from model to proxy
+// maybe it should be model index?
 void PlaylistTab::play(const QModelIndex& index)
 {
     MainWindow::instance->setCurrentPlayingPlaylist(this);
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track> >();
     MainWindow::instance->mediaObject->setCurrentSource(Phonon::MediaSource(track->location));
     MainWindow::instance->mediaObject->play();
-    if (MainWindow::instance->cursorFollowsPlayback())
+    if (MainWindow::instance->cursorFollowsPlayback()) {
         ui_.playlist->setCurrentIndex(index);
+    }
 }
 
 void PlaylistTab::playNext(QString path, int offset)
@@ -65,12 +67,10 @@ void PlaylistTab::playNext(QString path, int offset)
     QModelIndex indexMapped = filterModel_.mapFromSource(index);
     if (!indexMapped.isValid())
         return;
-    QModelIndex nextIndex = model_.index(indexMapped.row() + offset, 0);
+    QModelIndex nextIndex = filterModel_.index(indexMapped.row() + offset, 0);
     if (!nextIndex.isValid())
         return;
-    QModelIndex mappedNextIndex = filterModel_.mapFromSource(nextIndex);
-    if (mappedNextIndex.isValid())
-        play(mappedNextIndex);
+    play(nextIndex);
 }
 
 void PlaylistTab::addDirectory(const QString& directory)
