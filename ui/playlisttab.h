@@ -18,6 +18,7 @@ public slots:
     void play(const QModelIndex &index);
     void play();
     void playNext(QString path, int offset);
+    void enqueueNextTrack();
     virtual void addDirectory(const QString &directory);
     virtual void addFiles(const QStringList &files);
     virtual void addTracks(const QList<std::shared_ptr<Track> > &tracks);

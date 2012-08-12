@@ -59,6 +59,7 @@ void PlaylistTab::play(const QModelIndex& index)
     }
 }
 
+// bad? why pass path?
 void PlaylistTab::playNext(QString path, int offset)
 {
     QModelIndex index = model_.getIndex(path);
@@ -71,6 +72,17 @@ void PlaylistTab::playNext(QString path, int offset)
     if (!nextIndex.isValid())
         return;
     play(nextIndex);
+}
+
+void PlaylistTab::enqueueNextTrack()
+{
+    QModelIndex viewIndex = ui_.playlist->currentIndex();
+    QModelIndex nextIndex = filterModel_.index(viewIndex.row() + 1, 0);
+    if (!nextIndex.isValid())
+        return;
+    shared_ptr<Track> track = nextIndex.data(TrackRole).value<shared_ptr<Track>>();
+    MainWindow::instance->mediaObject->enqueue(Phonon::MediaSource(track->location));
+    qDebug() << "Enqueue " << track->location;
 }
 
 void PlaylistTab::addDirectory(const QString& directory)
