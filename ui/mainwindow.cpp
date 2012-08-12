@@ -25,6 +25,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     mediaObject = new Phonon::MediaObject(this);
     mediaObject->setTickInterval(1000);
     Phonon::createPath(mediaObject, audioOutput);
+    QObject::connect(mediaObject, SIGNAL(finished()), this, SLOT(FinishPlaying()));
     seekSlider_ = new Phonon::SeekSlider(this);
     seekSlider_->setIconVisible(false);
     seekSlider_->setMediaObject(mediaObject);
@@ -147,6 +148,11 @@ void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
     } else if (action->text().toLower().contains("next")) {
         Next();
     }
+}
+
+void MainWindow::FinishPlaying()
+{
+    Next();
 }
 
 void MainWindow::Play()

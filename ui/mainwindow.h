@@ -43,6 +43,7 @@ public slots:
 
     void on_mainToolBar_actionTriggered(QAction* action);
 
+    void FinishPlaying();
     void Play();
     void PlayPause();
     void Stop();
