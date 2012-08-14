@@ -3,7 +3,6 @@ project(fubar)
 enable_testing()
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x")
 
 set(TAGLIB_MIN_VERSION "1.6")
 find_package(Boost REQUIRED)
@@ -11,7 +10,11 @@ find_package(Taglib REQUIRED)
 find_package(ProtocolBuffers REQUIRED)
 find_package(Qt4 4.5 COMPONENTS QtCore QtGui QtTest Phonon REQUIRED)
 find_package(XInput2 REQUIRED)
+find_package(KDE4 REQUIRED)
 include(${QT_USE_FILE})
+
+# find_package(KDE4) overrides ***REMOVED***
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x -fexceptions")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

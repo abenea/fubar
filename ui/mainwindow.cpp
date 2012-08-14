@@ -8,6 +8,7 @@
 #include <QSettings>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <kwindowsystem.h>
 
 using namespace boost;
 
@@ -190,8 +191,20 @@ void MainWindow::ShowHide()
 {
     if (isVisible())
         hide();
-    else
+    else {
         show();
+        raise();
+        QApplication::setActiveWindow(this);
+        activateWindow();
+
+//         int wid = effectiveWinId();
+//         const KWindowInfo info = KWindowSystem::windowInfo( wid, 0, 0 );
+//         const int currentDesktop = KWindowSystem::currentDesktop();
+// 
+//         setWindowState(windowState() & ~Qt::WindowMinimized);
+//         KWindowSystem::setOnDesktop( winId(), currentDesktop );
+//         KWindowSystem::activateWindow( winId() );
+    }
 }
 
 #include "mainwindow.moc"

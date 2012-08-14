@@ -6,6 +6,7 @@
 #include <QList>
 #include <QMap>
 #include <QSet>
+#include <memory>
 
 namespace proto {
     class Directory;
