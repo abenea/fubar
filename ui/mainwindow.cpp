@@ -8,7 +8,6 @@
 #include <QSettings>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <kwindowsystem.h>
 
 using namespace boost;
 
