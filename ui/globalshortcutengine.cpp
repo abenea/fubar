@@ -144,6 +144,7 @@ void GlobalShortcutEngine::SetShortcuts()
         {{133, 38}, std::bind(&MainWindow::Prev, &mainWindow_)},
         {{133, 52}, std::bind(&MainWindow::Next, &mainWindow_)},
         {{133, 25}, std::bind(&MainWindow::ShowHide, &mainWindow_)},
+        {{134, 25}, std::bind(&MainWindow::ShowHide, &mainWindow_)},
         });
 }
 

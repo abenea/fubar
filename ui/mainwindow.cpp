@@ -189,22 +189,61 @@ void MainWindow::Stop()
 
 void MainWindow::ShowHide()
 {
-    if (isVisible())
-        hide();
-    else {
-        show();
-        raise();
-        QApplication::setActiveWindow(this);
-        activateWindow();
-
-//         int wid = effectiveWinId();
-//         const KWindowInfo info = KWindowSystem::windowInfo( wid, 0, 0 );
-//         const int currentDesktop = KWindowSystem::currentDesktop();
-// 
-//         setWindowState(windowState() & ~Qt::WindowMinimized);
-//         KWindowSystem::setOnDesktop( winId(), currentDesktop );
-//         KWindowSystem::activateWindow( winId() );
+    if( !isVisible() )
+    {
+        setVisible( true );
     }
+    else
+    {
+        if( !isMinimized() )
+        {
+            if( !isActiveWindow() ) // not minimised and without focus
+            {
+                //KWindowSystem::setOnDesktop( wid, currentDesktop );
+                activateWindow();
+            }
+            else // Amarok has focus
+            {
+                setVisible( false );
+            }
+        }
+        else // Amarok is minimised
+        {
+            setWindowState( windowState() & ~Qt::WindowMinimized );
+//            KWindowSystem::setOnDesktop( wid, currentDesktop );
+            activateWindow();
+        }
+    }
+/*
+    int wid = effectiveWinId();
+    const KWindowInfo info = KWindowSystem::windowInfo( wid, 0, 0 );
+    const int currentDesktop = KWindowSystem::currentDesktop();
+
+    if( !isVisible() )
+    {
+        setVisible( true );
+    }
+    else
+    {
+        if( !isMinimized() )
+        {
+            if( !isActiveWindow() ) // not minimised and without focus
+            {
+                KWindowSystem::setOnDesktop( wid, currentDesktop );
+                KWindowSystem::activateWindow( wid );
+            }
+            else // Amarok has focus
+            {
+                setVisible( false );
+            }
+        }
+        else // Amarok is minimised
+        {
+            setWindowState( windowState() & ~Qt::WindowMinimized );
+            KWindowSystem::setOnDesktop( wid, currentDesktop );
+            KWindowSystem::activateWindow( wid );
+        }
+    }*/
 }
 
 #include "mainwindow.moc"
