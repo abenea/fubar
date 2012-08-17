@@ -8,6 +8,7 @@
 #include <QSettings>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <kwindowsystem.h>
 
 using namespace boost;
 
@@ -188,61 +189,32 @@ void MainWindow::Stop()
 
 void MainWindow::ShowHide()
 {
-    if( !isVisible() )
+    if(!isVisible())
     {
-        setVisible( true );
+        setVisible(true);
     }
     else
     {
-        if( !isMinimized() )
+        int currentDesktop = KWindowSystem::currentDesktop();
+        if(!isMinimized())
         {
-            if( !isActiveWindow() ) // not minimised and without focus
+            if(!isActiveWindow()) // not minimised and without focus
             {
-                //KWindowSystem::setOnDesktop( wid, currentDesktop );
+                KWindowSystem::setOnDesktop(winId(), currentDesktop);
                 activateWindow();
             }
-            else // Amarok has focus
+            else // has focus
             {
-                setVisible( false );
+                setVisible(false);
             }
         }
-        else // Amarok is minimised
+        else // is minimised
         {
-            setWindowState( windowState() & ~Qt::WindowMinimized );
-//            KWindowSystem::setOnDesktop( wid, currentDesktop );
+            setWindowState(windowState() & ~Qt::WindowMinimized);
+            KWindowSystem::setOnDesktop(winId(), currentDesktop);
             activateWindow();
         }
     }
-/*
-    int wid = effectiveWinId();
-    const KWindowInfo info = KWindowSystem::windowInfo( wid, 0, 0 );
-    const int currentDesktop = KWindowSystem::currentDesktop();
-
-    if( !isVisible() )
-    {
-        setVisible( true );
-    }
-    else
-    {
-        if( !isMinimized() )
-        {
-            if( !isActiveWindow() ) // not minimised and without focus
-            {
-                KWindowSystem::setOnDesktop( wid, currentDesktop );
-                KWindowSystem::activateWindow( wid );
-            }
-            else // Amarok has focus
-            {
-                setVisible( false );
-            }
-        }
-        else // Amarok is minimised
-        {
-            setWindowState( windowState() & ~Qt::WindowMinimized );
-            KWindowSystem::setOnDesktop( wid, currentDesktop );
-            KWindowSystem::activateWindow( wid );
-        }
-    }*/
 }
 
 #include "mainwindow.moc"
