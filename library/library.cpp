@@ -468,7 +468,12 @@ void Library::fileCallback(QString path, LibraryEventType event)
                     oldTrack->accessed_by_taglib = false;
                 }
             } else {
-                qDebug() << "Modified file did not exist";
+                // We tried taglib-reading this but it failed
+                // maybe now we have more data so try again
+                qDebug() << "Pls try again";
+                std::shared_ptr<Track> track = scanFile(path);
+                if (track)
+                    addFile(track);
             }
         } else {
             qDebug() << "Couldnt find the directory where the file was modified";
