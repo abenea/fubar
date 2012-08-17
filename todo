@@ -1,12 +1,16 @@
 Bugs:
-When starting to monitor a directory playlist doesnt get updated.
+Next/Prev does nothing when nothing was played yet.
+Fix "modified file does not exist" when copying flacs in library dir.
+When changing monitored directory list sync playlists don't get updated.
 Cursor following playback not working when song is enqueued automatically (abouttofinish signal).
-Show/Hide window
+Show/Hide window without kde libs
 
 Features:
-Use kde globalshortcuts.
 Make synced playlists not editable.
 Save playlists.
 Save current playlist + current position.
 Random track.
 Plugins.
+Splits - album artist.
+Multiple cds.
+Cue sheets.

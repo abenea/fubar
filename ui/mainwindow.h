@@ -5,6 +5,7 @@
 #include "ui/ui_mainwindow.h"
 #include <QtGui/QMainWindow>
 #include <QModelIndex>
+#include <QKeySequence>
 #include <phonon/Phonon/MediaObject>
 #include <phonon/Phonon/AudioOutput>
 #include <phonon/SeekSlider>
@@ -27,6 +28,7 @@ public:
     static MainWindow *instance;
 
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
+    PlaylistTab* getCurrentPlaylist();
 
     bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
 
@@ -55,6 +57,9 @@ protected:
     virtual void closeEvent(QCloseEvent* );
 
 private:
+    void SetShortcuts();
+    void AddShortcut(QKeySequence shortcut, const char* func);
+
     Phonon::SeekSlider *seekSlider_;
     Phonon::VolumeSlider *volumeSlider_;
 

@@ -9,6 +9,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <kwindowsystem.h>
+#include <QxtGlobalShortcut>
+#include <Qt>
 
 using namespace boost;
 
@@ -44,13 +46,33 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     instance = this;
 
     on_newLibraryViewAction_triggered();
+
+    SetShortcuts();
+}
+
+void MainWindow::AddShortcut(QKeySequence shortcut, const char* func)
+{
+    // Not saving a reference to it
+    QxtGlobalShortcut* gs = new QxtGlobalShortcut(this);
+    QObject::connect(gs, SIGNAL(activated()), this, func);
+    gs->setShortcut(shortcut);
+}
+
+void MainWindow::SetShortcuts()
+{
+    AddShortcut(QKeySequence(Qt::META + Qt::Key_W), SLOT(ShowHide()));
+    AddShortcut(QKeySequence(Qt::META + Qt::Key_X), SLOT(Play()));
+    AddShortcut(QKeySequence(Qt::META + Qt::Key_C), SLOT(PlayPause()));
+    AddShortcut(QKeySequence(Qt::META + Qt::Key_A), SLOT(Prev()));
+    AddShortcut(QKeySequence(Qt::META + Qt::Key_Z), SLOT(Next()));
+    AddShortcut(QKeySequence(Qt::META + Qt::Key_V), SLOT(Stop()));
 }
 
 MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::tick(qint64 pos)
+void MainWindow::tick(qint64 )
 {
     
 }
@@ -156,12 +178,18 @@ void MainWindow::AboutToFinish()
     currentlyPlayingPlaylist_->enqueueNextTrack();
 }
 
-void MainWindow::Play()
+PlaylistTab* MainWindow::getCurrentPlaylist()
 {
     if (currentlyPlayingPlaylist_ == 0) {
         setCurrentPlayingPlaylist(current());
     }
-    currentlyPlayingPlaylist_->play();
+    return currentlyPlayingPlaylist_;
+}
+
+void MainWindow::Play()
+{
+    if (getCurrentPlaylist())
+        currentlyPlayingPlaylist_->play();
 }
 
 void MainWindow::PlayPause()
@@ -174,12 +202,14 @@ void MainWindow::PlayPause()
 
 void MainWindow::Next()
 {
-    currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), +1);
+    if (getCurrentPlaylist())
+        currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), +1);
 }
 
 void MainWindow::Prev()
 {
-    currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), -1);
+    if (getCurrentPlaylist())
+        currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), -1);
 }
 
 void MainWindow::Stop()
