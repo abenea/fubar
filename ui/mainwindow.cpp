@@ -121,6 +121,7 @@ void MainWindow::on_newLibraryViewAction_triggered()
     PlaylistTab* tab = new PlaylistTab(this);
     tab->addTracks(library_.getTracks());
     QObject::connect(&library_, SIGNAL(libraryChanged(LibraryEvent)), tab, SLOT(libraryChanged(LibraryEvent)));
+    QObject::connect(&library_, SIGNAL(libraryChanged(QList<std::shared_ptr<Track>>)), tab, SLOT(libraryChanged(QList<std::shared_ptr<Track>>)));
     tab->yunorefresh();
     playlistTabs->addTab(tab, "All");
 }

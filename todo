@@ -1,9 +1,7 @@
 Bugs:
 Next/Prev does nothing when nothing was played yet.
-Fix "modified file does not exist" when copying flacs in library dir.
-When changing monitored directory list sync playlists don't get updated.
 Cursor following playback not working when song is enqueued automatically (abouttofinish signal).
-Show/Hide window without kde libs
+Show/Hide window without kde libs?
 
 Features:
 Make synced playlists not editable.
@@ -14,3 +12,4 @@ Plugins.
 Splits - album artist.
 Multiple cds.
 Cue sheets.
+ctrl+j focus filter box

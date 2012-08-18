@@ -21,8 +21,9 @@ public slots:
     void enqueueNextTrack();
     virtual void addDirectory(const QString &directory);
     virtual void addFiles(const QStringList &files);
-    virtual void addTracks(const QList<std::shared_ptr<Track> > &tracks);
+    virtual void addTracks(const QList<std::shared_ptr<Track>> &tracks);
     virtual void libraryChanged(LibraryEvent event);
+    virtual void libraryChanged(QList<std::shared_ptr<Track>> tracks);
 
     // TODO: This code is probably bad/retarded, need to learn a bit more about qt to do it
     // But I'm too lazy atm

@@ -59,6 +59,8 @@ void Library::stopRescanning()
 void Library::startMonitoring()
 {
     QMutexLocker locker(&pause_monitoring_mutex_);
+    QList<std::shared_ptr<Track>> tracks = getTracks();
+    emit(libraryChanged(tracks));
     should_be_working_ = true;
     pause_monitoring_.wakeAll();
 }
@@ -133,7 +135,7 @@ void Library::removeDirectory(QString path)
     qDebug() << "Deleting dir " << path;
     DirectoryMap::iterator it = directories_.find(path);
     if (it == directories_.end()) {
-        qDebug() << "Wanted to remove directory " << path << ". No dice";
+//        qDebug() << " Maybe wanted to remove directory " << path << ". No dice";
         return;
     }
     QList<QString> subdirs = it.value()->getSubdirectories();
@@ -364,7 +366,9 @@ std::shared_ptr<Track> Library::scanFile(const QString& path)
 void Library::setMusicFolders(QStringList folders)
 {
     music_folders_ = folders;
+    music_folders_.removeAll("");
     setFoldersInSettings();
+    qDebug() << "Library::setMusicFolders()" << music_folders_.size();
 }
 
 void Library::rescan()
@@ -374,6 +378,7 @@ void Library::rescan()
         QMutexLocker locker(&stop_rescan_mutex_);
         rescanning_ = true;
     }
+    qDebug() << music_folders_.size();
     // Delete all dirs that are not monitored
     QList<QString> old_dirs;
     foreach (QString dir, directories_.keys()) {
@@ -501,6 +506,8 @@ void Library::getFoldersFromSettings()
 {
     QSettings settings;
     music_folders_ = settings.value("library/folders").toStringList();
+    music_folders_.removeAll("");
+    qDebug() << "Library::getFoldersFromSettings()" << music_folders_.size();
 }
 
 void Library::setFoldersInSettings()

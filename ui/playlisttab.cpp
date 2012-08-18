@@ -102,12 +102,18 @@ void PlaylistTab::yunorefresh()
 
 void PlaylistTab::addTracks(const QList< shared_ptr< Track > >& tracks)
 {
-	model_.playlist().tracks.append(tracks);
+    model_.playlist().tracks.append(tracks);
 }
 
 void PlaylistTab::libraryChanged(LibraryEvent event)
 {
-	model_.libraryChanged(event);
+    model_.libraryChanged(event);
+}
+
+void PlaylistTab::libraryChanged(QList<std::shared_ptr<Track>> tracks)
+{
+    model_.playlist().tracks.clear();
+    model_.playlist().tracks.append(tracks);
 }
 
 #include "playlisttab.moc"

@@ -16,7 +16,8 @@ void LibraryPreferencesDialog::accept()
     QSet<QString> current_set;
     QStringList current_list = libraryPaths->text().split(FOLDER_SEPARATOR);
     foreach (QString path, current_list) {
-        current_set.insert(path);
+        if (path.size() > 0)
+            current_set.insert(path);
     }
     QSet<QString> old_set;
     QStringList old_list = library_.getMusicFolders();

@@ -52,6 +52,9 @@ public slots:
 signals:
     // idea: make this a vector<events>
     void libraryChanged(LibraryEvent event);
+    // Emit when library directories change
+    // Completely replace the contents of synced playlists with these tracks
+    void libraryChanged(QList<std::shared_ptr<Track>> tracks);
 
 protected:
     void run();
