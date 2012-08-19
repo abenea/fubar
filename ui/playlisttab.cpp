@@ -5,7 +5,10 @@
 
 using std::shared_ptr;
 
-PlaylistTab::PlaylistTab(QWidget* parent): QWidget(parent), model_(playlist_)
+PlaylistTab::PlaylistTab(bool synced, QWidget* parent)
+    : QWidget(parent)
+    , synced_(synced)
+    , model_(playlist_)
 {
     ui_.setupUi(this);
     filterModel_.setSourceModel(&model_);
@@ -87,12 +90,14 @@ void PlaylistTab::enqueueNextTrack()
 
 void PlaylistTab::addDirectory(const QString& directory)
 {
-    model_.addDirectory(directory);
+    if (!synced_)
+        model_.addDirectory(directory);
 }
 
 void PlaylistTab::addFiles(const QStringList& files)
 {
-    model_.addFiles(files);
+    if (!synced_)
+        model_.addFiles(files);
 }
 
 void PlaylistTab::yunorefresh()
@@ -107,13 +112,16 @@ void PlaylistTab::addTracks(const QList< shared_ptr< Track > >& tracks)
 
 void PlaylistTab::libraryChanged(LibraryEvent event)
 {
-    model_.libraryChanged(event);
+    if (synced_)
+        model_.libraryChanged(event);
 }
 
 void PlaylistTab::libraryChanged(QList<std::shared_ptr<Track>> tracks)
 {
-    model_.playlist().tracks.clear();
-    model_.playlist().tracks.append(tracks);
+    if (synced_) {
+        model_.playlist().tracks.clear();
+        model_.playlist().tracks.append(tracks);
+    }
 }
 
 #include "playlisttab.moc"

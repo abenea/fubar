@@ -118,7 +118,7 @@ void MainWindow::on_addFilesAction_triggered()
 
 void MainWindow::on_newLibraryViewAction_triggered()
 {
-    PlaylistTab* tab = new PlaylistTab(this);
+    PlaylistTab* tab = new PlaylistTab(true, this);
     tab->addTracks(library_.getTracks());
     QObject::connect(&library_, SIGNAL(libraryChanged(LibraryEvent)), tab, SLOT(libraryChanged(LibraryEvent)));
     QObject::connect(&library_, SIGNAL(libraryChanged(QList<std::shared_ptr<Track>>)), tab, SLOT(libraryChanged(QList<std::shared_ptr<Track>>)));
@@ -128,7 +128,7 @@ void MainWindow::on_newLibraryViewAction_triggered()
 
 void MainWindow::on_newPlaylistAction_triggered()
 {
-    playlistTabs->addTab(new PlaylistTab(this), "Unnamed playlist");
+    playlistTabs->addTab(new PlaylistTab(false, this), "Unnamed playlist");
 }
 
 void MainWindow::on_preferencesAction_triggered()

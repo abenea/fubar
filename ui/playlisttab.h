@@ -12,7 +12,7 @@ class PlaylistTab : public QWidget
 {
     Q_OBJECT
 public:
-    PlaylistTab(QWidget* parent = 0);
+    PlaylistTab(bool synced, QWidget* parent = 0);
 
 public slots:
     void play(const QModelIndex &index);
@@ -30,6 +30,7 @@ public slots:
     void yunorefresh();
 
 protected:
+    bool synced_;
     Ui::PlaylistFrame ui_;
     Playlist playlist_;
     PlaylistModel model_;
