@@ -17,8 +17,10 @@ public:
 public slots:
     void play(const QModelIndex &index);
     void play();
-    void playNext(QString path, int offset);
+    void playNext(int offset);
     void enqueueNextTrack();
+    void updateCurrentIndex();
+    void updateCursor();
     virtual void addDirectory(const QString &directory);
     virtual void addFiles(const QStringList &files);
     virtual void addTracks(const QList<std::shared_ptr<Track>> &tracks);
@@ -35,6 +37,8 @@ protected:
     Playlist playlist_;
     PlaylistModel model_;
     PlaylistFilter filterModel_;
+    QPersistentModelIndex current_index_;
+    QPersistentModelIndex next_index_;
 
 protected slots:
     void changedFilter(const QString &filter);

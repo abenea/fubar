@@ -45,7 +45,9 @@ public slots:
 
     void on_mainToolBar_actionTriggered(QAction* action);
 
-    void AboutToFinish();
+    void aboutToFinish();
+    void currentSourceChanged(const Phonon::MediaSource &);
+
     void Play();
     void PlayPause();
     void Stop();

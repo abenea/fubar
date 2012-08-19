@@ -368,7 +368,6 @@ void Library::setMusicFolders(QStringList folders)
     music_folders_ = folders;
     music_folders_.removeAll("");
     setFoldersInSettings();
-    qDebug() << "Library::setMusicFolders()" << music_folders_.size();
 }
 
 void Library::rescan()
@@ -378,7 +377,6 @@ void Library::rescan()
         QMutexLocker locker(&stop_rescan_mutex_);
         rescanning_ = true;
     }
-    qDebug() << music_folders_.size();
     // Delete all dirs that are not monitored
     QList<QString> old_dirs;
     foreach (QString dir, directories_.keys()) {
@@ -475,7 +473,7 @@ void Library::fileCallback(QString path, LibraryEventType event)
             } else {
                 // We tried taglib-reading this but it failed
                 // maybe now we have more data so try again
-                qDebug() << "Pls try again";
+                qDebug() << "Reading again with taglib " << path;
                 std::shared_ptr<Track> track = scanFile(path);
                 if (track)
                     addFile(track);
@@ -507,7 +505,6 @@ void Library::getFoldersFromSettings()
     QSettings settings;
     music_folders_ = settings.value("library/folders").toStringList();
     music_folders_.removeAll("");
-    qDebug() << "Library::getFoldersFromSettings()" << music_folders_.size();
 }
 
 void Library::setFoldersInSettings()

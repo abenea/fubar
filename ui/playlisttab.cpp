@@ -54,38 +54,50 @@ void PlaylistTab::play()
 void PlaylistTab::play(const QModelIndex& index)
 {
     MainWindow::instance->setCurrentPlayingPlaylist(this);
+    current_index_ = QPersistentModelIndex(index);
+    next_index_ = QPersistentModelIndex();
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track> >();
     MainWindow::instance->mediaObject->setCurrentSource(Phonon::MediaSource(track->location));
     MainWindow::instance->mediaObject->play();
-    if (MainWindow::instance->cursorFollowsPlayback()) {
-        ui_.playlist->setCurrentIndex(index);
-    }
+    updateCursor();
 }
 
-// bad? why pass path?
-void PlaylistTab::playNext(QString path, int offset)
+void PlaylistTab::playNext(int offset)
 {
-    QModelIndex index = model_.getIndex(path);
-    if (!index.isValid())
+    current_index_ = filterModel_.index(current_index_.row() + offset, 0);
+    next_index_ = QPersistentModelIndex();
+    if (!current_index_.isValid())
         return;
-    QModelIndex indexMapped = filterModel_.mapFromSource(index);
-    if (!indexMapped.isValid())
-        return;
-    QModelIndex nextIndex = filterModel_.index(indexMapped.row() + offset, 0);
-    if (!nextIndex.isValid())
-        return;
-    play(nextIndex);
+    play(current_index_);
 }
 
 void PlaylistTab::enqueueNextTrack()
 {
-    QModelIndex viewIndex = ui_.playlist->currentIndex();
-    QModelIndex nextIndex = filterModel_.index(viewIndex.row() + 1, 0);
-    if (!nextIndex.isValid())
+    QModelIndex nextIndex = filterModel_.index(current_index_.row() + 1, 0);
+    if (!nextIndex.isValid()) {
+        qDebug() << "Nothing to enqueue";
         return;
+    }
+    next_index_ = QPersistentModelIndex(nextIndex);
     shared_ptr<Track> track = nextIndex.data(TrackRole).value<shared_ptr<Track>>();
     MainWindow::instance->mediaObject->enqueue(Phonon::MediaSource(track->location));
     qDebug() << "Enqueue " << track->location;
+}
+
+void PlaylistTab::updateCurrentIndex()
+{
+    if (next_index_.isValid()) {
+        current_index_ = next_index_;
+        next_index_ = QPersistentModelIndex();
+        updateCursor();
+    }
+}
+
+void PlaylistTab::updateCursor()
+{
+    if (MainWindow::instance->cursorFollowsPlayback()) {
+        ui_.playlist->setCurrentIndex(current_index_);
+    }
 }
 
 void PlaylistTab::addDirectory(const QString& directory)

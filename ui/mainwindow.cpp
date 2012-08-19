@@ -28,7 +28,8 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     mediaObject = new Phonon::MediaObject(this);
     mediaObject->setTickInterval(1000);
     Phonon::createPath(mediaObject, audioOutput);
-    QObject::connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(AboutToFinish()));
+    QObject::connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
+    QObject::connect(mediaObject, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)), this, SLOT(currentSourceChanged(const Phonon::MediaSource &)));
     seekSlider_ = new Phonon::SeekSlider(this);
     seekSlider_->setIconVisible(false);
     seekSlider_->setMediaObject(mediaObject);
@@ -174,9 +175,15 @@ void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
     }
 }
 
-void MainWindow::AboutToFinish()
+void MainWindow::aboutToFinish()
 {
     currentlyPlayingPlaylist_->enqueueNextTrack();
+}
+
+// Not using this cause I'm boss
+void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
+{
+    currentlyPlayingPlaylist_->updateCurrentIndex();
 }
 
 PlaylistTab* MainWindow::getCurrentPlaylist()
@@ -204,13 +211,13 @@ void MainWindow::PlayPause()
 void MainWindow::Next()
 {
     if (getCurrentPlaylist())
-        currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), +1);
+        currentlyPlayingPlaylist_->playNext(+1);
 }
 
 void MainWindow::Prev()
 {
     if (getCurrentPlaylist())
-        currentlyPlayingPlaylist_->playNext(mediaObject->currentSource().fileName(), -1);
+        currentlyPlayingPlaylist_->playNext(-1);
 }
 
 void MainWindow::Stop()

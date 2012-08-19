@@ -1,6 +1,5 @@
 Bugs:
 Next/Prev does nothing when nothing was played yet.
-Cursor following playback not working when song is enqueued automatically (abouttofinish signal).
 Show/Hide window without kde libs?
 
 Features:
