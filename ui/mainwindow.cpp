@@ -48,10 +48,10 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
 
     on_newLibraryViewAction_triggered();
 
-    SetShortcuts();
+    setShortcuts();
 }
 
-void MainWindow::AddShortcut(QKeySequence shortcut, const char* func)
+void MainWindow::addShortcut(QKeySequence shortcut, const char* func)
 {
     // Not saving a reference to it
     QxtGlobalShortcut* gs = new QxtGlobalShortcut(this);
@@ -59,14 +59,14 @@ void MainWindow::AddShortcut(QKeySequence shortcut, const char* func)
     gs->setShortcut(shortcut);
 }
 
-void MainWindow::SetShortcuts()
+void MainWindow::setShortcuts()
 {
-    AddShortcut(QKeySequence(Qt::META + Qt::Key_W), SLOT(ShowHide()));
-    AddShortcut(QKeySequence(Qt::META + Qt::Key_X), SLOT(Play()));
-    AddShortcut(QKeySequence(Qt::META + Qt::Key_C), SLOT(PlayPause()));
-    AddShortcut(QKeySequence(Qt::META + Qt::Key_A), SLOT(Prev()));
-    AddShortcut(QKeySequence(Qt::META + Qt::Key_Z), SLOT(Next()));
-    AddShortcut(QKeySequence(Qt::META + Qt::Key_V), SLOT(Stop()));
+    addShortcut(QKeySequence(Qt::META + Qt::Key_W), SLOT(showHide()));
+    addShortcut(QKeySequence(Qt::META + Qt::Key_X), SLOT(play()));
+    addShortcut(QKeySequence(Qt::META + Qt::Key_C), SLOT(playPause()));
+    addShortcut(QKeySequence(Qt::META + Qt::Key_A), SLOT(prev()));
+    addShortcut(QKeySequence(Qt::META + Qt::Key_Z), SLOT(next()));
+    addShortcut(QKeySequence(Qt::META + Qt::Key_V), SLOT(stop()));
 }
 
 MainWindow::~MainWindow()
@@ -163,15 +163,15 @@ void MainWindow::setCurrentPlayingPlaylist(PlaylistTab* playlist)
 void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
 {
     if (action->text().toLower().contains("play")) {
-        Play();
+        play();
     } else if (action->text().toLower().contains("pause")) {
-        PlayPause();
+        playPause();
     } else if (action->text().toLower().contains("stop")) {
-        Stop();
+        stop();
     } else if (action->text().toLower().contains("prev")) {
-        Prev();
+        prev();
     } else if (action->text().toLower().contains("next")) {
-        Next();
+        next();
     }
 }
 
@@ -194,13 +194,13 @@ PlaylistTab* MainWindow::getCurrentPlaylist()
     return currentlyPlayingPlaylist_;
 }
 
-void MainWindow::Play()
+void MainWindow::play()
 {
     if (getCurrentPlaylist())
         currentlyPlayingPlaylist_->play();
 }
 
-void MainWindow::PlayPause()
+void MainWindow::playPause()
 {
     if (mediaObject->state() == Phonon::PausedState)
         mediaObject->play();
@@ -208,24 +208,24 @@ void MainWindow::PlayPause()
         mediaObject->pause();
 }
 
-void MainWindow::Next()
+void MainWindow::next()
 {
     if (getCurrentPlaylist())
         currentlyPlayingPlaylist_->playNext(+1);
 }
 
-void MainWindow::Prev()
+void MainWindow::prev()
 {
     if (getCurrentPlaylist())
         currentlyPlayingPlaylist_->playNext(-1);
 }
 
-void MainWindow::Stop()
+void MainWindow::stop()
 {
     mediaObject->stop();
 }
 
-void MainWindow::ShowHide()
+void MainWindow::showHide()
 {
     if(!isVisible())
     {

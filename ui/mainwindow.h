@@ -27,12 +27,15 @@ public:
 
     static MainWindow *instance;
 
+    bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
+
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
     PlaylistTab* getCurrentPlaylist();
 
-    bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
+protected:
+    virtual void closeEvent(QCloseEvent* );
 
-public slots:
+private slots:
     void on_newPlaylistAction_triggered();
     void on_newLibraryViewAction_triggered();
 
@@ -45,22 +48,20 @@ public slots:
 
     void on_mainToolBar_actionTriggered(QAction* action);
 
+    void tick(qint64 pos);
     void aboutToFinish();
     void currentSourceChanged(const Phonon::MediaSource &);
 
-    void Play();
-    void PlayPause();
-    void Stop();
-    void Next();
-    void Prev();
-    void ShowHide();
-
-protected:
-    virtual void closeEvent(QCloseEvent* );
+    void play();
+    void playPause();
+    void stop();
+    void next();
+    void prev();
+    void showHide();
 
 private:
-    void SetShortcuts();
-    void AddShortcut(QKeySequence shortcut, const char* func);
+    void setShortcuts();
+    void addShortcut(QKeySequence shortcut, const char* func);
 
     Phonon::SeekSlider *seekSlider_;
     Phonon::VolumeSlider *volumeSlider_;
@@ -74,9 +75,6 @@ private:
     void readSettings();
 
     bool cursorFollowsPlayback_;
-
-private slots:
-    void tick(qint64 pos);
 };
 
 #endif // MAINWINDOW_H
