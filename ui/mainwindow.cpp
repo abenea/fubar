@@ -30,6 +30,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     Phonon::createPath(mediaObject, audioOutput);
     QObject::connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
     QObject::connect(mediaObject, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)), this, SLOT(currentSourceChanged(const Phonon::MediaSource &)));
+    QObject::connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
     seekSlider_ = new Phonon::SeekSlider(this);
     seekSlider_->setIconVisible(false);
     seekSlider_->setMediaObject(mediaObject);
@@ -71,11 +72,12 @@ void MainWindow::setShortcuts()
 
 MainWindow::~MainWindow()
 {
+    stop();
 }
 
-void MainWindow::tick(qint64 )
+void MainWindow::tick(qint64 pos)
 {
-    
+    emit trackPositionChanged(pos, false);
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -180,10 +182,11 @@ void MainWindow::aboutToFinish()
     currentlyPlayingPlaylist_->enqueueNextTrack();
 }
 
-// Not using this cause I'm boss
 void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
 {
     currentlyPlayingPlaylist_->updateCurrentIndex();
+    emit trackPlaying(currentlyPlayingPlaylist_->getCurrentTrack());
+    emit trackPositionChanged( 0, true );
 }
 
 PlaylistTab* MainWindow::getCurrentPlaylist()
@@ -194,10 +197,22 @@ PlaylistTab* MainWindow::getCurrentPlaylist()
     return currentlyPlayingPlaylist_;
 }
 
+PTrack MainWindow::getCurrentTrack()
+{
+    PlaylistTab* playlist = getCurrentPlaylist();
+    if (!playlist)
+        return PTrack(0);
+    return playlist->getCurrentTrack();
+}
+
 void MainWindow::play()
 {
-    if (getCurrentPlaylist())
+    if (getCurrentPlaylist()) {
         currentlyPlayingPlaylist_->play();
+        PTrack track = getCurrentTrack();
+        if (track)
+            emit trackPlaying(track);
+    }
 }
 
 void MainWindow::playPause()
@@ -223,6 +238,9 @@ void MainWindow::prev()
 void MainWindow::stop()
 {
     mediaObject->stop();
+    PTrack track = getCurrentTrack();
+    if (track)
+        emit stopped(mediaObject->totalTime(), mediaObject->currentTime());
 }
 
 void MainWindow::showHide()

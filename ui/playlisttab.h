@@ -31,6 +31,8 @@ public slots:
     // But I'm too lazy atm
     void yunorefresh();
 
+    PTrack getCurrentTrack();
+
 protected:
     bool synced_;
     Ui::PlaylistFrame ui_;

@@ -27,6 +27,7 @@ endfunction()
 
 add_subdirectory(ui)
 add_subdirectory(library)
+add_subdirectory(plugins)
 
 qt4_add_resources(ui_RC ui/icons/icons.qrc)
 add_executable(fubar main.cpp ${ui_RC})

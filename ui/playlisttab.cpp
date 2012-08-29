@@ -136,4 +136,12 @@ void PlaylistTab::libraryChanged(QList<std::shared_ptr<Track>> tracks)
     }
 }
 
+PTrack PlaylistTab::getCurrentTrack()
+{
+    if (current_index_.isValid()) {
+        return current_index_.data(TrackRole).value<shared_ptr<Track>>();
+    } else
+        return PTrack();
+}
+
 #include "playlisttab.moc"

@@ -31,6 +31,12 @@ public:
 
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
     PlaylistTab* getCurrentPlaylist();
+    PTrack getCurrentTrack();
+
+signals:
+    void trackPlaying(PTrack track);
+    void stopped(qint64 /*ms*/ finalPosition, qint64 /*ms*/ trackLength);
+    void trackPositionChanged(qint64 position, bool userSeek);
 
 protected:
     virtual void closeEvent(QCloseEvent* );
@@ -63,6 +69,7 @@ private:
     void setShortcuts();
     void addShortcut(QKeySequence shortcut, const char* func);
 
+    // TODO: get notified about seeks
     Phonon::SeekSlider *seekSlider_;
     Phonon::VolumeSlider *volumeSlider_;
 
