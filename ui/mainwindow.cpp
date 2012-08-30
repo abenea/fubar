@@ -63,6 +63,7 @@ void MainWindow::addShortcut(QKeySequence shortcut, const char* func)
 void MainWindow::setShortcuts()
 {
     addShortcut(QKeySequence(Qt::META + Qt::Key_W), SLOT(showHide()));
+    addShortcut(QKeySequence(Qt::META + Qt::Key_P), SLOT(showHide()));
     addShortcut(QKeySequence(Qt::META + Qt::Key_X), SLOT(play()));
     addShortcut(QKeySequence(Qt::META + Qt::Key_C), SLOT(playPause()));
     addShortcut(QKeySequence(Qt::META + Qt::Key_A), SLOT(prev()));
@@ -245,31 +246,14 @@ void MainWindow::stop()
 
 void MainWindow::showHide()
 {
-    if(!isVisible())
-    {
+    int currentDesktop = KWindowSystem::currentDesktop();
+    if (!isVisible() || isMinimized() || KWindowSystem::activeWindow() != winId()) {
+        setWindowState(windowState() & ~Qt::WindowMinimized);
+        KWindowSystem::setOnDesktop(winId(), currentDesktop);
         setVisible(true);
-    }
-    else
-    {
-        int currentDesktop = KWindowSystem::currentDesktop();
-        if(!isMinimized())
-        {
-            if(!isActiveWindow()) // not minimised and without focus
-            {
-                KWindowSystem::setOnDesktop(winId(), currentDesktop);
-                activateWindow();
-            }
-            else // has focus
-            {
-                setVisible(false);
-            }
-        }
-        else // is minimised
-        {
-            setWindowState(windowState() & ~Qt::WindowMinimized);
-            KWindowSystem::setOnDesktop(winId(), currentDesktop);
-            activateWindow();
-        }
+        KWindowSystem::forceActiveWindow(winId());
+    } else {
+        setVisible(false);
     }
 }
 

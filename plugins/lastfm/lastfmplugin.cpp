@@ -148,7 +148,7 @@ void LastfmPlugin::trackPlaying(PTrack track)
 
 void LastfmPlugin::trackPositionChanged(qint64 position, bool userSeek)
 {
-    qDebug() << "LastfmPlugin got trackPositionChanged " << position;
+//    qDebug() << "LastfmPlugin got trackPositionChanged " << position;
     // HACK enginecontroller is fscked. it sends engineTrackPositionChanged messages
     // with info for the last track even after engineNewTrackPlaying. this means that
     // we think we've played the whole new track even though we really haven't.

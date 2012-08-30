@@ -1,10 +1,13 @@
 Bugs:
 Next/Prev does nothing when nothing was played yet.
-Show/Hide window without kde libs?
+Killing fubar in the middle of scanning => dirs wont get scanned again??
 
 Features:
 Save playlists.
 Save current playlist + current position.
+Save volume.
+Save cursor follows playback.
+click status to go to current song in playlist.
 Random track.
 Plugins.
 Splits - album artist.
