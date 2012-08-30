@@ -311,7 +311,7 @@ void Library::scanDirectory(const QString& path)
         }
     // Full scan
     } else {
-        shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, mtime));
+        shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, 0));
         addDirectory(directory);
         QDir dir(path);
         dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
@@ -326,6 +326,7 @@ void Library::scanDirectory(const QString& path)
                 scanDirectory(info.filePath());
             }
         }
+        directory->setMtime(mtime);
     }
 }
 

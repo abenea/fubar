@@ -36,6 +36,7 @@ public:
 
     QString path() { return location_; }
     uint mtime() { return mtime_; }
+    void setMtime(uint mtime) { mtime_ = mtime; }
 
 private:
     // Change to QMap?
