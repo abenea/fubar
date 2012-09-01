@@ -2,13 +2,12 @@ Bugs:
 [lastfm] At exit doesnt scrobble currently playing track if it's the case.
 Seekbar gets stuck at start (Reproduce by playing last part of T-ara - I go crazy because of you. At the end of song seekbar gets stuck).
 Next/Prev does nothing when nothing was played yet.
+Volume slider repaints correctly at the first play.
 
 Features:
 Add version checking in FindTaglib.cmake
 [lastfm] handle user seeks
 [lastfm] config dialog
-Save volume.
-Save cursor follows playback.
 Save playlists.
 Save current playlist + current position.
 ctrl+j focus filter box

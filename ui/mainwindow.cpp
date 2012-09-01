@@ -44,6 +44,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     setStatusBar(&statusBar_);
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
 
+//    setWindowIcon(QIcon("fubar.gif"));
 //     playlistTabs->addTab(new PlaylistTab(this), "~/music_test");
 //     current()->addDirectory("/home/bogdan/music_test");
 
@@ -154,12 +155,16 @@ void MainWindow::readSettings()
 {
     QSettings settings;
     restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
+    audioOutput->setVolume(settings.value("mainwindow/volume", audioOutput->volume()).toReal());
+    cursorFollowsPlayback_ = settings.value("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_).toBool();
 }
 
 void MainWindow::writeSettings()
 {
     QSettings settings;
     settings.setValue("mainwindow/geometry", saveGeometry());
+    settings.setValue("mainwindow/volume", audioOutput->volume());
+    settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
 }
 
 void MainWindow::setCurrentPlayingPlaylist(PlaylistTab* playlist)
@@ -191,7 +196,7 @@ void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
 {
     currentlyPlayingPlaylist_->updateCurrentIndex();
     emit trackPlaying(currentlyPlayingPlaylist_->getCurrentTrack());
-    emit trackPositionChanged( 0, true );
+    emit trackPositionChanged(0, true);
 }
 
 PlaylistTab* MainWindow::getCurrentPlaylist()
@@ -215,8 +220,10 @@ void MainWindow::play()
     if (getCurrentPlaylist()) {
         currentlyPlayingPlaylist_->play();
         PTrack track = getCurrentTrack();
-        if (track)
+        if (track) {
             emit trackPlaying(track);
+            emit trackPositionChanged(0, true);
+        }
     }
 }
 
