@@ -21,6 +21,7 @@ public slots:
     void enqueueNextTrack();
     void updateCurrentIndex();
     void updateCursor();
+    void updateCursorAndScroll();
     virtual void addDirectory(const QString &directory);
     virtual void addFiles(const QStringList &files);
     virtual void addTracks(const QList<std::shared_ptr<Track>> &tracks);

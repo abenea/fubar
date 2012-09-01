@@ -2,6 +2,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(ui_SOURCES
     mainwindow.cpp
+    statusbar.cpp
     librarypreferencesdialog.cpp
     playlisttab.cpp
     playlistitemdelegate.cpp

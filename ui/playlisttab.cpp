@@ -100,6 +100,12 @@ void PlaylistTab::updateCursor()
     }
 }
 
+void PlaylistTab::updateCursorAndScroll()
+{
+    ui_.playlist->setCurrentIndex(current_index_);
+    ui_.playlist->scrollTo(current_index_, QAbstractItemView::PositionAtCenter);
+}
+
 void PlaylistTab::addDirectory(const QString& directory)
 {
     if (!synced_)

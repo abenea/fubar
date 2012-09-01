@@ -18,6 +18,7 @@ MainWindow *MainWindow::instance = 0;
 
 MainWindow::MainWindow(Library& library, QWidget *parent)
     : QMainWindow(parent)
+    , statusBar_(this)
     , library_(library)
     , currentlyPlayingPlaylist_(0)
     , cursorFollowsPlayback_(false)
@@ -39,6 +40,9 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     volumeSlider_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     mainToolBar->addWidget(seekSlider_);
     mainToolBar->addWidget(volumeSlider_);
+
+    setStatusBar(&statusBar_);
+    QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
 
 //     playlistTabs->addTab(new PlaylistTab(this), "~/music_test");
 //     current()->addDirectory("/home/bogdan/music_test");
@@ -254,6 +258,14 @@ void MainWindow::showHide()
         KWindowSystem::forceActiveWindow(winId());
     } else {
         setVisible(false);
+    }
+}
+
+void MainWindow::statusBarDoubleClicked()
+{
+    if (currentlyPlayingPlaylist_) {
+        playlistTabs->setCurrentWidget(currentlyPlayingPlaylist_);
+        currentlyPlayingPlaylist_->updateCursorAndScroll();
     }
 }
 

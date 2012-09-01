@@ -3,6 +3,7 @@
 
 #include "playlisttab.h"
 #include "ui/ui_mainwindow.h"
+#include "statusbar.h"
 #include <QtGui/QMainWindow>
 #include <QModelIndex>
 #include <QKeySequence>
@@ -65,6 +66,8 @@ private slots:
     void prev();
     void showHide();
 
+    void statusBarDoubleClicked();
+
 private:
     void setShortcuts();
     void addShortcut(QKeySequence shortcut, const char* func);
@@ -73,6 +76,7 @@ private:
     Phonon::SeekSlider *seekSlider_;
     Phonon::VolumeSlider *volumeSlider_;
 
+    StatusBar statusBar_;
     Library& library_;
 
     PlaylistTab *current();
