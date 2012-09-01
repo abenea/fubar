@@ -1,17 +1,18 @@
 Bugs:
-Next/Prev does nothing when nothing was played yet.
+Fix FindTaglib.cmake
+[lastfm] At exit doesnt scrobble currently playing track if it's the case.
 Seekbar gets stuck at start (Reproduce by playing last part of T-ara - I go crazy because of you. At the end of song seekbar gets stuck).
-At exit last.fm doesnt scrobble currently playing track if it's the case.
+Next/Prev does nothing when nothing was played yet.
 
 Features:
-Save playlists.
-Save current playlist + current position.
+[lastfm] handle user seeks
+[lastfm] config dialog
 Save volume.
 Save cursor follows playback.
-click status to go to current song in playlist.
-Random track.
-Plugins.
-Splits - album artist.
-Multiple cds.
-Cue sheets.
+Save playlists.
+Save current playlist + current position.
 ctrl+j focus filter box
+Enter in filter plays first track (and clears filter?)
+Random track.
+Cue sheets.
+Multiple cds.
