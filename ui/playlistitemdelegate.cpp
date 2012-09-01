@@ -50,15 +50,23 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
         headOption.font.setBold(true);
         painter->setFont(headOption.font);
         QRect remaining = headOption.rect;
-        drawText(painter, remaining, track->metadata["artist"], 5);
+        QString albumArtist = track->metadata.value("album artist", "");
+        if (albumArtist.isEmpty())
+            albumArtist = track->metadata["artist"];
+        drawText(painter, remaining, albumArtist + " - ", 5);
 
-        headOption.font.setBold(false);
-        painter->setFont(headOption.font);
-        drawText(painter, remaining, track->metadata["year"], 5);
+        if (track->metadata["year"].toInt()) {
+            headOption.font.setBold(false);
+            painter->setFont(headOption.font);
+            drawText(painter, remaining, QString("[" + track->metadata["year"] + "]"), 5);
+        }
 
         headOption.font.setBold(true);
         painter->setFont(headOption.font);
-        drawText(painter, remaining, track->metadata["album"], 5);
+        QString album = track->metadata["album"];
+        if (album.isEmpty())
+            album = "?";
+        drawText(painter, remaining, album, 5);
 
         trackOption.rect.moveTop(headOption.rect.bottom() + 2);
     }
@@ -69,14 +77,18 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     QApplication::style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &back, painter);
 
     QRect leftTextRect = trackOption.rect;
-    leftTextRect.setLeft(trackOption.rect.left() + 50);
+    leftTextRect.setLeft(trackOption.rect.left() + 100);
     leftTextRect.setRight(trackOption.rect.right() - 50);
     QRect rightTextRect = trackOption.rect;
     rightTextRect.setLeft(leftTextRect.right());
 
     painter->setFont(trackOption.font);
     QFontMetricsF tfm(trackOption.font);
-    QString leftText = QString("%1. %2").arg(track->metadata["track"], 2, QChar('0')).arg(track->metadata["title"]);
+    QString title = track->metadata["title"];
+    QString albumArtist = track->metadata.value("album artist", "");
+    if (!albumArtist.isEmpty() && albumArtist != track->metadata["artist"])
+        title += " // " + track->metadata["artist"];
+    QString leftText = QString("%1. %2").arg(track->metadata["track"], 2, QChar('0')).arg(title);
     int minutes = track->audioproperties.length / 60;
     int seconds = track->audioproperties.length % 60;
     QString rightText = QString("%1:%2").arg(minutes).arg(seconds, 2, 10, QChar('0'));

@@ -4,6 +4,10 @@
 #include "track.pb.h"
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
+#include <taglib/mpegfile.h>
+#include <taglib/id3v2tag.h>
+#include <taglib/id3v1tag.h>
+#include <taglib/tpropertymap.h>
 #include <boost/foreach.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/bind.hpp>
@@ -333,34 +337,77 @@ void Library::scanDirectory(const QString& path)
 std::shared_ptr<Track> Library::scanFile(const QString& path)
 {
     qDebug() << "Scanning file " << path;
-    TagLib::FileRef fileref;
     QByteArray encodedName = QFile::encodeName(path);
-    fileref = TagLib::FileRef(encodedName.constData(), true);
+
+    TagLib::FileRef fileref;
+    std::unique_ptr<TagLib::MPEG::File> mpegFile;
+    TagLib::AudioProperties *audioProperties = 0;
+    TagLib::Tag *tag = 0;
 
     shared_ptr<Track> track;
-    if (!fileref.isNull()) {
-        track.reset(new Track());
-        track->location = path;
-        if (TagLib::Tag *tag = fileref.tag()) {
-            track->metadata["title"] = TStringToQString(tag->title());
-            track->metadata["artist"] = TStringToQString(tag->artist());
-            track->metadata["album"] = TStringToQString(tag->album());
-            track->metadata["comment"] = TStringToQString(tag->comment());
-            track->metadata["genre"] = TStringToQString(tag->genre());
-            track->metadata["year"] = QString::number(tag->year());
-            track->metadata["track"] = QString::number(tag->track());
+
+    if (path.toLower().endsWith(".mp3")) {
+        mpegFile.reset(new TagLib::MPEG::File(encodedName));
+        if (!mpegFile->isValid())
+            return track;
+        tag = mpegFile->ID3v2Tag();
+        if (!tag)
+            tag = mpegFile->ID3v1Tag();
+        audioProperties = mpegFile->audioProperties();
+    } else {
+        fileref = TagLib::FileRef(encodedName.constData(), true);
+        if (fileref.isNull())
+            return track;
+        tag = fileref.tag();
+        audioProperties = fileref.audioProperties();
+    }
+
+    track.reset(new Track());
+    track->location = path;
+    if (tag) {
+        track->metadata["title"] = TStringToQString(tag->title());
+        track->metadata["artist"] = TStringToQString(tag->artist());
+        track->metadata["album"] = TStringToQString(tag->album());
+        track->metadata["comment"] = TStringToQString(tag->comment());
+        track->metadata["genre"] = TStringToQString(tag->genre());
+        track->metadata["year"] = QString::number(tag->year());
+        track->metadata["track"] = QString::number(tag->track());
+    }
+    if (audioProperties) {
+        track->audioproperties.length = audioProperties->length();
+        track->audioproperties.bitrate = audioProperties->bitrate();
+        track->audioproperties.samplerate = audioProperties->sampleRate();
+        track->audioproperties.channels = audioProperties->channels();
+    }
+
+    // mp3: Get album artist
+    if (mpegFile && mpegFile->isValid()) {
+        TagLib::ID3v2::Tag* id3v2 = mpegFile->ID3v2Tag();
+        if (id3v2) {
+            auto properties = id3v2->properties();
+            std::set<QString> probableAlbumArtistTags = {"ALBUM ARTIST", "ALBUMARTIST"};
+            for (auto albumArtistTag : probableAlbumArtistTags) {
+//                 qDebug() << "Searching " << albumArtistTag;
+                TagLib::PropertyMap::Iterator it = properties.find(albumArtistTag.toStdString().c_str());
+                if (it != properties.end() && !it->second.isEmpty()) {
+//                     qDebug() << "Found " << albumArtistTag;
+                    QString tmp = TStringToQString(it->second.front());
+                    if (!tmp.isEmpty())
+                        track->metadata["album artist"] = tmp;
+                }
+            }
+//             qDebug() << "Metadata for " << track->location;
+//             for (auto item : properties) {
+//                 qDebug() << TStringToQString(item.first) << " " << TStringToQString(item.second.front());
+//             }
         }
-        if (TagLib::AudioProperties *audioProperties = fileref.audioProperties()) {
-            track->audioproperties.length = audioProperties->length();
-            track->audioproperties.bitrate = audioProperties->bitrate();
-            track->audioproperties.samplerate = audioProperties->sampleRate();
-            track->audioproperties.channels = audioProperties->channels();
-        }
-        track->mtime = QFileInfo(path).lastModified().toTime_t();
+    }
+
+    track->mtime = QFileInfo(path).lastModified().toTime_t();
 /*        qDebug() << "LIBRARY: " << track->metadata["artist"] << " " << track->metadata["title"] <<
             " " << track->audioproperties.length;*/
-        track->accessed_by_taglib = true;
-    }
+    track->accessed_by_taglib = true;
+
     return track;
 }
 

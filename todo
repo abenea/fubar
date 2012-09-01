@@ -1,6 +1,7 @@
 Bugs:
 Next/Prev does nothing when nothing was played yet.
 Seekbar gets stuck at start (Reproduce by playing last part of T-ara - I go crazy because of you. At the end of song seekbar gets stuck).
+At exit last.fm doesnt scrobble currently playing track if it's the case.
 
 Features:
 Save playlists.
