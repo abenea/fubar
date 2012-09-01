@@ -1,49 +1,40 @@
-# - Try to find the Taglib library
-# Once done this will define
-#
-#  TAGLIB_FOUND - system has the taglib library
-#  TAGLIB_CFLAGS - the taglib cflags
-#  TAGLIB_LIBRARIES - The libraries needed to use taglib
-
-# Copyright (c) 2006, Laurent Montel, <montel@kde.org>
-#
-# Redistribution and use is allowed according to the terms of the BSD license.
-# For details see the accompanying COPYING-CMAKE-SCRIPTS file.
-
-if(NOT TAGLIB_MIN_VERSION)
-  set(TAGLIB_MIN_VERSION "1.6")
-endif(NOT TAGLIB_MIN_VERSION)
-
 if(NOT WIN32)
     find_program(TAGLIBCONFIG_EXECUTABLE NAMES taglib-config PATHS
        ${BIN_INSTALL_DIR}
     )
 endif(NOT WIN32)
 
-#reset vars
-set(TAGLIB_LIBRARIES)
-set(TAGLIB_CFLAGS)
-
 # if taglib-config has been found
 if(TAGLIBCONFIG_EXECUTABLE)
 
   exec_program(${TAGLIBCONFIG_EXECUTABLE} ARGS --version RETURN_VALUE _return_VALUE OUTPUT_VARIABLE TAGLIB_VERSION)
+  exec_program(${TAGLIBCONFIG_EXECUTABLE} ARGS --prefix RETURN_VALUE _return_VALUE OUTPUT_VARIABLE TAGLIB_LIBRARIES_PREFIX)
 
-  if(TAGLIB_VERSION STRLESS "${TAGLIB_MIN_VERSION}")
-     message(STATUS "TagLib version too old: version searched :${TAGLIB_MIN_VERSION}, found ${TAGLIB_VERSION}")
-     set(TAGLIB_FOUND FALSE)
-  else(TAGLIB_VERSION STRLESS "${TAGLIB_MIN_VERSION}")
+  find_path(TAGLIB_INCLUDE_DIR NAMES tag.h
+   HINTS
+   ${TAGLIB_LIBRARIES_PREFIX}/include
+   PATH_SUFFIXES taglib
+  )
 
-     exec_program(${TAGLIBCONFIG_EXECUTABLE} ARGS --libs RETURN_VALUE _return_VALUE OUTPUT_VARIABLE TAGLIB_LIBRARIES)
+  find_library(TAGLIB_LIBRARY NAMES tag
+    HINTS
+    ${TAGLIB_LIBRARIES_PREFIX}/lib
+  )
+  message(${TAGLIB_LIBRARY})
 
-     exec_program(${TAGLIBCONFIG_EXECUTABLE} ARGS --cflags RETURN_VALUE _return_VALUE OUTPUT_VARIABLE TAGLIB_CFLAGS)
-
-     if(TAGLIB_LIBRARIES AND TAGLIB_CFLAGS)
+#   if(TAGLIB_VERSION STRLESS "${TAGLIB_MIN_VERSION}")
+#      message(STATUS "TagLib version too old: version searched :${TAGLIB_MIN_VERSION}, found ${TAGLIB_VERSION}")
+#      set(TAGLIB_FOUND FALSE)
+#   else(TAGLIB_VERSION STRLESS "${TAGLIB_MIN_VERSION}")
+# 
+#      if(TAGLIB_LIBRARY AND TAGLIB_INCLUDE_DIR)
+#         set(TAGLIB_FOUND TRUE)
+#      endif(TAGLIB_LIBRARIES AND TAGLIB_CFLAGS)
+#   endif(TAGLIB_VERSION STRLESS "${TAGLIB_MIN_VERSION}") 
+     if(TAGLIB_LIBRARY AND TAGLIB_INCLUDE_DIR)
         set(TAGLIB_FOUND TRUE)
-     endif(TAGLIB_LIBRARIES AND TAGLIB_CFLAGS)
-     string(REGEX REPLACE " *-I" ";" TAGLIB_INCLUDES "${TAGLIB_CFLAGS}")
-  endif(TAGLIB_VERSION STRLESS "${TAGLIB_MIN_VERSION}") 
-  mark_as_advanced(TAGLIB_CFLAGS TAGLIB_LIBRARIES TAGLIB_INCLUDES)
+     endif(TAGLIB_LIBRARY AND TAGLIB_INCLUDE_DIR)
+  mark_as_advanced(TAGLIB_LIBRARY TAGLIB_INCLUDE_DIR)
 
 else(TAGLIBCONFIG_EXECUTABLE)
 
