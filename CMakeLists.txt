@@ -4,7 +4,7 @@ enable_testing()
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(Boost REQUIRED)
-find_package(Taglib REQUIRED)
+find_package(Taglib 1.8.0 REQUIRED)
 find_package(ProtocolBuffers REQUIRED)
 find_package(Qt4 4.5 REQUIRED QtCore QtGui QtTest Phonon)
 include(${QT_USE_FILE})
