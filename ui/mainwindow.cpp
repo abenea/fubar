@@ -195,8 +195,12 @@ void MainWindow::aboutToFinish()
 void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
 {
     currentlyPlayingPlaylist_->updateCurrentIndex();
-    emit trackPlaying(currentlyPlayingPlaylist_->getCurrentTrack());
-    emit trackPositionChanged(0, true);
+    if (currentlyPlayingPlaylist_->getCurrentTrack()) {
+        emit trackPlaying(currentlyPlayingPlaylist_->getCurrentTrack());
+        emit trackPositionChanged(0, true);
+    } else {
+        qDebug() << "OMFG! source changed to null track!!!";
+    }
 }
 
 PlaylistTab* MainWindow::getCurrentPlaylist()

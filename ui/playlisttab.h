@@ -34,17 +34,21 @@ public slots:
 
     PTrack getCurrentTrack();
 
+protected slots:
+    void changedFilter(const QString &filter);
+    void doubleClicked(const QModelIndex &filterIndex);
+
+protected:
+    QModelIndex getNextModelIndex(int offset);
+
 protected:
     bool synced_;
     Ui::PlaylistFrame ui_;
     Playlist playlist_;
     PlaylistModel model_;
     PlaylistFilter filterModel_;
-    QPersistentModelIndex current_index_;
-    QPersistentModelIndex next_index_;
-
-protected slots:
-    void changedFilter(const QString &filter);
+    QPersistentModelIndex currentIndex_;
+    QPersistentModelIndex nextIndex_;
 };
 
 #endif // PLAYLISTTAB_H

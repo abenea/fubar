@@ -1,7 +1,11 @@
 Bugs:
-Seekbar gets stuck at start (Reproduce by playing last part of T-ara - I go crazy because of you. At the end of song seekbar gets stuck).
+[lastfm] trackPlaying is reported although nothing plays. Reproduce: play song, set filter so there's no results. stop. play. (after some clicking pause/stop/play it starts playing)
+Shortcuts output text in the filter box.
+Rescan library should wipe all info, then scan. Now it's useless.
+Cursor follows playback is not painted correctly in menu (does not reflect the real value of the bool).
 
 Features:
+Filter should select first track, then scroll to it after filter is cleared.
 [lastfm] handle user seeks
 [lastfm] config dialog
 Save playlists.
@@ -14,3 +18,4 @@ Multiple cds.
 
 Known issues:
 Volume slider repaints correctly at the first play.
+Seekbar gets stuck at start (Reproduce by playing last part of T-ara - I go crazy because of you. At the end of song seekbar gets stuck).
