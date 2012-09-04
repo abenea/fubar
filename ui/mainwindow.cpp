@@ -78,7 +78,6 @@ void MainWindow::setShortcuts()
 
 MainWindow::~MainWindow()
 {
-    stop();
 }
 
 void MainWindow::tick(qint64 pos)
@@ -88,6 +87,7 @@ void MainWindow::tick(qint64 pos)
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    stop();
     writeSettings();
     QWidget::closeEvent(event);
 }
