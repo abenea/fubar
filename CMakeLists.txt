@@ -9,10 +9,7 @@ find_package(ProtocolBuffers REQUIRED)
 find_package(Qt4 4.5 REQUIRED QtCore QtGui QtTest Phonon)
 include(${QT_USE_FILE})
 find_package(XInput2 REQUIRED)
-find_package(Qxt REQUIRED QxtCore QxtGui)
 find_package(KDE4 REQUIRED)
-
-include_directories(${Qxt_INCLUDE_DIRS})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x -fexceptions")
 
@@ -33,4 +30,4 @@ qt4_add_resources(ui_RC ui/icons/icons.qrc)
 add_executable(fubar main.cpp ${ui_RC})
 add_executable(testlib testlib.cpp ${ui_RC})
 target_link_libraries(testlib ui library ${QT_LIBRARIES} ${TAGLIB_LIBRARY})
-target_link_libraries(fubar library ui ${QT_LIBRARIES} ${TAGLIB_LIBRARY} ${Qxt_LIBRARIES} ${KDE4_KDEUI_LIBS})
+target_link_libraries(fubar library ui ${QT_LIBRARIES} ${TAGLIB_LIBRARY} ${KDE4_KDEUI_LIBS})

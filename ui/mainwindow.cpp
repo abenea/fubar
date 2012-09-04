@@ -4,13 +4,13 @@
 #include "ui/ui_mainwindow.h"
 #include "ui/librarypreferencesdialog.h"
 
+#include <Qt>
 #include <QTableView>
 #include <QSettings>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <kwindowsystem.h>
-#include <QxtGlobalShortcut>
-#include <Qt>
+#include <kaction.h>
 
 using namespace boost;
 
@@ -57,23 +57,25 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     setShortcuts();
 }
 
-void MainWindow::addShortcut(QKeySequence shortcut, const char* func)
+void MainWindow::addShortcut(QKeySequence shortcut, const char* func, QString name)
 {
     // Not saving a reference to it
-    QxtGlobalShortcut* gs = new QxtGlobalShortcut(this);
-    QObject::connect(gs, SIGNAL(activated()), this, func);
-    gs->setShortcut(shortcut);
+    KAction* action = new KAction(name, this);
+    action->setObjectName(name);
+    action->setGlobalShortcut(KShortcut(shortcut), KAction::ActiveShortcut, KAction::Autoloading);
+    QObject::connect(action, SIGNAL(triggered()), this, func);
+
 }
 
 void MainWindow::setShortcuts()
 {
-    addShortcut(QKeySequence(Qt::META + Qt::Key_W), SLOT(showHide()));
-    addShortcut(QKeySequence(Qt::META + Qt::Key_P), SLOT(showHide()));
-    addShortcut(QKeySequence(Qt::META + Qt::Key_X), SLOT(play()));
-    addShortcut(QKeySequence(Qt::META + Qt::Key_C), SLOT(playPause()));
-    addShortcut(QKeySequence(Qt::META + Qt::Key_A), SLOT(prev()));
-    addShortcut(QKeySequence(Qt::META + Qt::Key_Z), SLOT(next()));
-    addShortcut(QKeySequence(Qt::META + Qt::Key_V), SLOT(stop()));
+    addShortcut(QKeySequence(Qt::META + Qt::Key_W), SLOT(showHide()), "Show/Hide");
+    addShortcut(QKeySequence(Qt::META + Qt::Key_P), SLOT(showHide()), "Show/Hide");
+    addShortcut(QKeySequence(Qt::META + Qt::Key_X), SLOT(play()), "Play");
+    addShortcut(QKeySequence(Qt::META + Qt::Key_C), SLOT(playPause()), "Play/Pause");
+    addShortcut(QKeySequence(Qt::META + Qt::Key_A), SLOT(prev()), "Prev");
+    addShortcut(QKeySequence(Qt::META + Qt::Key_Z), SLOT(next()), "Next");
+    addShortcut(QKeySequence(Qt::META + Qt::Key_V), SLOT(stop()), "Stop");
 }
 
 MainWindow::~MainWindow()

@@ -70,7 +70,7 @@ private slots:
 
 private:
     void setShortcuts();
-    void addShortcut(QKeySequence shortcut, const char* func);
+    void addShortcut(QKeySequence shortcut, const char* func, QString name);
 
     // TODO: get notified about seeks
     Phonon::SeekSlider *seekSlider_;
