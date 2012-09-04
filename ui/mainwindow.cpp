@@ -159,6 +159,7 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
     audioOutput->setVolume(settings.value("mainwindow/volume", audioOutput->volume()).toReal());
     cursorFollowsPlayback_ = settings.value("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_).toBool();
+    cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
 }
 
 void MainWindow::writeSettings()
