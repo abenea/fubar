@@ -96,6 +96,11 @@ void PlaylistTab::enqueueNextTrack()
 QModelIndex PlaylistTab::getNextModelIndex(int offset)
 {
     QModelIndex filterIndex = filterModel_.mapFromSource(currentIndex_);
+    // If current index is filtered out, play first track from filtered list
+    if (!filterIndex.isValid()) {
+        filterIndex = filterModel_.index(0, 0);
+        offset = 0;
+    }
     if (!filterIndex.isValid()) {
 //         qDebug() << currentIndex_ << " mapped from source is not good";
         return QModelIndex();
