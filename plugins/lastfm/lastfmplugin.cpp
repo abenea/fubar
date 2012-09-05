@@ -3,6 +3,7 @@
 #include <QCryptographicHash>
 #include <QNetworkReply>
 #include <QSettings>
+#include <QDir>
 #include <lastfm/ws.h>
 #include <lastfm/XmlQuery.h>
 #include <cstdio>
@@ -119,12 +120,22 @@ void LastfmPlugin::gotSession()
     m_scrobbler.reset(new lastfm::Audioscrobbler("fubar"));
     resetVariables();
 
+    //HACK work around a bug in liblastfm---it doesn't create its config dir, so when it
+    // tries to write the track cache, it fails silently. until we have a fixed version, do this
+    // path finding code taken from liblastfm/src/misc.cpp
+    QString lpath = QDir::home().filePath( ".local/share/Last.fm" );
+    QDir ldir = QDir( lpath );
+    if( !ldir.exists() )
+    {
+        ldir.mkpath( lpath );
+    }
+
     connect(theApp, SIGNAL(trackPlaying(PTrack)), this, SLOT(trackPlaying(PTrack)));
     connect(theApp, SIGNAL(stopped(qint64, qint64)), this, SLOT(stopped(qint64, qint64)));
     connect(theApp, SIGNAL(trackPositionChanged(qint64, bool)), this, SLOT(trackPositionChanged(qint64, bool)));
 }
 
-void LastfmPlugin::stopped(qint64 finalPosition, qint64 trackLength)
+void LastfmPlugin::stopped(qint64 finalPosition, qint64 /*trackLength*/)
 {
     qDebug() << "LastfmPlugin got stopped " << finalPosition;
     trackPositionChanged(finalPosition, false);

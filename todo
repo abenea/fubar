@@ -1,5 +1,4 @@
 Bugs:
-[lastfm] Scrobbling the track when fubar is closed doesn't happen?
 [lastfm] trackPlaying is reported although nothing plays. Reproduce: play song, set filter so there's no results. stop. play. (after some clicking pause/stop/play it starts playing)
 Rescan library should wipe all info, then scan. Now it's useless.
 
