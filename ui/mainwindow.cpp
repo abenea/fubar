@@ -9,6 +9,7 @@
 #include <QSettings>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QShortcut>
 #include <kwindowsystem.h>
 #include <kaction.h>
 
@@ -69,6 +70,7 @@ void MainWindow::addShortcut(QKeySequence shortcut, const char* func, QString na
 
 void MainWindow::setShortcuts()
 {
+    // Global shortcuts
     addShortcut(QKeySequence(Qt::META + Qt::Key_W), SLOT(showHide()), "Show/Hide");
     addShortcut(QKeySequence(Qt::META + Qt::Key_P), SLOT(showHide()), "Show/Hide");
     addShortcut(QKeySequence(Qt::META + Qt::Key_X), SLOT(play()), "Play");
@@ -76,6 +78,10 @@ void MainWindow::setShortcuts()
     addShortcut(QKeySequence(Qt::META + Qt::Key_A), SLOT(prev()), "Prev");
     addShortcut(QKeySequence(Qt::META + Qt::Key_Z), SLOT(next()), "Next");
     addShortcut(QKeySequence(Qt::META + Qt::Key_V), SLOT(stop()), "Stop");
+
+    // App shortcuts
+    QShortcut* q = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this);
+    QObject::connect(q, SIGNAL(activated()), this, SLOT(focusFilter()));
 }
 
 MainWindow::~MainWindow()
@@ -280,6 +286,14 @@ void MainWindow::statusBarDoubleClicked()
     if (currentlyPlayingPlaylist_) {
         playlistTabs->setCurrentWidget(currentlyPlayingPlaylist_);
         currentlyPlayingPlaylist_->updateCursorAndScroll();
+    }
+}
+
+void MainWindow::focusFilter()
+{
+    PlaylistTab* playlist = getCurrentPlaylist();
+    if (playlist) {
+        playlist->focusFilter();
     }
 }
 

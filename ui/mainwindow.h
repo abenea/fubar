@@ -67,6 +67,7 @@ private slots:
     void showHide();
 
     void statusBarDoubleClicked();
+    void focusFilter();
 
 private:
     void setShortcuts();

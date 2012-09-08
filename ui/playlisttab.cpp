@@ -15,16 +15,11 @@ PlaylistTab::PlaylistTab(bool synced, QWidget* parent)
     filterModel_.setDynamicSortFilter(true);
     filterModel_.sort(0);
     ui_.playlist->setModel(&filterModel_);
-    /*
-    try {
-        defaultPlaylist->load("test.pb");
-    } catch (const std::exception &ex) {
-        qDebug(ex.what());
-    }
-    */
 
     connect(ui_.filter, SIGNAL(textChanged(QString)), this, SLOT(changedFilter(QString)));
+    connect(ui_.filter, SIGNAL(returnPressed()), this, SLOT(clearFilterAndPlay()));
     connect(ui_.playlist, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(doubleClicked(const QModelIndex &)));
+    connect(ui_.playlist, SIGNAL(returnPressed(QModelIndex)), this, SLOT(doubleClicked(const QModelIndex &)));
 }
 
 void PlaylistTab::changedFilter(const QString &filter)
@@ -39,6 +34,24 @@ void PlaylistTab::doubleClicked(const QModelIndex& filterIndex)
     return play(filterModel_.mapToSource(filterIndex));
 }
 
+void PlaylistTab::clearFilterAndPlay()
+{
+    QModelIndex filterIndex = filterModel_.index(0, 0);
+    if (filterIndex.isValid()) {
+        play(filterModel_.mapToSource(filterIndex));
+    }
+    ui_.filter->clear();
+    if (currentIndex_.isValid()) {
+        ui_.playlist->scrollTo(filterModel_.mapFromSource(currentIndex_), QAbstractItemView::PositionAtTop);
+    }
+    ui_.playlist->setFocus();
+}
+
+void PlaylistTab::focusFilter()
+{
+    ui_.filter->setFocus();
+}
+
 void PlaylistTab::play()
 {
     QModelIndex filterIndex = ui_.playlist->currentIndex();
@@ -51,7 +64,7 @@ void PlaylistTab::play()
             play(filterModel_.mapToSource(filterIndex));
         }
         else {
-            qDebug() << "No clue what item in what playlist play";
+            qDebug() << "No clue what item in what playlist to play";
         }
     }
 }

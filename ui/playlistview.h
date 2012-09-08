@@ -13,6 +13,12 @@ public:
 
     void keyboardSearch(const QString &search);
 
+signals:
+    void returnPressed(const QModelIndex& index);
+
+protected:
+    void keyPressEvent(QKeyEvent* event);
+
 private:
     PlaylistItemDelegate *itemDelegate_;
 };

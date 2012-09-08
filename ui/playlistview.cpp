@@ -1,6 +1,8 @@
 #include "playlistview.h"
 #include <QHeaderView>
 #include <QAction>
+#include <QKeyEvent>
+#include <QDebug>
 
 PlaylistView::PlaylistView(QWidget *parent) : QListView(parent)
 {
@@ -15,6 +17,15 @@ PlaylistView::PlaylistView(QWidget *parent) : QListView(parent)
 // Overridden to disable keyboard search behavior
 void PlaylistView::keyboardSearch(const QString &)
 {
+}
+
+void PlaylistView::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Return) {
+        emit returnPressed(currentIndex());
+    } else {
+        QAbstractItemView::keyPressEvent(event);
+    }
 }
 
 #include "playlistview.moc"

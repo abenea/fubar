@@ -2,14 +2,9 @@ Bugs:
 [lastfm] trackPlaying is reported although nothing plays. Reproduce: play song, set filter so there's no results. stop. play. (after some clicking pause/stop/play it starts playing)
 Rescan library should wipe all info, then scan. Now it's useless.
 Use album artist instead of artist if artist is empty/not present?
-Sorting should prefer tracknumber over location inside an album group.
 
 Features:
 Filter:
-- ctrl+j focus filter
-- tab goes to first track
-- enter on track plays it
-- enter on filter plays first track, scrolls to it (or rather selects which implies scroll) and clears filter
 [lastfm] config dialog
 Save playlists.
 Save current playlist + current position.

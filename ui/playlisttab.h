@@ -22,6 +22,7 @@ public slots:
     void updateCurrentIndex();
     void updateCursor();
     void updateCursorAndScroll();
+    void focusFilter();
     virtual void addDirectory(const QString &directory);
     virtual void addFiles(const QStringList &files);
     virtual void addTracks(const QList<std::shared_ptr<Track>> &tracks);
@@ -37,6 +38,7 @@ public slots:
 protected slots:
     void changedFilter(const QString &filter);
     void doubleClicked(const QModelIndex &filterIndex);
+    void clearFilterAndPlay();
 
 protected:
     QModelIndex getNextModelIndex(int offset);
