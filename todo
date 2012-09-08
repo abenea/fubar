@@ -2,19 +2,23 @@ Bugs:
 [lastfm] trackPlaying is reported although nothing plays. Reproduce: play song, set filter so there's no results. stop. play. (after some clicking pause/stop/play it starts playing)
 Rescan library should wipe all info, then scan. Now it's useless.
 Use album artist instead of artist if artist is empty/not present?
+Sorting should prefer tracknumber over location inside an album group.
 
 Features:
-Filter should select first track, then scroll to it after filter is cleared.
-[lastfm] handle user seeks
+Filter:
+- ctrl+j focus filter
+- tab goes to first track
+- enter on track plays it
+- enter on filter plays first track, scrolls to it (or rather selects which implies scroll) and clears filter
 [lastfm] config dialog
 Save playlists.
 Save current playlist + current position.
-ctrl+j focus filter box
 Enter in filter plays first track (and clears filter?)
 Random track.
 Cue sheets.
 Multiple cds.
 
 Known issues:
+[lastfm] not handling user seeks. too lazy.
 Volume slider repaints correctly at the first play.
 Seekbar gets stuck at start (Reproduce by playing last part of T-ara - I go crazy because of you. At the end of song seekbar gets stuck).
