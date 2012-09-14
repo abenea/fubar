@@ -29,6 +29,7 @@ public:
     static MainWindow *instance;
 
     bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
+    bool random() { return random_; }
 
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
     PlaylistTab* getCurrentPlaylist();
@@ -52,6 +53,7 @@ private slots:
     void on_preferencesAction_triggered();
 
     void on_cursorFollowsPlaybackAction_triggered();
+    void on_random_triggered();
 
     void on_mainToolBar_actionTriggered(QAction* action);
 
@@ -87,6 +89,7 @@ private:
     void readSettings();
 
     bool cursorFollowsPlayback_;
+    bool random_;
 };
 
 #endif // MAINWINDOW_H

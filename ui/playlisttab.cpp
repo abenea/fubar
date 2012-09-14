@@ -108,6 +108,11 @@ void PlaylistTab::enqueueNextTrack()
 // should this return a persistent index?
 QModelIndex PlaylistTab::getNextModelIndex(int offset)
 {
+    if (MainWindow::instance->random()) {
+        QModelIndex filterIndex = filterModel_.index(rand() % filterModel_.rowCount(), 0);
+        return filterModel_.mapToSource(filterIndex);
+    }
+
     QModelIndex filterIndex = filterModel_.mapFromSource(currentIndex_);
     // If current index is filtered out, play first track from filtered list
     if (!filterIndex.isValid()) {

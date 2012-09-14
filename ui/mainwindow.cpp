@@ -23,6 +23,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     , library_(library)
     , currentlyPlayingPlaylist_(0)
     , cursorFollowsPlayback_(false)
+    , random_(false)
 {
     setupUi(this);
 
@@ -157,6 +158,11 @@ void MainWindow::on_preferencesAction_triggered()
 void MainWindow::on_cursorFollowsPlaybackAction_triggered()
 {
     cursorFollowsPlayback_ = !cursorFollowsPlayback_;
+}
+
+void MainWindow::on_random_triggered()
+{
+    random_ = !random_;
 }
 
 void MainWindow::readSettings()

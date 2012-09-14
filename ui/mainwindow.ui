@@ -60,9 +60,10 @@
    </widget>
    <widget class="QMenu" name="menuPlayback">
     <property name="title">
-     <string>Playback</string>
+     <string>Pla&amp;yback</string>
     </property>
     <addaction name="cursorFollowsPlaybackAction"/>
+    <addaction name="random"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuLibrary"/>
@@ -164,6 +165,14 @@
    </property>
    <property name="text">
     <string>Cursor follows playback</string>
+   </property>
+  </action>
+  <action name="random">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Random</string>
    </property>
   </action>
  </widget>
