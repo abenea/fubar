@@ -351,7 +351,7 @@ std::shared_ptr<Track> Library::scanFile(const QString& path)
         if (!mpegFile->isValid())
             return track;
         tag = mpegFile->ID3v2Tag();
-        if (!tag)
+        if (!tag || tag->title().isEmpty() || tag->artist().isEmpty())
             tag = mpegFile->ID3v1Tag();
         audioProperties = mpegFile->audioProperties();
     } else {
