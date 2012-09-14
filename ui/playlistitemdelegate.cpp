@@ -86,7 +86,7 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     QFontMetricsF tfm(trackOption.font);
     QString title = track->metadata["title"];
     QString albumArtist = track->metadata.value("album artist", "");
-    if (!albumArtist.isEmpty() && albumArtist != track->metadata["artist"])
+    if (!albumArtist.isEmpty() && albumArtist != track->metadata["artist"] && !track->metadata["artist"].isEmpty())
         title += " // " + track->metadata["artist"];
     QString leftText = QString("%1. %2").arg(track->metadata["track"], 2, QChar('0')).arg(title);
     int minutes = track->audioproperties.length / 60;
