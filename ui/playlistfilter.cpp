@@ -51,7 +51,9 @@ bool PlaylistFilter::filterAcceptsRow(int source_row, const QModelIndex &/*sourc
 bool PlaylistFilter::sameGroup(shared_ptr<Track> track1, shared_ptr<Track> track2)
 {
     if (track1 && track2) {
-        return (track1->metadata["artist"] == track2->metadata["artist"] || track1->metadata["album artist"] == track2->metadata["album artist"]) &&
+        return (track1->metadata["artist"] == track2->metadata["artist"] ||
+            (track1->metadata.value("album artist", "") == track2->metadata.value("album artist", "") &&
+                !track1->metadata.value("album artist", "").isEmpty())) &&
             track1->metadata["album"] == track2->metadata["album"] &&
             track1->metadata["year"] == track2->metadata["year"];
     } else {
