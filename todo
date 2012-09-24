@@ -7,12 +7,10 @@ deal somehow with  accessed_by_taglib(at least rename)
 make plugin code less lame. 
 
 Features:
-icon
 [lastfm] config dialog
 Save playlists.
 Save current playlist + current position.
 Enter in filter plays first track (and clears filter?)
-Random track.
 Cue sheets.
 Multiple cds.
 

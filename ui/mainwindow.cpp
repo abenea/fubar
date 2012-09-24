@@ -46,7 +46,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     setStatusBar(&statusBar_);
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
 
-//    setWindowIcon(QIcon("fubar.gif"));
+    setWindowIcon(QIcon(":/logo.gif"));
 //     playlistTabs->addTab(new PlaylistTab(this), "~/music_test");
 //     current()->addDirectory("/home/bogdan/music_test");
 
