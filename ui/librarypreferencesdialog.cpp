@@ -49,7 +49,7 @@ void LibraryPreferencesDialog::on_actionStartMonitoring_clicked()
 void LibraryPreferencesDialog::on_actionRescanLibrary_clicked()
 {
     library_.setMusicFolders(libraryPaths->text().split(FOLDER_SEPARATOR));
-    library_.restartMonitoring();
+    library_.restartMonitoring(true);
 }
 
 #include "librarypreferencesdialog.moc"

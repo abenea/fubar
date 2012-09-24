@@ -165,14 +165,9 @@ void PlaylistTab::addFiles(const QStringList& files)
         model_.addFiles(files);
 }
 
-void PlaylistTab::yunorefresh()
+void PlaylistTab::addTracks(const QList<shared_ptr<Track>>& tracks)
 {
-    model_.yunorefresh();
-}
-
-void PlaylistTab::addTracks(const QList< shared_ptr< Track > >& tracks)
-{
-    model_.playlist().tracks.append(tracks);
+    model_.addTracks(tracks);
 }
 
 void PlaylistTab::libraryChanged(LibraryEvent event)
@@ -184,8 +179,8 @@ void PlaylistTab::libraryChanged(LibraryEvent event)
 void PlaylistTab::libraryChanged(QList<std::shared_ptr<Track>> tracks)
 {
     if (synced_) {
-        model_.playlist().tracks.clear();
-        model_.playlist().tracks.append(tracks);
+        model_.clear();
+        model_.addTracks(tracks);
     }
 }
 

@@ -29,10 +29,6 @@ public slots:
     virtual void libraryChanged(LibraryEvent event);
     virtual void libraryChanged(QList<std::shared_ptr<Track>> tracks);
 
-    // TODO: This code is probably bad/retarded, need to learn a bit more about qt to do it
-    // But I'm too lazy atm
-    void yunorefresh();
-
     PTrack getCurrentTrack();
 
 protected slots:

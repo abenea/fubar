@@ -45,7 +45,7 @@ public slots:
 
     void startMonitoring();
     void stopMonitoring();
-    void restartMonitoring();
+    void restartMonitoring(bool wipeDatabase = false);
 
     void quit();
 

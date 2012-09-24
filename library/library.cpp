@@ -79,9 +79,13 @@ void Library::stopMonitoring()
     stopWatch();
 }
 
-void Library::restartMonitoring()
+void Library::restartMonitoring(bool wipeDatabase)
 {
     stopMonitoring();
+    if (wipeDatabase) {
+        QMutexLocker locker(&mutex_);
+        directories_.clear();
+    }
     startMonitoring();
 }
 

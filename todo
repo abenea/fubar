@@ -1,10 +1,13 @@
 Bugs:
 Scan doesn't read tags always?
 [lastfm] trackPlaying is reported although nothing plays. Reproduce: play song, set filter so there's no results. stop. play. (after some clicking pause/stop/play it starts playing)
-Rescan library should wipe all info, then scan. Now it's useless.
+
+Clean things up:
+deal somehow with  accessed_by_taglib(at least rename)
+make plugin code less lame. 
 
 Features:
-Filter:
+icon
 [lastfm] config dialog
 Save playlists.
 Save current playlist + current position.

@@ -43,7 +43,7 @@ bool PlaylistModel::hasChildren(const QModelIndex& parent) const
         return true;
 }
 
-QModelIndex PlaylistModel::parent(const QModelIndex& index) const
+QModelIndex PlaylistModel::parent(const QModelIndex& /*index*/) const
 {
     return QModelIndex();
 }
@@ -80,7 +80,6 @@ void PlaylistModel::addFiles(const QStringList& files)
 
 void PlaylistModel::libraryChanged(LibraryEvent event)
 {
-    // treat all consecutive "add" events in one swoop
     if (event.op == CREATE) {
         beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size());
         playlist_.tracks.append(event.track);
@@ -114,9 +113,17 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
     }
 }
 
-void PlaylistModel::yunorefresh()
+void PlaylistModel::clear()
 {
-    beginInsertRows(QModelIndex(), 0, playlist_.tracks.size() - 1);
+    beginRemoveRows(QModelIndex(), 0, playlist_.tracks.size() - 1);
+    playlist_.tracks.clear();
+    endRemoveRows();
+}
+
+void PlaylistModel::addTracks(QList<std::shared_ptr<Track>> tracks)
+{
+    beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size() + tracks.size() - 1);
+    playlist_.tracks.append(tracks);
     endInsertRows();
 }
 
