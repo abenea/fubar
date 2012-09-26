@@ -24,7 +24,28 @@ PlaylistTab::PlaylistTab(bool synced, QWidget* parent)
 
 void PlaylistTab::changedFilter(const QString &filter)
 {
+    QPersistentModelIndex modelIndex;
+    if (filter.isEmpty()) {
+        QModelIndex filterIndex = filterModel_.index(0, 0);
+        modelIndex = QPersistentModelIndex(filterModel_.mapToSource(filterIndex));
+    }
     filterModel_.setFilter(filter);
+
+    if (!filter.isEmpty()) {
+        QModelIndex filterIndex = filterModel_.index(0, 0);
+        if (filterIndex.isValid()) {
+            ui_.playlist->setCurrentIndex(filterIndex);
+        }
+    } else {
+        QModelIndex filterIndex = filterModel_.mapFromSource(modelIndex);
+        if (filterIndex.isValid()) {
+            ui_.playlist->scrollTo(filterIndex, QAbstractItemView::PositionAtCenter);
+            ui_.playlist->setCurrentIndex(filterIndex);
+            // Lame code: Second time's the charm
+            // No clue why first time does not paint the track as selected
+            ui_.playlist->setCurrentIndex(filterIndex);
+        }
+    }
 }
 
 void PlaylistTab::doubleClicked(const QModelIndex& filterIndex)
@@ -42,6 +63,7 @@ void PlaylistTab::clearFilterAndPlay()
     }
     ui_.filter->clear();
     if (currentIndex_.isValid()) {
+        ui_.playlist->setCurrentIndex(filterModel_.mapFromSource(currentIndex_));
         ui_.playlist->scrollTo(filterModel_.mapFromSource(currentIndex_), QAbstractItemView::PositionAtTop);
     }
     ui_.playlist->setFocus();
