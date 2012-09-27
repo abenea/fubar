@@ -1,10 +1,10 @@
 Bugs:
-Scan doesn't read tags always?
 [lastfm] trackPlaying is reported although nothing plays. Reproduce: play song, set filter so there's no results. stop. play. (after some clicking pause/stop/play it starts playing)
 
 Clean things up:
 deal somehow with  accessed_by_taglib(at least rename)
 make plugin code less lame. 
+use moar persistent indexes in PlaylistTab?
 
 Features:
 [lastfm] config dialog

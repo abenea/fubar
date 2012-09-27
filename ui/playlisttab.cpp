@@ -26,7 +26,7 @@ void PlaylistTab::changedFilter(const QString &filter)
 {
     QPersistentModelIndex modelIndex;
     if (filter.isEmpty()) {
-        QModelIndex filterIndex = filterModel_.index(0, 0);
+        QModelIndex filterIndex = ui_.playlist->currentIndex();
         modelIndex = QPersistentModelIndex(filterModel_.mapToSource(filterIndex));
     }
     filterModel_.setFilter(filter);
