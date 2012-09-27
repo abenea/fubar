@@ -1,4 +1,5 @@
 Bugs:
+Sometimes queued track is not correct. can't reproduce :(something to do with filtering I think)
 [lastfm] trackPlaying is reported although nothing plays. Reproduce: play song, set filter so there's no results. stop. play. (after some clicking pause/stop/play it starts playing)
 
 Clean things up:
