@@ -79,7 +79,9 @@ void PlaylistTab::focusFilter()
 void PlaylistTab::play()
 {
     QModelIndex filterIndex = ui_.playlist->currentIndex();
-    if (filterIndex.isValid()) {
+    if (currentIndex_.isValid()) {
+        play(currentIndex_);
+    } else if (filterIndex.isValid()) {
         play(filterModel_.mapToSource(filterIndex));
     } else {
         // Try playing first item in playlist?
