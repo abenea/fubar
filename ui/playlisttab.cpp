@@ -52,11 +52,13 @@ void PlaylistTab::doubleClicked(const QModelIndex& filterIndex)
 {
     if (!filterIndex.isValid())
         return;
+    MainWindow::instance->mediaObject->clearQueue();
     return play(filterModel_.mapToSource(filterIndex));
 }
 
 void PlaylistTab::clearFilterAndPlay()
 {
+    MainWindow::instance->mediaObject->clearQueue();
     QModelIndex filterIndex = filterModel_.index(0, 0);
     if (filterIndex.isValid()) {
         play(filterModel_.mapToSource(filterIndex));

@@ -1,11 +1,14 @@
 Bugs:
-Sometimes queued track is not correct. can't reproduce :(something to do with filtering I think)
+Seekbar gets stuck at start.
 [lastfm] trackPlaying is reported although nothing plays. Reproduce: play song, set filter so there's no results. stop. play. (after some clicking pause/stop/play it starts playing)
 
 Clean things up:
 deal somehow with  accessed_by_taglib(at least rename)
 make plugin code less lame. 
-use moar persistent indexes in PlaylistTab?
+
+Possible bugs:
+not using persistent indexes in PlaylistTab can result in weird behavior when playing while adding tracks to playlist
+enqueue_next
 
 Features:
 [lastfm] config dialog
@@ -17,4 +20,3 @@ Multiple cds.
 Known issues:
 [lastfm] not handling user seeks. too lazy.
 Volume slider repaints correctly at the first play.
-Seekbar gets stuck at start (Reproduce by playing last part of T-ara - I go crazy because of you.).
