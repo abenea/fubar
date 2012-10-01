@@ -1,6 +1,3 @@
-Bugs:
-Seekbar gets stuck at start.
-
 Clean things up:
 deal somehow with  accessed_by_taglib(at least rename)
 make plugin code less lame. 
@@ -17,5 +14,6 @@ Cue sheets.
 Multiple cds.
 
 Known issues:
+Seekbar gets stuck at start. (probably backend issue)
 [lastfm] not handling user seeks. too lazy.
 Volume slider repaints correctly at the first play.

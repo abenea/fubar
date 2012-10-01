@@ -71,6 +71,8 @@ private slots:
     void statusBarDoubleClicked();
     void focusFilter();
 
+    void updateWindowTitle(PTrack track);
+
 private:
     void setShortcuts();
     void addShortcut(QKeySequence shortcut, const char* func, QString name);

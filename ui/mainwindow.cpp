@@ -27,6 +27,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
 {
     setupUi(this);
 
+    QObject::connect(this, SIGNAL(trackPlaying(PTrack)), this, SLOT(updateWindowTitle(PTrack)));
     audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
     mediaObject = new Phonon::MediaObject(this);
     mediaObject->setTickInterval(1000);
@@ -47,8 +48,6 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
 
     setWindowIcon(QIcon(":/icon/logo.gif"));
-//     playlistTabs->addTab(new PlaylistTab(this), "~/music_test");
-//     current()->addDirectory("/home/bogdan/music_test");
 
     readSettings();
 
@@ -271,6 +270,7 @@ void MainWindow::stop()
     PTrack track = getCurrentTrack();
     if (track)
         emit stopped(mediaObject->totalTime(), mediaObject->currentTime());
+    updateWindowTitle(0);
 }
 
 void MainWindow::showHide()
@@ -300,6 +300,14 @@ void MainWindow::focusFilter()
     if (playlist) {
         playlist->focusFilter();
     }
+}
+
+void MainWindow::updateWindowTitle(PTrack track)
+{
+    if (track)
+        setWindowTitle(track->metadata["artist"] + " - " + track->metadata["title"] + "  [fubar]");
+    else
+        setWindowTitle("fubar");
 }
 
 #include "mainwindow.moc"
