@@ -1,6 +1,7 @@
 Clean things up:
+reduce console output of lastfm
 deal somehow with  accessed_by_taglib(at least rename)
-make plugin code less lame. 
+make lastfm plugin code less lame. 
 
 Possible bugs:
 not using persistent indexes in PlaylistTab can result in weird behavior when playing while adding tracks to playlist
@@ -13,7 +14,12 @@ Save current playlist + current position.
 Cue sheets.
 Multiple cds.
 
+
 Known issues:
 Seekbar gets stuck at start. (probably backend issue)
 [lastfm] not handling user seeks. too lazy.
 Volume slider repaints correctly at the first play.
+
+Statusbar track progress is wrong when song ends. (probably backend issue)
+Immediately when a new track is enqueued (at aboutToFinish()) the totalTime() is set to the one of the enqueued track, thus screwing seekbar and progress message.
+

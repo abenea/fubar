@@ -27,6 +27,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
 {
     setupUi(this);
 
+    // questionable code
     QObject::connect(this, SIGNAL(trackPlaying(PTrack)), this, SLOT(updateWindowTitle(PTrack)));
     audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
     mediaObject = new Phonon::MediaObject(this);
@@ -35,6 +36,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     QObject::connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
     QObject::connect(mediaObject, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)), this, SLOT(currentSourceChanged(const Phonon::MediaSource &)));
     QObject::connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
+    QObject::connect(mediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
     seekSlider_ = new Phonon::SeekSlider(this);
     seekSlider_->setIconVisible(false);
     seekSlider_->setMediaObject(mediaObject);
@@ -88,9 +90,20 @@ MainWindow::~MainWindow()
 {
 }
 
+QString msToHumanTime(qint64 pos)
+{
+    pos /= 1000;
+    QString status_message;
+    QTextStream(&status_message) << pos / 60 << ":" << qSetPadChar('0') << qSetFieldWidth(2) << pos % 60;
+    return status_message;
+}
+
 void MainWindow::tick(qint64 pos)
 {
     emit trackPositionChanged(pos, false);
+    if (mediaObject->totalTime() > 0) {
+        statusBar_.showMessage(msToHumanTime(mediaObject->currentTime()) + " / " + msToHumanTime(mediaObject->totalTime()));
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -207,6 +220,7 @@ void MainWindow::aboutToFinish()
 
 void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
 {
+    qDebug() << "currentSourceChanged() " << mediaObject->currentTime() << " " << mediaObject->totalTime();
     currentlyPlayingPlaylist_->updateCurrentIndex();
     if (currentlyPlayingPlaylist_->getCurrentTrack()) {
         emit trackPlaying(currentlyPlayingPlaylist_->getCurrentTrack());
@@ -271,6 +285,7 @@ void MainWindow::stop()
     if (track)
         emit stopped(mediaObject->totalTime(), mediaObject->currentTime());
     updateWindowTitle(0);
+    statusBar_.clearMessage();
 }
 
 void MainWindow::showHide()
@@ -308,6 +323,11 @@ void MainWindow::updateWindowTitle(PTrack track)
         setWindowTitle(track->metadata["artist"] + " - " + track->metadata["title"] + "  [fubar]");
     else
         setWindowTitle("fubar");
+}
+
+void MainWindow::totalTimeChanged(qint64 time)
+{
+    qDebug() << "Total time changed " << time;
 }
 
 #include "mainwindow.moc"

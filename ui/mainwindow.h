@@ -72,6 +72,7 @@ private slots:
     void focusFilter();
 
     void updateWindowTitle(PTrack track);
+    void totalTimeChanged(qint64 time);
 
 private:
     void setShortcuts();
