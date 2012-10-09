@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QShortcut>
+#include <QFileInfo>
 #include <kwindowsystem.h>
 #include <kaction.h>
 
@@ -99,8 +100,11 @@ QString msToHumanTime(qint64 pos)
 void MainWindow::tick(qint64 pos)
 {
     emit trackPositionChanged(pos, false);
-    if (mediaObject->totalTime() > 0) {
-        statusBar_.showMessage(msToHumanTime(mediaObject->currentTime()) + " / " + msToHumanTime(mediaObject->totalTime()));
+    PTrack track = getCurrentTrack();
+    if (track) {
+        QString progress = msToHumanTime(mediaObject->currentTime()) + " / " + msToHumanTime(track->audioproperties.length * 1000);
+        QString format = QFileInfo(track->location).suffix().toUpper();
+        statusBar_.showMessage(QString("%1 %2kbps %3Hz  %4  %5").arg(format).arg(track->audioproperties.bitrate).arg(track->audioproperties.samplerate).arg(QChar(164)).arg(progress));
     }
 }
 
