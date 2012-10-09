@@ -28,7 +28,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     setupUi(this);
 
     // questionable code
-    QObject::connect(this, SIGNAL(trackPlaying(PTrack)), this, SLOT(updateWindowTitle(PTrack)));
+    QObject::connect(this, SIGNAL(trackPlaying(PTrack)), this, SLOT(updateUI(PTrack)));
     audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
     mediaObject = new Phonon::MediaObject(this);
     mediaObject->setTickInterval(1000);
@@ -37,9 +37,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     QObject::connect(mediaObject, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)), this, SLOT(currentSourceChanged(const Phonon::MediaSource &)));
     QObject::connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
     QObject::connect(mediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
-    seekSlider_ = new Phonon::SeekSlider(this);
-    seekSlider_->setIconVisible(false);
-    seekSlider_->setMediaObject(mediaObject);
+    seekSlider_ = new SeekSlider(mediaObject, this);
     volumeSlider_ = new Phonon::VolumeSlider(this);
     volumeSlider_->setAudioOutput(audioOutput);
     volumeSlider_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -284,7 +282,7 @@ void MainWindow::stop()
     PTrack track = getCurrentTrack();
     if (track)
         emit stopped(mediaObject->totalTime(), mediaObject->currentTime());
-    updateWindowTitle(0);
+    updateUI(0);
     statusBar_.clearMessage();
 }
 
@@ -317,12 +315,15 @@ void MainWindow::focusFilter()
     }
 }
 
-void MainWindow::updateWindowTitle(PTrack track)
+void MainWindow::updateUI(PTrack track)
 {
-    if (track)
+    if (track) {
         setWindowTitle(track->metadata["artist"] + " - " + track->metadata["title"] + "  [fubar]");
-    else
+        seekSlider_->setLimits(0, track->audioproperties.length);
+    } else {
         setWindowTitle("fubar");
+        seekSlider_->setLimits(0, 0);
+    }
 }
 
 void MainWindow::totalTimeChanged(qint64 time)

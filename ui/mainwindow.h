@@ -4,12 +4,12 @@
 #include "playlisttab.h"
 #include "ui/ui_mainwindow.h"
 #include "statusbar.h"
+#include "seekslider.h"
 #include <QtGui/QMainWindow>
 #include <QModelIndex>
 #include <QKeySequence>
 #include <phonon/Phonon/MediaObject>
 #include <phonon/Phonon/AudioOutput>
-#include <phonon/SeekSlider>
 #include <phonon/VolumeSlider>
 
 
@@ -71,7 +71,7 @@ private slots:
     void statusBarDoubleClicked();
     void focusFilter();
 
-    void updateWindowTitle(PTrack track);
+    void updateUI(PTrack track);
     void totalTimeChanged(qint64 time);
 
 private:
@@ -79,7 +79,7 @@ private:
     void addShortcut(QKeySequence shortcut, const char* func, QString name);
 
     // TODO: get notified about seeks
-    Phonon::SeekSlider *seekSlider_;
+    SeekSlider *seekSlider_;
     Phonon::VolumeSlider *volumeSlider_;
 
     StatusBar statusBar_;
