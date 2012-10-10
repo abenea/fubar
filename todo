@@ -1,7 +1,6 @@
 Bugs:
 At stop statusbar is not cleared.
-Clicking seekbar around margins.
-Not using totaltime reported by backend results in sloppuy ***REMOVED***.
+Not using totaltime reported by backend results in sloppy ***REMOVED***.
 
 Clean things up:
 reduce console output of lastfm
@@ -23,4 +22,3 @@ Multiple cds.
 Known issues:
 [lastfm] not handling user seeks. too lazy.
 Volume slider repaints correctly at the first play.
-

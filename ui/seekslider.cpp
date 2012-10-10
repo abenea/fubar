@@ -16,6 +16,7 @@ SeekSlider::SeekSlider(Phonon::MediaObject* mediaObject, QWidget* parent)
 
 void SeekSlider::setLimits(int min, int max)
 {
+    setValue(0);
     setMinimum(min);
     setMaximum(max * 1000);
 }
@@ -27,8 +28,9 @@ void SeekSlider::scrollTo(int pos)
 
 void SeekSlider::tick(qint64 pos)
 {
-    if (!pressed_)
+    if (!pressed_) {
         setValue(pos);
+    }
 }
 
 void SeekSlider::sliderPressedAction()
@@ -42,17 +44,61 @@ void SeekSlider::sliderReleasedAction()
     pressed_ = false;
 }
 
-void SeekSlider::mousePressEvent(QMouseEvent* event)
+/*
+ * Copypasta from Phonon::SwiftSlider
+ */
+
+// Function copied from qslider.cpp
+inline int SeekSlider::pick(const QPoint &pt) const
 {
-    QSlider::mousePressEvent(event);
+    return orientation() == Qt::Horizontal ? pt.x() : pt.y();
+}
+
+// Function copied from qslider.cpp and modified to make it compile
+int SeekSlider::pixelPosToRangeValue(int pos) const
+{
+    QStyleOptionSlider opt;
+    initStyleOption(&opt);
+    QRect gr = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderGroove, this);
+    QRect sr = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderHandle, this);
+    int sliderMin, sliderMax, sliderLength;
+
+    if (orientation() == Qt::Horizontal) {
+        sliderLength = sr.width();
+        sliderMin = gr.x();
+        sliderMax = gr.right() - sliderLength + 1;
+    } else {
+        sliderLength = sr.height();
+        sliderMin = gr.y();
+        sliderMax = gr.bottom() - sliderLength + 1;
+    }
+    return QStyle::sliderValueFromPosition(minimum(), maximum(), pos - sliderMin,
+                                           sliderMax - sliderMin, opt.upsideDown);
+}
+
+// Based on code from qslider.cpp
+void SeekSlider::mousePressEvent(QMouseEvent *event)
+{
     if (event->button() == Qt::LeftButton) {
-//         QStyleOptionSlider option;
-//         initStyleOption(&option);
-//         QRect rect = style()->subControlRect(QStyle::CC_Slider, &option, QStyle::SC_SliderGroove, this);
-        int value = QStyle::sliderValueFromPosition(minimum(), maximum(), event->x(), width());
-        qDebug() << "SeekSlider::mouseMoveEvent() " << value;
-        setValue(value);
-        scrollTo(value);
+        QStyleOptionSlider opt;
+        initStyleOption(&opt);
+        const QRect sliderRect = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderHandle, this);
+        const QPoint center = sliderRect.center() - sliderRect.topLeft();
+        // to take half of the slider off for the setSliderPosition call we use the center - topLeft
+
+        if (!sliderRect.contains(event->pos())) {
+            event->accept();
+
+            int pos = pixelPosToRangeValue(pick(event->pos() - center));
+            setSliderPosition(pos);
+            scrollTo(pos);
+            triggerAction(SliderMove);
+            setRepeatAction(SliderNoAction);
+        } else {
+            QSlider::mousePressEvent(event);
+        }
+    } else {
+        QSlider::mousePressEvent(event);
     }
 }
 

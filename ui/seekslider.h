@@ -1,9 +1,9 @@
 #ifndef SEEKSLIDER_H
 #define SEEKSLIDER_H
 
-#include <QSlider>
 #include <MediaObject>
 #include <QMouseEvent>
+#include <QSlider>
 
 class SeekSlider : public QSlider
 {
@@ -14,15 +14,16 @@ public:
     void setLimits(int min, int max);
     void scrollTo(int pos);
 
-protected:
-    void mousePressEvent(QMouseEvent* event);
-
 private slots:
     void tick(qint64 pos);
     void sliderPressedAction();
     void sliderReleasedAction();
 
 private:
+    void mousePressEvent(QMouseEvent *event);
+    inline int pick(const QPoint &pt) const;
+    int pixelPosToRangeValue(int pos) const;
+
     Phonon::MediaObject* mediaObject_;
     bool pressed_;
 };
