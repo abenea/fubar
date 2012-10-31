@@ -519,7 +519,8 @@ void Library::fileCallback(QString path, LibraryEventType event)
                     it.value()->addFile(track);
                     emit libraryChanged(LibraryEvent(track, MODIFY));
                 } else {
-                    // TODO: Should update track's mtime here cause  taglib accessedus
+                    // No need to update mtime cause taglib didn't modify the file
+                    // (although we receive the inotify modify event cause file was opened rw)
                     oldTrack->accessed_by_taglib = false;
                 }
             } else {

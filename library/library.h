@@ -95,7 +95,7 @@ private:
     QWaitCondition stop_rescan_, pause_monitoring_;
     bool rescanning_; // library is rescanning folders
     bool watching_;   // library is handling inotify events
-    bool should_be_working_; // library should be fucking working on something
+    bool should_be_working_; // library should be working on something
 };
 
 #endif // LIBRARY_H

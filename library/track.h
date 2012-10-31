@@ -30,7 +30,8 @@ public:
 
     void fillProtoTrack(proto::Track& ptrack);
 
-    // TODO: should rename this really
+    // This is set when taglib opens the file read-write.
+    // We need this when receiving updates from inotify to dismiss taglib events. (for now)
     bool accessed_by_taglib;
 };
 

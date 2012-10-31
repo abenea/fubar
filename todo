@@ -1,18 +1,22 @@
 Bugs:
 At stop statusbar is not cleared.
-Not using totaltime reported by backend results in sloppy ***REMOVED***.
+Library can't handle new files in a root directory.
+Not using totaltime reported by backend results in sloppy ***REMOVED***. wat sloppy ***REMOVED***?
 
 Clean things up:
 reduce console output of lastfm
-deal somehow with  accessed_by_taglib(at least rename)
-make lastfm plugin code less lame.
+make lastfm plugin code less lame?
+check all //todo
 
 Possible bugs:
 not using persistent indexes in PlaylistTab can result in weird behavior when playing while adding tracks to playlist
 enqueue_next
 
 Features:
+configure plugins with enable/disable
 [lastfm] config dialog
+[new plugin] stop playing at a specific time in the day
+Replaygain
 Save playlists.
 Save current playlist + current position.
 Cue sheets.

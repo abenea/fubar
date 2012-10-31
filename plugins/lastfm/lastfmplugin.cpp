@@ -160,18 +160,9 @@ void LastfmPlugin::trackPlaying(PTrack track)
 void LastfmPlugin::trackPositionChanged(qint64 position, bool userSeek)
 {
 //    qDebug() << "LastfmPlugin got trackPositionChanged " << position;
-    // HACK enginecontroller is fscked. it sends engineTrackPositionChanged messages
-    // with info for the last track even after engineNewTrackPlaying. this means that
-    // we think we've played the whole new track even though we really haven't.
-    // engineController ticks at least a couple of times a second under normal
-    // circumstances; a larger jump that is not a userSeek is caused by a tick from
-    // the old track after resetting variables. Therefore, ignore. The threshold is
-    // arbitrarily chosen as approximately ten times the tick rate of the slowest-
-    // ticking backend.
-    // note: in the 1.2 protocol, it's OK to submit if the user seeks
-    // so long as they meet the half file played requirement.
     //qDebug() << "userSeek" << userSeek << "position:" << position << "m_lastPosition" << m_lastPosition << "m_totalPlayed" << m_totalPlayed;
-    //TODO: this guy is mumbling about 1.2 ver submission rules, need to read 2.0
+    //TODO: need to read lastfm protocol 2.0
+    //TODO: handle user seeks
     if( !userSeek && position > m_lastPosition && ( position - m_lastPosition ) < 4000 )
         m_totalPlayed += position - m_lastPosition;
     m_lastPosition = position;
