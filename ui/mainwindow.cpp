@@ -37,7 +37,8 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     QObject::connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
     QObject::connect(mediaObject, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)), this, SLOT(currentSourceChanged(const Phonon::MediaSource &)));
     QObject::connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
-    QObject::connect(mediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
+    // TODO: report bug to phonon about totalTimeChanged reporting crap when enqueue is used
+//    QObject::connect(mediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
     seekSlider_ = new SeekSlider(mediaObject, this);
     volumeSlider_ = new Phonon::VolumeSlider(this);
     volumeSlider_->setAudioOutput(audioOutput);

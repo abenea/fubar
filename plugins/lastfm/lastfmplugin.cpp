@@ -23,7 +23,7 @@ LastfmPlugin::LastfmPlugin(QObject* parent)
 
 LastfmPlugin::~LastfmPlugin()
 {
-    qDebug() << "LastfmPlugin::~LastfmPlugin()";
+//    qDebug() << "[Lastfm] LastfmPlugin::~LastfmPlugin()";
 }
 
 void LastfmPlugin::init(QObject& fubarApp)
@@ -36,7 +36,7 @@ void LastfmPlugin::init(QObject& fubarApp)
     // Read config
     FILE* cfg = fopen("lastfm.cfg", "rt");
     if (!cfg) {
-        qDebug() << "Cannot find lastfm.cfg";
+        qDebug() << "[Lastfm] Cannot find lastfm.cfg";
         return;
     }
     char user[50], pass[50];
@@ -56,7 +56,7 @@ void LastfmPlugin::init(QObject& fubarApp)
 
     // now authenticate w/ last.fm and get our session key if we don't have one
     if (m_sessionKey.isEmpty()) {
-        qDebug() << "got no saved session key, authenticating with last.fm";
+        qDebug() << "[Lastfm] got no saved session key, authenticating with last.fm";
         QMap<QString, QString> query;
         query["method"] = QString("auth.getMobileSession");
         query["username"] = username;
@@ -64,7 +64,7 @@ void LastfmPlugin::init(QObject& fubarApp)
         m_jobs["auth"] = lastfm::ws::post(query);
         connect(m_jobs["auth"], SIGNAL(finished()), SLOT(onAuthenticated()));
     } else {
-        qDebug() << "using saved sessionkey from last.fm";
+        qDebug() << "[Lastfm] using saved sessionkey from last.fm";
         gotSession();
     }
 
@@ -73,7 +73,7 @@ void LastfmPlugin::init(QObject& fubarApp)
 void LastfmPlugin::onAuthenticated()
 {
     if(!m_jobs["auth"]) {
-        qDebug() << "WARNING: GOT RESULT but no object";
+        qDebug() << "[Lastfm] WARNING: GOT RESULT but no object";
         return;
     }
 
@@ -84,7 +84,7 @@ void LastfmPlugin::onAuthenticated()
             lfm.parse((m_jobs["auth"]->readAll()));
 
             if (lfm.children("error").size() > 0) {
-                qDebug() << "error from authenticating with last.fm service:" << lfm.text();
+                qDebug() << "[Lastfm] error from authenticating with last.fm service:" << lfm.text();
                 QSettings settings;
                 settings.setValue("lastfm/sessionKey", "");
                 return;
@@ -98,11 +98,11 @@ void LastfmPlugin::onAuthenticated()
             break;
         }
         case QNetworkReply::AuthenticationRequiredError:
-            qDebug() << "Last.fm: errorMessage " << "Either the username was not recognized, or the password was incorrect.";
+            qDebug() << "[Lastfm] errorMessage " << "Either the username was not recognized, or the password was incorrect.";
             return;
 
         default:
-            qDebug() << "Last.fm: errorMessage " << m_jobs[ "auth" ]->error() << "There was a problem communicating with the Last.fm services. Please try again later.";
+            qDebug() << "[Lastfm] errorMessage " << m_jobs[ "auth" ]->error() << "There was a problem communicating with the Last.fm services. Please try again later.";
             for (QNetworkReply::RawHeaderPair p : m_jobs[ "auth" ]->rawHeaderPairs())
                 qDebug() << p.first << " -> " << p.second;
             qDebug() << m_jobs[ "auth" ]->readAll();
@@ -113,7 +113,7 @@ void LastfmPlugin::onAuthenticated()
 
 void LastfmPlugin::gotSession()
 {
-    qDebug() << "Last.fm session " << m_sessionKey;
+    qDebug() << "[Lastfm] Last.fm session " << m_sessionKey;
     m_sessionKeyArray = qstrdup(m_sessionKey.toLatin1().data());
     lastfm::ws::SessionKey = m_sessionKeyArray;
 
@@ -137,14 +137,14 @@ void LastfmPlugin::gotSession()
 
 void LastfmPlugin::stopped(qint64 finalPosition, qint64 /*trackLength*/)
 {
-    qDebug() << "LastfmPlugin got stopped " << finalPosition;
+//    qDebug() << "[Lastfm] LastfmPlugin got stopped " << finalPosition;
     trackPositionChanged(finalPosition, false);
     checkScrobble();
 }
 
 void LastfmPlugin::trackPlaying(PTrack track)
 {
-    qDebug() << "LastfmPlugin got trackPlaying " << track->location;
+//    qDebug() << "[Lastfm] LastfmPlugin got trackPlaying " << track->location;
     checkScrobble();
     m_current.stamp();
 
@@ -152,21 +152,21 @@ void LastfmPlugin::trackPlaying(PTrack track)
     copyTrackMetadata(m_current, track);
     m_current.setSource(lastfm::Track::Player);
     if (!m_current.isNull()) {
-        qDebug() << "nowPlaying: " << m_current.artist() << " - " << m_current.album() << " - " << m_current.title();
+//        qDebug() << "[Lastfm] nowPlaying: " << m_current.artist() << " - " << m_current.album() << " - " << m_current.title();
         m_scrobbler->nowPlaying(m_current);
     }
 }
 
 void LastfmPlugin::trackPositionChanged(qint64 position, bool userSeek)
 {
-//    qDebug() << "LastfmPlugin got trackPositionChanged " << position;
-    //qDebug() << "userSeek" << userSeek << "position:" << position << "m_lastPosition" << m_lastPosition << "m_totalPlayed" << m_totalPlayed;
+//    qDebug() << "[Lastfm] LastfmPlugin got trackPositionChanged " << position;
+    //qDebug() << "[Lastfm] userSeek" << userSeek << "position:" << position << "m_lastPosition" << m_lastPosition << "m_totalPlayed" << m_totalPlayed;
     //TODO: need to read lastfm protocol 2.0
     //TODO: handle user seeks
     if( !userSeek && position > m_lastPosition && ( position - m_lastPosition ) < 4000 )
         m_totalPlayed += position - m_lastPosition;
     m_lastPosition = position;
-    //qDebug() << "userSeek" << userSeek << "position:" << position << "m_lastPosition" << m_lastPosition << "m_totalPlayed" << m_totalPlayed;
+    //qDebug() << "[Lastfm] userSeek" << userSeek << "position:" << position << "m_lastPosition" << m_lastPosition << "m_totalPlayed" << m_totalPlayed;
 }
 
 void LastfmPlugin::copyTrackMetadata(lastfm::MutableTrack& to, PTrack from)
@@ -178,9 +178,9 @@ void LastfmPlugin::copyTrackMetadata(lastfm::MutableTrack& to, PTrack from)
 
 void LastfmPlugin::checkScrobble()
 {
-    qDebug() << "total played" << m_totalPlayed << "duration" << m_current.duration() * 1000 / 2 << "isNull" << m_current.isNull();
+//    qDebug() << "[Lastfm] total played" << m_totalPlayed << "duration" << m_current.duration() * 1000 / 2 << "isNull" << m_current.isNull();
     if (( m_totalPlayed > m_current.duration() * 1000 / 2) && !m_current.isNull()) {
-        qDebug() << "scrobble: " << m_current.artist() << " - " << m_current.album() << " - " << m_current.title();
+        qDebug() << "[Lastfm] Scrobble: " << m_current.artist() << " - " << m_current.album() << " - " << m_current.title();
         m_scrobbler->cache(m_current);
         m_scrobbler->submit();
     }
