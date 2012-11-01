@@ -1,10 +1,8 @@
 Bugs:
 At stop statusbar is not cleared.
-Library can't handle new files in a root directory.
 Not using totaltime reported by backend results in sloppy ***REMOVED***. wat sloppy ***REMOVED***?
 
 Clean things up:
-reduce console output of lastfm
 make lastfm plugin code less lame?
 check all //todo
 
