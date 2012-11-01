@@ -410,8 +410,6 @@ std::shared_ptr<Track> Library::scanFile(const QString& path)
     track->mtime = QFileInfo(path).lastModified().toTime_t();
 /*        qDebug() << "LIBRARY: " << track->metadata["artist"] << " " << track->metadata["title"] <<
             " " << track->audioproperties.length;*/
-    track->accessed_by_taglib = true;
-
     return track;
 }
 
@@ -513,15 +511,11 @@ void Library::fileCallback(QString path, LibraryEventType event)
         if (it != directories_.end()) {
             PTrack oldTrack = it.value()->getFile(fileInfo.fileName());
             if (oldTrack) {
-                if (!oldTrack->accessed_by_taglib) {
+                if (oldTrack->mtime != fileInfo.lastModified().toTime_t()) {
 //                    qDebug() << "FILE MODIFY " << path;
                     PTrack track = scanFile(path);
                     it.value()->addFile(track);
                     emit libraryChanged(LibraryEvent(track, MODIFY));
-                } else {
-                    // No need to update mtime cause taglib didn't modify the file
-                    // (although we receive the inotify modify event cause file was opened rw)
-                    oldTrack->accessed_by_taglib = false;
                 }
             } else {
                 // We tried taglib-reading this but it failed

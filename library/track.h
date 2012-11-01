@@ -23,16 +23,12 @@ public:
     QMap<QString, QString> metadata;
     uint mtime;
 
-    Track() : accessed_by_taglib(false) {}
+    Track() {}
     Track(proto::Track ptrack);
 
     QString path() { return location; }
 
     void fillProtoTrack(proto::Track& ptrack);
-
-    // This is set when taglib opens the file read-write.
-    // We need this when receiving updates from inotify to dismiss taglib events. (for now)
-    bool accessed_by_taglib;
 };
 
 typedef std::shared_ptr<Track> PTrack;

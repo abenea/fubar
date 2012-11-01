@@ -6,7 +6,6 @@
 using namespace boost;
 
 Track::Track(proto::Track ptrack)
-    : accessed_by_taglib(false)
 {
     location = QString::fromUtf8(ptrack.location().c_str());
     if (ptrack.has_audioproperties()) {
