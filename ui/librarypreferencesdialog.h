@@ -20,6 +20,7 @@ private slots:
     void on_actionRescanLibrary_clicked();
 
 private:
+    QStringList getCurrentList();
     Library& library_;
 };
 

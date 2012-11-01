@@ -14,11 +14,9 @@ LibraryPreferencesDialog::LibraryPreferencesDialog(Library& library, QWidget* pa
 void LibraryPreferencesDialog::accept()
 {
     QSet<QString> current_set;
-    QStringList current_list = libraryPaths->text().split(FOLDER_SEPARATOR);
+    QStringList current_list = getCurrentList();
     foreach (QString path, current_list) {
-        if (path.size() > 0) {
-            current_set.insert(QFileInfo(path).canonicalFilePath());
-        }
+        current_set.insert(path);
     }
     QSet<QString> old_set;
     QStringList old_list = library_.getMusicFolders();
@@ -49,8 +47,22 @@ void LibraryPreferencesDialog::on_actionStartMonitoring_clicked()
 
 void LibraryPreferencesDialog::on_actionRescanLibrary_clicked()
 {
-    library_.setMusicFolders(libraryPaths->text().split(FOLDER_SEPARATOR));
+    library_.setMusicFolders(getCurrentList());
     library_.restartMonitoring(true);
+}
+
+QStringList LibraryPreferencesDialog::getCurrentList()
+{
+    QStringList current_list = libraryPaths->text().split(FOLDER_SEPARATOR);
+    QStringList result;
+    foreach (QString path, current_list) {
+        if (path.size() > 0) {
+            QFileInfo info(path);
+            if (info.exists())
+                result.push_back(info.canonicalFilePath());
+        }
+    }
+    return result;
 }
 
 #include "librarypreferencesdialog.moc"
