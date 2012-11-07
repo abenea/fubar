@@ -40,6 +40,8 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     // TODO: report bug to phonon about totalTimeChanged reporting crap when enqueue is used
 //    QObject::connect(mediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
     seekSlider_ = new SeekSlider(mediaObject, this);
+    // questionable code
+    QObject::connect(seekSlider_, SIGNAL(movedByUser(int)), this, SLOT(sliderMovedByUser(int)));
     volumeSlider_ = new Phonon::VolumeSlider(this);
     volumeSlider_->setAudioOutput(audioOutput);
     volumeSlider_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -334,6 +336,11 @@ void MainWindow::updateUI(PTrack track)
 void MainWindow::totalTimeChanged(qint64 time)
 {
     qDebug() << "Total time changed " << time;
+}
+
+void MainWindow::sliderMovedByUser(int pos)
+{
+    emit trackPositionChanged(pos, true);
 }
 
 #include "mainwindow.moc"

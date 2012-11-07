@@ -24,6 +24,7 @@ void SeekSlider::setLimits(int min, int max)
 void SeekSlider::scrollTo(int pos)
 {
     mediaObject_->seek(pos);
+    emit movedByUser(pos);
 }
 
 void SeekSlider::tick(qint64 pos)

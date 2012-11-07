@@ -14,6 +14,9 @@ public:
     void setLimits(int min, int max);
     void scrollTo(int pos);
 
+signals:
+    void movedByUser(int position);
+
 private slots:
     void tick(qint64 pos);
     void sliderPressedAction();

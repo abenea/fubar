@@ -68,6 +68,7 @@ private slots:
     void prev();
     void showHide();
 
+    void sliderMovedByUser(int pos);
     void statusBarDoubleClicked();
     void focusFilter();
 
@@ -78,7 +79,6 @@ private:
     void setShortcuts();
     void addShortcut(QKeySequence shortcut, const char* func, QString name);
 
-    // TODO: get notified about seeks
     SeekSlider *seekSlider_;
     Phonon::VolumeSlider *volumeSlider_;
 
