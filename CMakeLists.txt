@@ -8,7 +8,6 @@ find_package(Taglib 1.8.0 REQUIRED)
 find_package(ProtocolBuffers REQUIRED)
 find_package(Qt4 4.5 REQUIRED QtCore QtGui QtTest Phonon)
 include(${QT_USE_FILE})
-find_package(XInput2 REQUIRED)
 find_package(KDE4 REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x -fexceptions")

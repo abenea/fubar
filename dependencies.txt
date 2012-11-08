@@ -1,1 +1,2 @@
-libboost-all-dev protobuf-compiler libprotobuf-dev libqt4-dev libphonon-dev libtag1-dev kdelibs5-dev libqxt-dev
+libboost-all-dev protobuf-compiler libprotobuf-dev libqt4-dev libphonon-dev libtag1-dev kdelibs5-dev
+https://github.com/bugdone/liblastfm.git
