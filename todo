@@ -2,10 +2,6 @@ Bugs:
 At stop statusbar is not cleared.
 Not using totaltime reported by backend results in sloppy ***REMOVED***. wat sloppy ***REMOVED***?
 
-Clean things up:
-make lastfm plugin code less lame?
-check all //todo
-
 Possible bugs:
 not using persistent indexes in PlaylistTab can result in weird behavior when playing while adding tracks to playlist
 enqueue_next

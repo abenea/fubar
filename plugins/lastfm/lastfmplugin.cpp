@@ -155,8 +155,6 @@ void LastfmPlugin::trackPositionChanged(qint64 position, bool userSeek)
 {
 //    qDebug() << "[Lastfm] LastfmPlugin got trackPositionChanged " << position;
     //qDebug() << "[Lastfm] userSeek" << userSeek << "position:" << position << "m_lastPosition" << m_lastPosition << "m_totalPlayed" << m_totalPlayed;
-    //TODO: need to read lastfm protocol 2.0
-    //TODO: handle user seeks
     if( !userSeek && position > m_lastPosition && ( position - m_lastPosition ) < 4000 )
         m_totalPlayed += position - m_lastPosition;
     m_lastPosition = position;

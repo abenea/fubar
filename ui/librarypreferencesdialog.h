@@ -14,7 +14,6 @@ public:
 private slots:
     void accept();
     void reject();
-    // TODO: is this on_action convention retarded or I am?
     void on_actionStartMonitoring_clicked();
     void on_actionStopMonitoring_clicked();
     void on_actionRescanLibrary_clicked();
