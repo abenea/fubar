@@ -165,9 +165,15 @@ void MainWindow::on_newPlaylistAction_triggered()
     playlistTabs->addTab(new PlaylistTab(false, this), "Unnamed playlist");
 }
 
-void MainWindow::on_preferencesAction_triggered()
+void MainWindow::on_libraryPreferencesAction_triggered()
 {
     LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(library_, this);
+    widget->show();
+}
+
+void MainWindow::on_pluginsAction_triggered()
+{
+    PluginsPreferences* widget = new PluginsPreferences(this);
     widget->show();
 }
 

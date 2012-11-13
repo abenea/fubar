@@ -26,7 +26,7 @@ add_subdirectory(library)
 add_subdirectory(plugins)
 
 qt4_add_resources(ui_RC ui/icons/icons.qrc)
-add_executable(fubar main.cpp ${ui_RC})
+add_executable(fubar plugins/pluginmanager.cpp main.cpp ${ui_RC})
 add_executable(testlib testlib.cpp)
 target_link_libraries(testlib ui library ${QT_LIBRARIES} ${TAGLIB_LIBRARY})
 target_link_libraries(fubar library ui ${QT_LIBRARIES} ${TAGLIB_LIBRARY} ${KDE4_KDEUI_LIBS})

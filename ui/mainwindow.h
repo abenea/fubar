@@ -5,6 +5,7 @@
 #include "ui/ui_mainwindow.h"
 #include "statusbar.h"
 #include "seekslider.h"
+#include "pluginspreferences.h"
 #include <QtGui/QMainWindow>
 #include <QModelIndex>
 #include <QKeySequence>
@@ -50,7 +51,8 @@ private slots:
     void on_addDirectoryAction_triggered();
     void on_addFilesAction_triggered();
 
-    void on_preferencesAction_triggered();
+    void on_libraryPreferencesAction_triggered();
+    void on_pluginsAction_triggered();
 
     void on_cursorFollowsPlaybackAction_triggered();
     void on_random_triggered();
@@ -93,6 +95,8 @@ private:
 
     bool cursorFollowsPlayback_;
     bool random_;
+
+    friend PluginsPreferences;
 };
 
 #endif // MAINWINDOW_H

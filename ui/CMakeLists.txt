@@ -5,12 +5,13 @@ set(ui_SOURCES
     seekslider.cpp
     statusbar.cpp
     librarypreferencesdialog.cpp
+    pluginspreferences.cpp
     playlisttab.cpp
     playlistitemdelegate.cpp
     playlistview.cpp
     playlistmodel.cpp
     playlistfilter.cpp)
-qt4_wrap_ui(ui_UI mainwindow.ui playlist.ui librarypreferences.ui)
+qt4_wrap_ui(ui_UI mainwindow.ui playlist.ui librarypreferences.ui plugins.ui)
 qt4_automoc(${ui_SOURCES})
 
 add_library(ui ${ui_UI} ${ui_SOURCES})

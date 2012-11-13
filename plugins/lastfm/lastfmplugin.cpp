@@ -17,11 +17,12 @@ LastfmPlugin::LastfmPlugin(QObject* parent)
 
 LastfmPlugin::~LastfmPlugin()
 {
-//    qDebug() << "[Lastfm] LastfmPlugin::~LastfmPlugin()";
+    qDebug() << "[Lastfm] LastfmPlugin::~LastfmPlugin()";
 }
 
 void LastfmPlugin::init(QObject& fubarApp)
 {
+    qDebug() << "[Lastfm] LastfmPlugin::LastfmPlugin()";
     theApp = &fubarApp;
 
     QString username;

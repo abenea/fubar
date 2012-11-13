@@ -26,7 +26,7 @@ Track::Track(proto::Track ptrack)
     }
     if (ptrack.has_mtime())
         mtime = ptrack.mtime();
-    qDebug() << "LOADFROMDISK: " << metadata["title"] << " " << audioproperties.length;
+//    qDebug() << "LOADFROMDISK: " << metadata["title"] << " " << audioproperties.length;
 }
 
 void Track::fillProtoTrack(proto::Track& ptrack)

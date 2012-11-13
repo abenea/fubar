@@ -39,7 +39,7 @@
      <x>0</x>
      <y>0</y>
      <width>589</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -52,12 +52,6 @@
     <addaction name="addDirectoryAction"/>
     <addaction name="addFilesAction"/>
    </widget>
-   <widget class="QMenu" name="menuLibrary">
-    <property name="title">
-     <string>Library</string>
-    </property>
-    <addaction name="preferencesAction"/>
-   </widget>
    <widget class="QMenu" name="menuPlayback">
     <property name="title">
      <string>Pla&amp;yback</string>
@@ -65,9 +59,16 @@
     <addaction name="cursorFollowsPlaybackAction"/>
     <addaction name="random"/>
    </widget>
+   <widget class="QMenu" name="menuPreferences">
+    <property name="title">
+     <string>Pre&amp;ferences</string>
+    </property>
+    <addaction name="pluginsAction"/>
+    <addaction name="libraryPreferencesAction"/>
+   </widget>
    <addaction name="menu_File"/>
-   <addaction name="menuLibrary"/>
    <addaction name="menuPlayback"/>
+   <addaction name="menuPreferences"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="windowTitle">
@@ -173,6 +174,21 @@
    </property>
    <property name="text">
     <string>&amp;Random</string>
+   </property>
+  </action>
+  <action name="&amp;libraryPreferencesAction">
+   <property name="text">
+    <string>Library</string>
+   </property>
+  </action>
+  <action name="pluginsAction">
+   <property name="text">
+    <string>&amp;Plugins</string>
+   </property>
+  </action>
+  <action name="libraryPreferencesAction">
+   <property name="text">
+    <string>&amp;Library</string>
    </property>
   </action>
  </widget>
