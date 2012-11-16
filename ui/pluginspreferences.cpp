@@ -10,16 +10,27 @@ PluginsPreferences::PluginsPreferences(QWidget* parent)
     pluginTable->setRowCount(plugins.size());
     pluginTable->setColumnCount(2);
     for (std::size_t i = 0; i < plugins.size(); ++i) {
-        pluginTable->setItem(i, 1, new QTableWidgetItem(plugins[i]));
+        QTableWidgetItem* dialog = new QTableWidgetItem(plugins[i]);
+        dialog->setFlags(Qt::ItemIsEnabled);
+        pluginTable->setItem(i, 1, dialog);
+
         QTableWidgetItem* checkbox = new QTableWidgetItem();
         checkbox->setFlags(Qt::NoItemFlags/*Qt::ItemIsUserCheckable | Qt::ItemIsEnabled*/);
         checkbox->setCheckState(Qt::Unchecked);
         pluginTable->setItem(i, 0, checkbox);
     }
+    connect(pluginTable, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(on_itemDoubleClicked(QTableWidgetItem*)));
+}
+
+void PluginsPreferences::on_itemDoubleClicked(QTableWidgetItem* item)
+{
+    PluginManager::instance->configurePlugin(item->text());
 }
 
 void PluginsPreferences::on_okButton_clicked()
 {
+    // Actually you may want the plugin loaded at all times so it can
+    // be configurable even when disabled. maybe
     // No enabling/disabling plugins yet cause qt4.8 is bugged
     // https://bugreports.qt-project.org/browse/QTBUG-24079
 //     for (int i = 0; i < pluginTable->rowCount(); ++i) {

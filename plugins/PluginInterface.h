@@ -9,6 +9,7 @@ class PluginInterface
 public:
     virtual ~PluginInterface() {}
     virtual void init(QObject& fubarApp) = 0;
+    virtual void configure() {}
 };
 
 QT_BEGIN_NAMESPACE

@@ -4,6 +4,7 @@
 #include "ui/ui_plugins.h"
 #include <QDialog>
 
+class QTableWidgetItem;
 
 class PluginsPreferences : public QDialog, private Ui::Plugins
 {
@@ -13,6 +14,7 @@ public:
 
 private slots:
     void on_okButton_clicked();
+    void on_itemDoubleClicked(QTableWidgetItem* item);
 };
 
 #endif // PLUGINSPREFERENCES_H

@@ -36,6 +36,7 @@ public:
     PlaylistTab* getCurrentPlaylist();
     PTrack getCurrentTrack();
 
+    //void savePluginSetting();
 signals:
     void trackPlaying(PTrack track);
     void stopped(qint64 /*ms*/ finalPosition, qint64 /*ms*/ trackLength);

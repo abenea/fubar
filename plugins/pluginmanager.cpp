@@ -67,6 +67,30 @@ void PluginManager::enablePlugin(QString name)
     }
 }
 
+void PluginManager::configurePlugin(QString name)
+{
+    PluginMap::iterator it = plugins_.find(name);
+    if (it != plugins_.end()) {
+        if (it->second->isLoaded()) {
+            QObject *plugin = it->second->instance();
+            if (plugin) {
+                PluginInterface *fubarPlugin = qobject_cast<PluginInterface*>(plugin);
+                if (fubarPlugin) {
+                    fubarPlugin->configure();
+                } else {
+                    qDebug() << "Bad plugin " << it->second->fileName();
+                }
+            } else {
+                qDebug() << "Instance is 0 for Plugin " << it->second->fileName();
+            }
+        } else {
+            qDebug() << "Cannot configure " << name << ". Plugin not loaded.";
+        }
+    } else {
+        qDebug() << "Cannot configure " << name << ". No such plugin.";
+    }
+}
+
 std::vector<QString> PluginManager::getPlugins()
 {
     std::vector<QString> plugins;

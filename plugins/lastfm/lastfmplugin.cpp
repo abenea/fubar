@@ -1,4 +1,5 @@
 #include "lastfmplugin.h"
+#include "preferences.h"
 #include <QDebug>
 #include <QCryptographicHash>
 #include <QNetworkReply>
@@ -12,7 +13,7 @@ LastfmPlugin::LastfmPlugin(QObject* parent)
     : QObject(parent)
     , m_sessionKeyArray(0)
 {
-
+    qDebug() << "[Lastfm] LastfmPlugin::LastfmPlugin()";
 }
 
 LastfmPlugin::~LastfmPlugin()
@@ -20,34 +21,30 @@ LastfmPlugin::~LastfmPlugin()
     qDebug() << "[Lastfm] LastfmPlugin::~LastfmPlugin()";
 }
 
-void LastfmPlugin::init(QObject& fubarApp)
+void LastfmPlugin::init(QObject& mainWindow)
 {
-    qDebug() << "[Lastfm] LastfmPlugin::LastfmPlugin()";
-    theApp = &fubarApp;
+    qDebug() << "[Lastfm] LastfmPlugin::init()";
+    mainWindow_ = &mainWindow;
+    login();
+}
 
-    QString username;
-    QString password;
+void LastfmPlugin::login()
+{
+    QSettings settings;
 
-    // Read config
-    FILE* cfg = fopen("lastfm.cfg", "rt");
-    if (!cfg) {
-        qDebug() << "[Lastfm] Cannot find lastfm.cfg";
+    QString username = settings.value("plugins/lastfm/username").toString();
+    QString password = settings.value("plugins/lastfm/password").toString();
+    if (username.isEmpty() || password.isEmpty()) {
+        qDebug() << "[Lastfm] User/pass not present in settings";
         return;
     }
-    char user[50], pass[50];
-    fscanf(cfg, "%s %s", user, pass);
-    fclose(cfg);
-
-    username = user;
-    password = pass;
 
     // set the global static Lastfm::Ws stuff
     lastfm::ws::ApiKey = "bf8e2991b5fee92612b2f4c22f1d4a8b";
     lastfm::ws::SharedSecret = "0d3a53011c519ae243bae01ec1e4e87f";
     lastfm::ws::Username = username.toLatin1().data();
 
-    QSettings settings;
-    m_sessionKey = settings.value("lastfm/sessionKey").toString();
+    m_sessionKey = settings.value("plugins/lastfm/sessionKey").toString();
 
     // now authenticate w/ last.fm and get our session key if we don't have one
     if (m_sessionKey.isEmpty()) {
@@ -62,7 +59,13 @@ void LastfmPlugin::init(QObject& fubarApp)
         qDebug() << "[Lastfm] using saved sessionkey from last.fm";
         gotSession();
     }
+}
 
+void LastfmPlugin::logout()
+{
+    m_scrobbler.reset();
+    resetVariables();
+    disconnect(mainWindow_, 0, this, 0);
 }
 
 void LastfmPlugin::onAuthenticated()
@@ -125,9 +128,9 @@ void LastfmPlugin::gotSession()
         ldir.mkpath( lpath );
     }
 
-    connect(theApp, SIGNAL(trackPlaying(PTrack)), this, SLOT(trackPlaying(PTrack)));
-    connect(theApp, SIGNAL(stopped(qint64, qint64)), this, SLOT(stopped(qint64, qint64)));
-    connect(theApp, SIGNAL(trackPositionChanged(qint64, bool)), this, SLOT(trackPositionChanged(qint64, bool)));
+    connect(mainWindow_, SIGNAL(trackPlaying(PTrack)), this, SLOT(trackPlaying(PTrack)));
+    connect(mainWindow_, SIGNAL(stopped(qint64, qint64)), this, SLOT(stopped(qint64, qint64)));
+    connect(mainWindow_, SIGNAL(trackPositionChanged(qint64, bool)), this, SLOT(trackPositionChanged(qint64, bool)));
 }
 
 void LastfmPlugin::stopped(qint64 finalPosition, qint64 /*trackLength*/)
@@ -185,6 +188,13 @@ void LastfmPlugin::resetVariables()
     m_current = lastfm::MutableTrack();
     m_totalPlayed = m_lastPosition = 0;
 }
+
+void LastfmPlugin::configure()
+{
+    Preferences* widget = new Preferences(*this);
+    widget->show();
+}
+
 
 QT_BEGIN_NAMESPACE
 Q_EXPORT_PLUGIN2(lastfm, LastfmPlugin);

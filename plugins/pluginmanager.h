@@ -17,6 +17,7 @@ public:
 
     void enablePlugin(QString name);
     void disablePlugin(QString name);
+    void configurePlugin(QString name);
     std::vector<QString> getPlugins();
 
 private:

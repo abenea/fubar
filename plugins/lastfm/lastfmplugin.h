@@ -18,6 +18,8 @@ namespace lastfm
 class Audioscrobbler;
 }
 
+class Preferences;
+
 class LastfmPlugin : public QObject, public PluginInterface
 {
     Q_OBJECT
@@ -28,6 +30,7 @@ public:
     ~LastfmPlugin();
 
     void init(QObject& fubarApp);
+    void configure();
 
 private slots:
     void trackPlaying(PTrack track);
@@ -38,6 +41,8 @@ private slots:
 private:
     QMap< QString, QNetworkReply* > m_jobs;
 
+    void login();
+    void logout();
     void gotSession();
     void resetVariables();
     void checkScrobble();
@@ -51,7 +56,9 @@ private:
     QString m_sessionKey;
     char *m_sessionKeyArray;
 
-    QObject* theApp;
+    QObject* mainWindow_;
+
+    friend Preferences;
 };
 
 #endif // LASTFMPLUGIN_H
