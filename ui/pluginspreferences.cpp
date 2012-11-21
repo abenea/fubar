@@ -19,10 +19,10 @@ PluginsPreferences::PluginsPreferences(QWidget* parent)
         checkbox->setCheckState(Qt::Unchecked);
         pluginTable->setItem(i, 0, checkbox);
     }
-    connect(pluginTable, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(on_itemDoubleClicked(QTableWidgetItem*)));
+    connect(pluginTable, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(slot_itemDoubleClicked(QTableWidgetItem*)));
 }
 
-void PluginsPreferences::on_itemDoubleClicked(QTableWidgetItem* item)
+void PluginsPreferences::slot_itemDoubleClicked(QTableWidgetItem* item)
 {
     PluginManager::instance->configurePlugin(item->text());
 }

@@ -14,7 +14,7 @@ public:
 
 private slots:
     void on_okButton_clicked();
-    void on_itemDoubleClicked(QTableWidgetItem* item);
+    void slot_itemDoubleClicked(QTableWidgetItem* item);
 };
 
 #endif // PLUGINSPREFERENCES_H
