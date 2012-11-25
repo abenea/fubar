@@ -445,26 +445,30 @@ std::shared_ptr<Track> Library::scanFile(const QString& path)
         track->audioproperties.channels = audioProperties->channels();
     }
 
-    // mp3: Get album artist
+    // mp3: Get album artist and replaygain
     if (mpegFile && mpegFile->isValid()) {
         TagLib::ID3v2::Tag* id3v2 = mpegFile->ID3v2Tag();
         if (id3v2) {
             auto properties = id3v2->properties();
-            std::set<QString> probableAlbumArtistTags = {"ALBUM ARTIST", "ALBUMARTIST"};
-            for (auto albumArtistTag : probableAlbumArtistTags) {
-//                 qDebug() << "Searching " << albumArtistTag;
-                TagLib::PropertyMap::Iterator it = properties.find(albumArtistTag.toStdString().c_str());
-                if (it != properties.end() && !it->second.isEmpty()) {
-//                     qDebug() << "Found " << albumArtistTag;
-                    QString tmp = TStringToQString(it->second.front());
-                    if (!tmp.isEmpty())
-                        track->metadata["album artist"] = tmp;
-                }
-            }
 //             qDebug() << "Metadata for " << track->location;
 //             for (auto item : properties) {
 //                 qDebug() << TStringToQString(item.first) << " " << TStringToQString(item.second.front());
 //             }
+
+            std::map<QString, QString> mp3Tags{{"ALBUM ARTIST", "album artist"}, {"ALBUMARTIST", "album artist"}};
+            std::set<QString> replayGainTags = {"REPLAYGAIN_ALBUM_GAIN", "REPLAYGAIN_ALBUM_PEAK", "REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_TRACK_PEAK"};
+            for (const auto& rgtag : replayGainTags) {
+                mp3Tags.insert(std::make_pair(rgtag, rgtag));
+            }
+
+            for (const auto& mp3tag: mp3Tags) {
+                TagLib::PropertyMap::Iterator it = properties.find(mp3tag.first.toStdString().c_str());
+                if (it != properties.end() && !it->second.isEmpty()) {
+                    QString tmp = TStringToQString(it->second.front());
+                    if (!tmp.isEmpty())
+                        track->metadata[mp3tag.second] = tmp;
+                }
+            }
         }
     }
 
