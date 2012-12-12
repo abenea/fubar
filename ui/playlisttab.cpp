@@ -98,6 +98,7 @@ void PlaylistTab::play()
 // Takes a model index, not a filterIndex
 void PlaylistTab::play(const QModelIndex& index)
 {
+    MainWindow::instance->mediaObject->clearQueue();
     MainWindow::instance->setCurrentPlayingPlaylist(this);
     currentIndex_ = QPersistentModelIndex(index);
     nextIndex_ = QPersistentModelIndex();
