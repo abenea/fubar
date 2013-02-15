@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QFileInfo>
+#include <QtCore/qmath.h>
 #include <kwindowsystem.h>
 #include <kaction.h>
 
@@ -41,9 +42,12 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     seekSlider_ = new SeekSlider(mediaObject, this);
     // questionable code
     QObject::connect(seekSlider_, SIGNAL(movedByUser(int)), this, SLOT(sliderMovedByUser(int)));
-    volumeSlider_ = new Phonon::VolumeSlider(this);
-    volumeSlider_->setAudioOutput(audioOutput);
+    volumeSlider_ = new QSlider(this);
+    volumeSlider_->setOrientation(Qt::Horizontal);
+    volumeSlider_->setMaximum(100);
+    volumeSlider_->setMinimum(0);
     volumeSlider_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    QObject::connect(volumeSlider_, SIGNAL(valueChanged(int)), this, SLOT(volumeChanged()));
     mainToolBar->addWidget(seekSlider_);
     mainToolBar->addWidget(volumeSlider_);
 
@@ -213,7 +217,11 @@ void MainWindow::readSettings()
 {
     QSettings settings;
     restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
-    audioOutput->setVolume(settings.value("mainwindow/volume", audioOutput->volume()).toReal());
+    qreal volume = settings.value("mainwindow/volume", -1).toReal();
+    if (volume >= 0) {
+        volumeSlider_->setValue(volume * 100);
+        setVolume(volume);
+    }
     cursorFollowsPlayback_ = settings.value("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_).toBool();
     cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
     random_ = settings.value("mainwindow/random", random_).toBool();
@@ -224,7 +232,7 @@ void MainWindow::writeSettings()
 {
     QSettings settings;
     settings.setValue("mainwindow/geometry", saveGeometry());
-    settings.setValue("mainwindow/volume", audioOutput->volume());
+    settings.setValue("mainwindow/volume", currentVolume());
     settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
     settings.setValue("mainwindow/random", random_);
 }
@@ -302,6 +310,7 @@ void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
     if (bufferingTrack_)
         track = bufferingTrack_;
     if (track) {
+        volumeChanged();
         emit trackPlaying(track);
         emit trackPositionChanged(0, true);
     } else {
@@ -434,6 +443,42 @@ void MainWindow::repaintEnqueuedTrack(const QPersistentModelIndex& index)
     if (!currentlyPlayingPlaylist_ || currentlyPlayingPlaylist_ != current())
         return;
     currentlyPlayingPlaylist_->repaintTrack(index);
+}
+
+void MainWindow::volumeChanged()
+{
+    setVolume(currentVolume());
+}
+
+qreal MainWindow::currentVolume()
+{
+    if (volumeSlider_->value() == 0)
+        return 0;
+    return static_cast<qreal>(volumeSlider_->value()) / 100;
+}
+
+void MainWindow::setVolume(qreal value)
+{
+    PTrack track = getCurrentTrack();
+    qreal volume = value;
+    if (track) {
+        // gain = 10 ^ ((rg + pream) / 20)
+        QMap<QString, QString>::const_iterator it = track->metadata.find("REPLAYGAIN_TRACK_GAIN");
+        qreal rg;
+        if (it != track->metadata.end()) {
+            QString track_rg = it.value();
+            track_rg.chop(3);
+            rg = track_rg.toDouble();
+            qreal preamp = 10;
+            rg = qPow(10, (preamp + rg) / 20);
+            qDebug() << "Got track replaygain " << track_rg << " resulting in gain = " << rg;
+        } else {
+            rg = 1;
+        }
+        volume *= rg;
+    }
+    qDebug() << "Setting volume to " << volume;
+    audioOutput->setVolume(volume);
 }
 
 #include "mainwindow.moc"

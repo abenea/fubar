@@ -42,7 +42,9 @@ public:
     PlaylistTab* getActivePlaylist();
     PTrack getCurrentTrack();
 
-    //void savePluginSetting();
+public slots:
+    void volumeChanged();
+
 signals:
     void trackPlaying(PTrack track);
     void stopped(qint64 /*ms*/ finalPosition, qint64 /*ms*/ trackLength);
@@ -79,6 +81,8 @@ private slots:
     void prev();
     void showHide();
 
+    qreal currentVolume();
+    void setVolume(qreal value);
     void sliderMovedByUser(int pos);
     void statusBarDoubleClicked();
     void focusFilter();
@@ -100,7 +104,7 @@ private:
     void readSettings();
 
     SeekSlider *seekSlider_;
-    Phonon::VolumeSlider *volumeSlider_;
+    QSlider *volumeSlider_;
 
     StatusBar statusBar_;
     QSystemTrayIcon *trayIcon_;

@@ -103,6 +103,7 @@ void PlaylistTab::play(const QModelIndex& index)
     nextIndex_ = QPersistentModelIndex();
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track> >();
     MainWindow::instance->playTrack(track);
+    MainWindow::instance->volumeChanged();
     updateCursor();
 }
 
