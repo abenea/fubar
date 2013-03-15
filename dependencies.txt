@@ -1,2 +1,15 @@
 libboost-all-dev protobuf-compiler libprotobuf-dev libqt4-dev libphonon-dev libtag1-dev kdelibs5-dev
+
+phonon-backend-gstreamer
+gstreamer0.10-plugins-ugly
+
 https://github.com/bugdone/liblastfm.git
+
+[fubar]
+Next=Meta+Z,none,Next
+Play=Meta+X,none,Play
+Play/Pause=Meta+C,none,Play/Pause
+Prev=Meta+A,none,Prev
+Show/Hide=Meta+W,none,Show/Hide
+Stop=Meta+V,none,Stop
+_k_friendly_name=fubar
