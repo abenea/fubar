@@ -48,6 +48,7 @@ protected:
 private slots:
     void on_newPlaylistAction_triggered();
     void on_newLibraryViewAction_triggered();
+    void on_quitAction_triggered();
 
     void on_addDirectoryAction_triggered();
     void on_addFilesAction_triggered();

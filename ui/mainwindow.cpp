@@ -165,6 +165,11 @@ void MainWindow::on_newPlaylistAction_triggered()
     playlistTabs->addTab(new PlaylistTab(false, this), "Unnamed playlist");
 }
 
+void MainWindow::on_quitAction_triggered()
+{
+    QApplication::quit();
+}
+
 void MainWindow::on_libraryPreferencesAction_triggered()
 {
     LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(library_, this);

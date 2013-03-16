@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>589</width>
-    <height>517</height>
+    <width>409</width>
+    <height>344</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,7 +38,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>589</width>
+     <width>409</width>
      <height>20</height>
     </rect>
    </property>
@@ -51,6 +51,8 @@
     <addaction name="separator"/>
     <addaction name="addDirectoryAction"/>
     <addaction name="addFilesAction"/>
+    <addaction name="separator"/>
+    <addaction name="quitAction"/>
    </widget>
    <widget class="QMenu" name="menuPlayback">
     <property name="title">
@@ -96,6 +98,9 @@
    </property>
   </action>
   <action name="newPlaylistAction">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>New &amp;playlist</string>
    </property>
@@ -189,6 +194,20 @@
   <action name="libraryPreferencesAction">
    <property name="text">
     <string>&amp;Library</string>
+   </property>
+  </action>
+  <action name="quitAction">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
  </widget>
