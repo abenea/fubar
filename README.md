@@ -46,7 +46,8 @@ Clone the modified liblastfm dependency, in whatever directory you wish:
 
 At the moment, no installation is required. Just add a symlink to one of the directories in $PATH:
 
-   CURRENT="`pwd`"; sudo ln -s "$CURRENT/fubar" /usr/local/bin/fubar
+       CURRENT="`pwd`"; sudo ln -s "$CURRENT/fubar" /usr/local/bin/fubar
+   
 
 ### Using fubar
 
