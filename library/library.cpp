@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <qdatetime.h>
+#include <set>
 
 using namespace std;
 
