@@ -167,7 +167,7 @@ void MainWindow::on_newPlaylistAction_triggered()
 
 void MainWindow::on_quitAction_triggered()
 {
-    QApplication::quit();
+    close();
 }
 
 void MainWindow::on_libraryPreferencesAction_triggered()
