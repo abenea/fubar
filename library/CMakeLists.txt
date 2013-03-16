@@ -1,5 +1,5 @@
 wrap_proto(PROTO_GENERATED track.proto)
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_BINARY_DIR} ${TAGLIB_INCLUDES})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_BINARY_DIR} ${TAGLIB_INCLUDE_DIR})
 qt4_automoc(library.cpp)
 add_library(library
             directorywatcher.cpp
@@ -8,4 +8,4 @@ add_library(library
             library.cpp
             playlist.cpp
             ${PROTO_GENERATED})
-target_link_libraries(library ${PROTOBUF_LIBRARY} ${TAGLIB_LIBRARIES})
+target_link_libraries(library ${PROTOBUF_LIBRARY} ${TAGLIB_LIBRARY})
