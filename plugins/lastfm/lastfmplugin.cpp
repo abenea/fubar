@@ -43,6 +43,7 @@ void LastfmPlugin::login()
     lastfm::ws::ApiKey = "bf8e2991b5fee92612b2f4c22f1d4a8b";
     lastfm::ws::SharedSecret = "0d3a53011c519ae243bae01ec1e4e87f";
     lastfm::ws::Username = username.toLatin1().data();
+    lastfm::ws::setScheme(lastfm::ws::Https);
 
     m_sessionKey = settings.value("plugins/lastfm/sessionKey").toString();
 
