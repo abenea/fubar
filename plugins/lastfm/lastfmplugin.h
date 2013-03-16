@@ -58,7 +58,7 @@ private:
 
     QObject* mainWindow_;
 
-    friend Preferences;
+    friend class Preferences;
 };
 
 #endif // LASTFMPLUGIN_H

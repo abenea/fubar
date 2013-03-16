@@ -98,7 +98,7 @@ private:
     bool cursorFollowsPlayback_;
     bool random_;
 
-    friend PluginsPreferences;
+    friend class PluginsPreferences;
 };
 
 #endif // MAINWINDOW_H
