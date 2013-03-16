@@ -33,6 +33,8 @@ Dependencies:
 * FFTW http://www.fftw.org/
 * libsamplerate http://www.mega-nerd.com/SRC/
 
+Run:
+
     apt-get install libsamplerate0-dev libfftw3-dev
     git clone git://github.com/bugdone/liblastfm.git; cd liblastfm ; mkdir build ; cd build ; cmake ..
     make -j4 ; sudo make install ; cd ../..
