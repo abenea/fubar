@@ -60,6 +60,7 @@ protected:
     void run();
 
 private:
+    const char* libraryFilePath();
     void getFoldersFromSettings();
     void setFoldersInSettings();
     void saveToDisk();

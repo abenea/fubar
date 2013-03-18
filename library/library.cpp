@@ -12,6 +12,7 @@
 #include <boost/scoped_array.hpp>
 #include <boost/bind.hpp>
 #include <QDir>
+#include <QFileInfo>
 #include <QDebug>
 #include <QSettings>
 #include <qdatetime.h>
@@ -19,8 +20,12 @@
 
 using namespace std;
 
-const char* library_filename = "media_library";
 
+const char* Library::libraryFilePath()
+{
+    QSettings settings;
+    return QFileInfo(settings.fileName()).absoluteDir().absoluteFilePath("media_library").toStdString().c_str();
+}
 
 string LibraryEvent::op2str()
 {
@@ -200,7 +205,7 @@ void Library::removeFile(QString path)
 
 void Library::loadFromDisk()
 {
-    FILE *f = std::fopen(library_filename, "rb");
+    FILE *f = std::fopen(libraryFilePath(), "rb");
     if (f == NULL)
         return;
 
@@ -231,7 +236,7 @@ void Library::loadFromDisk()
 
 void Library::saveToDisk()
 {
-    FILE *f = std::fopen(library_filename, "wb");
+    FILE *f = std::fopen(libraryFilePath(), "wb");
     if (f == NULL)
         return;
 
