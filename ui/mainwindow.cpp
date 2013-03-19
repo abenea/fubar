@@ -48,6 +48,11 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     mainToolBar->addWidget(seekSlider_);
     mainToolBar->addWidget(volumeSlider_);
 
+    trayIcon_ = new QSystemTrayIcon(this);
+    trayIcon_->setIcon(QIcon(":/icon/logo.gif"));
+    connect(trayIcon_, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+    trayIcon_->show();
+
     setStatusBar(&statusBar_);
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
 
@@ -355,6 +360,13 @@ void MainWindow::totalTimeChanged(qint64 time)
 void MainWindow::sliderMovedByUser(int pos)
 {
     emit trackPositionChanged(pos, true);
+}
+
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    if (reason == QSystemTrayIcon::Trigger) {
+        showHide();
+    }
 }
 
 #include "mainwindow.moc"

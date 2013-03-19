@@ -9,6 +9,7 @@
 #include <QtGui/QMainWindow>
 #include <QModelIndex>
 #include <QKeySequence>
+#include <QSystemTrayIcon>
 #include <phonon/Phonon/MediaObject>
 #include <phonon/Phonon/AudioOutput>
 #include <phonon/VolumeSlider>
@@ -79,6 +80,8 @@ private slots:
     void updateUI(PTrack track);
     void totalTimeChanged(qint64 time);
 
+    void iconActivated(QSystemTrayIcon::ActivationReason reason);
+
 private:
     void setShortcuts();
     void addShortcut(QKeySequence shortcut, const char* func, QString name);
@@ -87,6 +90,7 @@ private:
     Phonon::VolumeSlider *volumeSlider_;
 
     StatusBar statusBar_;
+    QSystemTrayIcon *trayIcon_;
     Library& library_;
 
     PlaylistTab *current();
