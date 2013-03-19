@@ -57,7 +57,7 @@ private slots:
     void on_pluginsAction_triggered();
 
     void on_cursorFollowsPlaybackAction_triggered();
-    void on_random_triggered();
+    void on_randomAction_triggered();
 
     void on_mainToolBar_actionTriggered(QAction* action);
 

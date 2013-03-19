@@ -187,7 +187,7 @@ void MainWindow::on_cursorFollowsPlaybackAction_triggered()
     cursorFollowsPlayback_ = !cursorFollowsPlayback_;
 }
 
-void MainWindow::on_random_triggered()
+void MainWindow::on_randomAction_triggered()
 {
     random_ = !random_;
 }
@@ -199,6 +199,8 @@ void MainWindow::readSettings()
     audioOutput->setVolume(settings.value("mainwindow/volume", audioOutput->volume()).toReal());
     cursorFollowsPlayback_ = settings.value("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_).toBool();
     cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
+    random_ = settings.value("mainwindow/random", random_).toBool();
+    randomAction->setChecked(random_);
 }
 
 void MainWindow::writeSettings()
@@ -207,6 +209,7 @@ void MainWindow::writeSettings()
     settings.setValue("mainwindow/geometry", saveGeometry());
     settings.setValue("mainwindow/volume", audioOutput->volume());
     settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
+    settings.setValue("mainwindow/random", random_);
 }
 
 void MainWindow::setCurrentPlayingPlaylist(PlaylistTab* playlist)

@@ -59,7 +59,7 @@
      <string>Pla&amp;yback</string>
     </property>
     <addaction name="cursorFollowsPlaybackAction"/>
-    <addaction name="random"/>
+    <addaction name="randomAction"/>
    </widget>
    <widget class="QMenu" name="menuPreferences">
     <property name="title">
@@ -173,7 +173,7 @@
     <string>Cursor follows playback</string>
    </property>
   </action>
-  <action name="random">
+  <action name="randomAction">
    <property name="checkable">
     <bool>true</bool>
    </property>
