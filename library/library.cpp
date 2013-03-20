@@ -1,5 +1,6 @@
 #include "library.h"
 
+#include "util.h"
 #include "playlist.h"
 #include "track.pb.h"
 #include <taglib/fileref.h>
@@ -20,12 +21,7 @@
 
 using namespace std;
 
-
-const char* Library::libraryFilePath()
-{
-    QSettings settings;
-    return QFileInfo(settings.fileName()).absoluteDir().absoluteFilePath("media_library").toStdString().c_str();
-}
+const char* library_filename = "media_library";
 
 string LibraryEvent::op2str()
 {
@@ -205,7 +201,7 @@ void Library::removeFile(QString path)
 
 void Library::loadFromDisk()
 {
-    FILE *f = std::fopen(libraryFilePath(), "rb");
+    FILE *f = std::fopen(settingsDirFilePath(library_filename), "rb");
     if (f == NULL)
         return;
 
@@ -236,7 +232,7 @@ void Library::loadFromDisk()
 
 void Library::saveToDisk()
 {
-    FILE *f = std::fopen(libraryFilePath(), "wb");
+    FILE *f = std::fopen(settingsDirFilePath(library_filename), "wb");
     if (f == NULL)
         return;
 
