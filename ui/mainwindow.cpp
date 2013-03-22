@@ -14,8 +14,6 @@
 #include <kwindowsystem.h>
 #include <kaction.h>
 
-using namespace boost;
-
 MainWindow *MainWindow::instance = 0;
 
 MainWindow::MainWindow(Library& library, QWidget *parent)

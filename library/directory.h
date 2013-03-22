@@ -39,7 +39,6 @@ public:
     void setMtime(uint mtime) { mtime_ = mtime; }
 
 private:
-    // Change to QMap?
     typedef QMap<QString, std::shared_ptr<Directory> > SubdirectoryMap;
     typedef QMap<QString, std::shared_ptr<Track> > FileMap;
 

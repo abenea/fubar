@@ -3,7 +3,6 @@
 #include "track.h"
 #include <QDebug>
 #include <QDir>
-#include <boost/scoped_array.hpp>
 #include <sstream>
 #include <fstream>
 #include <exception>

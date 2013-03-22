@@ -1,9 +1,6 @@
 #include "track.h"
 #include "track.pb.h"
 #include <QDebug>
-#include <boost/scoped_array.hpp>
-
-using namespace boost;
 
 Track::Track(proto::Track ptrack)
 {
