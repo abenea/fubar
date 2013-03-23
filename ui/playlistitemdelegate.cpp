@@ -99,7 +99,7 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     QRect queueRect = trackOption.rect;
     queueRect.setLeft(trackOption.rect.left() + 45);
     queueRect.setRight(trackOption.rect.left() + 55);
-    painter->drawText(queueRect, Qt::AlignHCenter, MainWindow::instance->queue.isQueued(track) ? QString(QChar(1342)) : QString());
+    painter->drawText(queueRect, Qt::AlignHCenter, MainWindow::instance->queue.isQueued(MainWindow::instance->getActivePlaylist(), track) ? QString(QChar(1342)) : QString());
 
     painter->restore();
 }

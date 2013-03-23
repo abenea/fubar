@@ -20,11 +20,11 @@ public:
     void clear();
 
     bool isEmpty();
-    bool isQueued(std::shared_ptr<Track> track);
+    bool isQueued(PlaylistTab* playlistTab, std::shared_ptr<Track> track);
 
 private:
     std::queue<std::tuple<PlaylistTab*, QPersistentModelIndex, QString>> queue_;
-    std::map<QString, int> paths_;
+    std::map<QString, std::map<PlaylistTab*, int>> paths_;
 };
 
 #endif // QUEUE_H
