@@ -266,7 +266,7 @@ void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
     }
 }
 
-PlaylistTab* MainWindow::getCurrentPlaylist()
+PlaylistTab* MainWindow::getPlayingPlaylist()
 {
     if (currentlyPlayingPlaylist_ == 0) {
         setCurrentPlayingPlaylist(current());
@@ -274,9 +274,14 @@ PlaylistTab* MainWindow::getCurrentPlaylist()
     return currentlyPlayingPlaylist_;
 }
 
+PlaylistTab* MainWindow::getActivePlaylist()
+{
+    return dynamic_cast<PlaylistTab*>(playlistTabs->currentWidget());
+}
+
 PTrack MainWindow::getCurrentTrack()
 {
-    PlaylistTab* playlist = getCurrentPlaylist();
+    PlaylistTab* playlist = getPlayingPlaylist();
     if (!playlist)
         return PTrack(0);
     return playlist->getCurrentTrack();
@@ -284,7 +289,7 @@ PTrack MainWindow::getCurrentTrack()
 
 void MainWindow::play()
 {
-    if (getCurrentPlaylist()) {
+    if (getPlayingPlaylist()) {
         currentlyPlayingPlaylist_->play();
         PTrack track = getCurrentTrack();
         if (track) {
@@ -307,17 +312,18 @@ void MainWindow::next()
     if (!queue.isEmpty()) {
         auto enqueued = queue.popTrack();
         if (enqueued.second.isValid()) {
+            currentlyPlayingPlaylist_ = enqueued.first;
             currentlyPlayingPlaylist_->play(enqueued.second);
             return;
         }
     }
-    if (getCurrentPlaylist())
+    if (getPlayingPlaylist())
         currentlyPlayingPlaylist_->playNext(+1);
 }
 
 void MainWindow::prev()
 {
-    if (getCurrentPlaylist())
+    if (getPlayingPlaylist())
         currentlyPlayingPlaylist_->playNext(-1);
 }
 
@@ -354,7 +360,7 @@ void MainWindow::statusBarDoubleClicked()
 
 void MainWindow::focusFilter()
 {
-    PlaylistTab* playlist = getCurrentPlaylist();
+    PlaylistTab* playlist = getPlayingPlaylist();
     if (playlist) {
         playlist->focusFilter();
     }

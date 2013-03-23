@@ -36,7 +36,8 @@ public:
     bool random() { return random_; }
 
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
-    PlaylistTab* getCurrentPlaylist();
+    PlaylistTab* getPlayingPlaylist();
+    PlaylistTab* getActivePlaylist();
     PTrack getCurrentTrack();
 
     //void savePluginSetting();

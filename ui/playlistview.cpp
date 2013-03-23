@@ -24,7 +24,7 @@ void PlaylistView::keyPressEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_Return) {
         emit returnPressed(currentIndex());
     } else if (event->key() == Qt::Key_Q) {
-        PlaylistTab* playlistTab = MainWindow::instance->getCurrentPlaylist();
+        PlaylistTab* playlistTab = MainWindow::instance->getActivePlaylist();
         MainWindow::instance->queue.pushTracks(playlistTab, playlistTab->mapToSource(selectedIndexes()));
     } else {
         QAbstractItemView::keyPressEvent(event);
