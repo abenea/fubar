@@ -186,6 +186,11 @@ void MainWindow::on_pluginsAction_triggered()
     widget->show();
 }
 
+void MainWindow::on_clearQueueAction_triggered()
+{
+    queue.clear();
+}
+
 void MainWindow::on_cursorFollowsPlaybackAction_triggered()
 {
     cursorFollowsPlayback_ = !cursorFollowsPlayback_;

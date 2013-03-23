@@ -39,7 +39,7 @@
      <x>0</x>
      <y>0</y>
      <width>409</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -58,12 +58,13 @@
     <property name="title">
      <string>Pla&amp;yback</string>
     </property>
+    <addaction name="clearQueueAction"/>
     <addaction name="cursorFollowsPlaybackAction"/>
     <addaction name="randomAction"/>
    </widget>
    <widget class="QMenu" name="menuPreferences">
     <property name="title">
-     <string>Pre&amp;ferences</string>
+     <string>&amp;Preferences</string>
     </property>
     <addaction name="pluginsAction"/>
     <addaction name="libraryPreferencesAction"/>
@@ -208,6 +209,11 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::WindowShortcut</enum>
+   </property>
+  </action>
+  <action name="clearQueueAction">
+   <property name="text">
+    <string>Clear &amp;queue</string>
    </property>
   </action>
  </widget>

@@ -60,6 +60,7 @@ private slots:
     void on_libraryPreferencesAction_triggered();
     void on_pluginsAction_triggered();
 
+    void on_clearQueueAction_triggered();
     void on_cursorFollowsPlaybackAction_triggered();
     void on_randomAction_triggered();
 
