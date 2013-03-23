@@ -5,6 +5,7 @@
 #include "ui/ui_mainwindow.h"
 #include "statusbar.h"
 #include "seekslider.h"
+#include "queue.h"
 #include "pluginspreferences.h"
 #include <QtGui/QMainWindow>
 #include <QModelIndex>
@@ -27,6 +28,7 @@ public:
 
     Phonon::MediaObject *mediaObject;
     Phonon::AudioOutput *audioOutput;
+    Queue queue;
 
     static MainWindow *instance;
 
@@ -86,18 +88,21 @@ private:
     void setShortcuts();
     void addShortcut(QKeySequence shortcut, const char* func, QString name);
 
+    PlaylistTab *current();
+
+    void writeSettings();
+    void readSettings();
+
     SeekSlider *seekSlider_;
     Phonon::VolumeSlider *volumeSlider_;
 
     StatusBar statusBar_;
     QSystemTrayIcon *trayIcon_;
+
     Library& library_;
 
-    PlaylistTab *current();
     PlaylistTab *currentlyPlayingPlaylist_;
-
-    void writeSettings();
-    void readSettings();
+    PlaylistTab *nextPlaylist_;
 
     bool cursorFollowsPlayback_;
     bool random_;

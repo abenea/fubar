@@ -20,7 +20,8 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     : QMainWindow(parent)
     , statusBar_(this)
     , library_(library)
-    , currentlyPlayingPlaylist_(0)
+    , currentlyPlayingPlaylist_(nullptr)
+    , nextPlaylist_(nullptr)
     , cursorFollowsPlayback_(false)
     , random_(false)
 {
@@ -237,12 +238,25 @@ void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
 
 void MainWindow::aboutToFinish()
 {
+    if (!queue.isEmpty()) {
+        auto enqueued = queue.popTrack();
+        if (enqueued.second.isValid()) {
+            if (currentlyPlayingPlaylist_ != enqueued.first)
+                nextPlaylist_ = enqueued.first;
+            enqueued.first->enqueueTrack(enqueued.second);
+            return;
+        }
+    }
     currentlyPlayingPlaylist_->enqueueNextTrack();
 }
 
 void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
 {
     qDebug() << "currentSourceChanged() " << mediaObject->currentTime() << " " << mediaObject->totalTime();
+    if (nextPlaylist_) {
+        currentlyPlayingPlaylist_ = nextPlaylist_;
+        nextPlaylist_= nullptr;
+    }
     currentlyPlayingPlaylist_->updateCurrentIndex();
     if (currentlyPlayingPlaylist_->getCurrentTrack()) {
         emit trackPlaying(currentlyPlayingPlaylist_->getCurrentTrack());
@@ -290,6 +304,13 @@ void MainWindow::playPause()
 
 void MainWindow::next()
 {
+    if (!queue.isEmpty()) {
+        auto enqueued = queue.popTrack();
+        if (enqueued.second.isValid()) {
+            currentlyPlayingPlaylist_->play(enqueued.second);
+            return;
+        }
+    }
     if (getCurrentPlaylist())
         currentlyPlayingPlaylist_->playNext(+1);
 }

@@ -126,6 +126,11 @@ void PlaylistTab::enqueueNextTrack()
     QModelIndex index = getNextModelIndex(1);
     if (!index.isValid())
         return;
+    enqueueTrack(index);
+}
+
+void PlaylistTab::enqueueTrack(QModelIndex index)
+{
     nextIndex_ = QPersistentModelIndex(index);
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track>>();
     MainWindow::instance->mediaObject->enqueue(Phonon::MediaSource(track->location));
@@ -216,6 +221,14 @@ PTrack PlaylistTab::getCurrentTrack()
         return currentIndex_.data(TrackRole).value<shared_ptr<Track>>();
     }
     return PTrack();
+}
+
+QModelIndexList PlaylistTab::mapToSource(QModelIndexList indexes) const
+{
+    QModelIndexList result;
+    for (auto index : indexes)
+        result.append(filterModel_.mapToSource(index));
+    return result;
 }
 
 #include "playlisttab.moc"

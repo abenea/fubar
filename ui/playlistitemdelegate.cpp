@@ -1,5 +1,6 @@
 #include "playlistitemdelegate.h"
 #include "playlistmodel.h"
+#include "mainwindow.h"
 #include <QPainter>
 #include <QApplication>
 
@@ -94,6 +95,13 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     QString rightText = QString("%1:%2").arg(minutes).arg(seconds, 2, 10, QChar('0'));
     painter->drawText(leftTextRect, tfm.elidedText(leftText, Qt::ElideRight, leftTextRect.width()));
     painter->drawText(rightTextRect, Qt::AlignRight, rightText);
+
+    if (MainWindow::instance->queue.isQueued(track)) {
+        QRect queueRect = trackOption.rect;
+        queueRect.setLeft(trackOption.rect.left() + 45);
+        queueRect.setRight(trackOption.rect.left() + 55);
+        painter->drawText(queueRect, Qt::AlignHCenter, QString(QChar(1342)));
+    }
 
     painter->restore();
 }

@@ -14,11 +14,15 @@ class PlaylistTab : public QWidget
 public:
     PlaylistTab(bool synced, QWidget* parent = 0);
 
+    // so uncool having this here
+    QModelIndexList mapToSource(QModelIndexList indexes) const;
+
 public slots:
     void play(const QModelIndex &index);
     void play();
     void playNext(int offset);
     void enqueueNextTrack();
+    void enqueueTrack(QModelIndex index);
     void updateCurrentIndex();
     void updateCursor();
     void updateCursorAndScroll();
