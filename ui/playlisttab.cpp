@@ -98,13 +98,11 @@ void PlaylistTab::play()
 // Takes a model index, not a filterIndex
 void PlaylistTab::play(const QModelIndex& index)
 {
-    MainWindow::instance->mediaObject->clearQueue();
     MainWindow::instance->setCurrentPlayingPlaylist(this);
     currentIndex_ = QPersistentModelIndex(index);
     nextIndex_ = QPersistentModelIndex();
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track> >();
-    MainWindow::instance->mediaObject->setCurrentSource(Phonon::MediaSource(track->location));
-    MainWindow::instance->mediaObject->play();
+    MainWindow::instance->playTrack(track);
     updateCursor();
 }
 
@@ -133,8 +131,7 @@ void PlaylistTab::enqueueTrack(QModelIndex index)
 {
     nextIndex_ = QPersistentModelIndex(index);
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track>>();
-    MainWindow::instance->mediaObject->enqueue(Phonon::MediaSource(track->location));
-    qDebug() << "Enqueue " << track->location;
+    MainWindow::instance->enqueueTrack(track);
 }
 
 QModelIndex PlaylistTab::getNextModelIndex(int offset)

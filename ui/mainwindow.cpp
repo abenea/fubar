@@ -21,7 +21,7 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     , statusBar_(this)
     , library_(library)
     , currentlyPlayingPlaylist_(nullptr)
-    , nextPlaylist_(nullptr)
+    , bufferingTrackPlaylist_(nullptr)
     , cursorFollowsPlayback_(false)
     , random_(false)
 {
@@ -188,7 +188,14 @@ void MainWindow::on_pluginsAction_triggered()
 
 void MainWindow::on_clearQueueAction_triggered()
 {
+//     bool peeked = queue.peeked();
     queue.clear();
+    // We can't buffer next song 'cause gstreamer is bugged to hell
+//     if (peeked) {
+//         // buffer next song
+//         // TODO currentlyPlayingPlaylist_ might be bad
+//         currentlyPlayingPlaylist_->enqueueNextTrack();
+//     }
 }
 
 void MainWindow::on_cursorFollowsPlaybackAction_triggered()
@@ -241,13 +248,29 @@ void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
     }
 }
 
+void MainWindow::enqueueTrack(PTrack track)
+{
+    mediaObject->clearQueue();
+    mediaObject->enqueue(Phonon::MediaSource(track->location));
+    bufferingTrack_ = track;
+    qDebug() << "Enqueue " << track->location;
+}
+
+void MainWindow::playTrack(PTrack track)
+{
+    bufferingTrack_ = nullptr;
+    mediaObject->clearQueue();
+    mediaObject->setCurrentSource(Phonon::MediaSource(track->location));
+    mediaObject->play();
+}
+
 void MainWindow::aboutToFinish()
 {
     if (!queue.isEmpty()) {
-        auto enqueued = queue.popTrack();
+        auto enqueued = queue.peekTrack();
         if (enqueued.second.isValid()) {
             if (currentlyPlayingPlaylist_ != enqueued.first)
-                nextPlaylist_ = enqueued.first;
+                bufferingTrackPlaylist_ = enqueued.first;
             enqueued.first->enqueueTrack(enqueued.second);
             return;
         }
@@ -258,17 +281,27 @@ void MainWindow::aboutToFinish()
 void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
 {
     qDebug() << "currentSourceChanged() " << mediaObject->currentTime() << " " << mediaObject->totalTime();
-    if (nextPlaylist_) {
-        currentlyPlayingPlaylist_ = nextPlaylist_;
-        nextPlaylist_= nullptr;
+    if (queue.peeked())
+        queue.popPeekedTrack();
+    if (bufferingTrackPlaylist_) {
+        if (playlistTabs->indexOf(currentlyPlayingPlaylist_) != -1) {
+            currentlyPlayingPlaylist_ = bufferingTrackPlaylist_;
+        } else {
+            // Playlist was deleted
+            currentlyPlayingPlaylist_ = nullptr;
+        }
+        bufferingTrackPlaylist_= nullptr;
     }
-    currentlyPlayingPlaylist_->updateCurrentIndex();
-    if (currentlyPlayingPlaylist_->getCurrentTrack()) {
-        emit trackPlaying(currentlyPlayingPlaylist_->getCurrentTrack());
+    if (currentlyPlayingPlaylist_)
+        currentlyPlayingPlaylist_->updateCurrentIndex();
+    PTrack track = bufferingTrack_ ? bufferingTrack_ : currentlyPlayingPlaylist_->getCurrentTrack();
+    if (track) {
+        emit trackPlaying(track);
         emit trackPositionChanged(0, true);
     } else {
         qDebug() << "OMFG! source changed to null track!!!";
     }
+    bufferingTrack_ = nullptr;
 }
 
 PlaylistTab* MainWindow::getPlayingPlaylist()

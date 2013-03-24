@@ -32,6 +32,9 @@ public:
 
     static MainWindow *instance;
 
+    void enqueueTrack(PTrack track);
+    void playTrack(PTrack track);
+
     bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
     bool random() { return random_; }
 
@@ -104,7 +107,10 @@ private:
     Library& library_;
 
     PlaylistTab *currentlyPlayingPlaylist_;
-    PlaylistTab *nextPlaylist_;
+    PlaylistTab *bufferingTrackPlaylist_;
+    // PTrack currentPlayingTrack_; // Needed for cue sheets
+    // Needed by lastfm when the current playing track is deleted from playlist before currentSourceChanged() is called
+    PTrack bufferingTrack_;
 
     bool cursorFollowsPlayback_;
     bool random_;
