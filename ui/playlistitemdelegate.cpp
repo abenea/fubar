@@ -1,6 +1,7 @@
 #include "playlistitemdelegate.h"
 #include "playlistmodel.h"
 #include "mainwindow.h"
+#include <QFileInfo>
 #include <QPainter>
 #include <QApplication>
 
@@ -86,6 +87,8 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     painter->setFont(trackOption.font);
     QFontMetricsF tfm(trackOption.font);
     QString title = track->metadata["title"];
+    if (title.size() == 0)
+        title = QFileInfo(track->path()).completeBaseName();
     QString albumArtist = track->metadata.value("album artist", "");
     if (!albumArtist.isEmpty() && albumArtist != track->metadata["artist"] && !track->metadata["artist"].isEmpty())
         title += " // " + track->metadata["artist"];

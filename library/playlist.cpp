@@ -12,7 +12,7 @@
 
 using namespace std;
 
-void Playlist::load(const char *fileName)
+void Playlist::load(const char */*fileName*/)
 {
     // TODO: code moar pls
 /*    FILE *f = fopen(fileName, "rb");
