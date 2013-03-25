@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <sys/file.h>
 #include <fcntl.h>
+#include <cstring>
 
 
 
@@ -14,8 +15,8 @@ int main(int argc, char *argv[])
     // Single instance
     int fd = open(settingsDirFilePath("lock"), O_RDONLY | O_CREAT);
     if (fd == -1) {
-        qDebug()  << "wtf cant open lock file";
-        qDebug()  << "Single instance disabled";
+        qDebug()  << "Cant open lock file " << settingsDirFilePath("lock") << ": " << strerror(errno);
+        return 1;
     }
     else {
         if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
@@ -24,7 +25,7 @@ int main(int argc, char *argv[])
                 return 0;
             }
             else {
-                qDebug() << "wtf flock failed errno " << errno;
+                qDebug() << "flock() failed: " << strerror(errno);
                 return 1;
             }
         }

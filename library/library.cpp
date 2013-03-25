@@ -201,18 +201,23 @@ void Library::removeFile(QString path)
 
 void Library::loadFromDisk()
 {
-    FILE *f = std::fopen(settingsDirFilePath(library_filename), "rb");
-    if (f == NULL)
+    const char* filename = settingsDirFilePath(library_filename);
+    FILE *f = std::fopen(filename, "rb");
+    if (f == NULL) {
+        qDebug() << "Cannot open library file " << filename << ": " << strerror(errno);
         return;
+    }
 
     proto::Library plibrary;
     int len = 0;
-    if (fread(&len, 4, 1, f) != 1)
+    if (fread(&len, 4, 1, f) != 1) {
+        qDebug() << "Error reading library file " << filename;
         return;
+    }
 
     boost::scoped_array<char> tmp(new char[len]);
     if (fread(tmp.get(), len, 1, f) != 1) {
-        qDebug() << "OOps, failed read for pb";
+        qDebug() << "Error reading library file " << filename;
         return;
     }
     fclose(f);
@@ -232,9 +237,12 @@ void Library::loadFromDisk()
 
 void Library::saveToDisk()
 {
-    FILE *f = std::fopen(settingsDirFilePath(library_filename), "wb");
-    if (f == NULL)
+    const char* filename = settingsDirFilePath(library_filename);
+    FILE *f = std::fopen(filename, "wb");
+    if (f == NULL) {
+        qDebug() << "Cannot open library file " << filename << ": " << strerror(errno);
         return;
+    }
 
     proto::Library plibrary;
     for (DirectoryMap::const_iterator it = directories_.begin(); it != directories_.end(); ++it) {
@@ -250,11 +258,12 @@ void Library::saveToDisk()
     plibrary.SerializeToArray(tmp.get(), len);
 
     if (fwrite(&len, 4, 1, f) != 1) {
+        qDebug() << "Error writing library file " << filename;
         fclose(f);
         return;
     }
     if (fwrite(tmp.get(), len, 1, f) != 1) {
-        qDebug() << "Cannot write media library";
+        qDebug() << "Error writing library file " << filename;
     }
 
     fclose(f);
