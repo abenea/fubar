@@ -151,7 +151,7 @@ void Library::addDirectory(std::shared_ptr<Directory> directory)
 void Library::removeDirectory(QString path)
 {
     QMutexLocker locker(&mutex_);
-    qDebug() << "Deleting dir " << path;
+    qDebug() << "Deleting dir" << path;
     DirectoryMap::iterator it = directories_.find(path);
     if (it == directories_.end()) {
 //        qDebug() << " Maybe wanted to remove directory " << path << ". No dice";
@@ -180,7 +180,7 @@ void Library::removeDirectory(QString path)
         father_it.value()->removeSubdirectory(info.fileName());
     }
     directories_.erase(it);
-    qDebug() << "Done deleting dir " << path;
+    qDebug() << "Done deleting dir" << path;
 }
 
 void Library::addFile(std::shared_ptr<Track> track)
@@ -219,20 +219,20 @@ void Library::loadFromDisk()
     const char* filename = settingsDirFilePath(library_filename);
     FILE *f = std::fopen(filename, "rb");
     if (f == NULL) {
-        qDebug() << "Cannot open library file " << filename << ": " << strerror(errno);
+        qDebug() << "Cannot open library file" << filename << strerror(errno);
         return;
     }
 
     proto::Library plibrary;
     int len = 0;
     if (fread(&len, 4, 1, f) != 1) {
-        qDebug() << "Error reading library file " << filename;
+        qDebug() << "Error reading library file" << filename;
         return;
     }
 
     boost::scoped_array<char> tmp(new char[len]);
     if (fread(tmp.get(), len, 1, f) != 1) {
-        qDebug() << "Error reading library file " << filename;
+        qDebug() << "Error reading library file" << filename;
         return;
     }
     fclose(f);
@@ -248,6 +248,7 @@ void Library::loadFromDisk()
         shared_ptr<Track> track(new Track(plibrary.tracks(i)));
         addFile(track);
     }
+    qDebug() << "Read metadata for" << plibrary.tracks_size() << "tracks in" << plibrary.directories_size() << "directories from disk";
 }
 
 void Library::saveToDisk()
@@ -256,7 +257,7 @@ void Library::saveToDisk()
     const char* filename = settingsDirFilePath(library_filename);
     FILE *f = std::fopen(filename, "wb");
     if (f == NULL) {
-        qDebug() << "Cannot open library file " << filename << ": " << strerror(errno);
+        qDebug() << "Cannot open library file" << filename << strerror(errno);
         return;
     }
 
@@ -274,12 +275,12 @@ void Library::saveToDisk()
     plibrary.SerializeToArray(tmp.get(), len);
 
     if (fwrite(&len, 4, 1, f) != 1) {
-        qDebug() << "Error writing library file " << filename;
+        qDebug() << "Error writing library file" << filename;
         fclose(f);
         return;
     }
     if (fwrite(tmp.get(), len, 1, f) != 1) {
-        qDebug() << "Error writing library file " << filename;
+        qDebug() << "Error writing library file" << filename;
     }
 
     fclose(f);
@@ -297,6 +298,7 @@ void Library::persist()
 
 void Library::scanDirectory(const QString& path)
 {
+    QDir::Filters directory_filter = QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot;
     if (stopRescan())
         return;
     DirectoryMap::const_iterator it = directories_.find(path);
@@ -316,13 +318,15 @@ void Library::scanDirectory(const QString& path)
         // Stuff changed
         } else {
             QList<QString> subdirs;
+            shared_ptr<Directory> new_directory;
             {
                 QMutexLocker locker(&mutex_);
+                dirty_ = true;
                 QSet<QString> old_files = directory->getFileSet();
-                shared_ptr<Directory> new_directory = shared_ptr<Directory>(new Directory(path, mtime));
+                new_directory = shared_ptr<Directory>(new Directory(path, 0));
                 addDirectory(new_directory);
                 QDir dir(path);
-                dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
+                dir.setFilter(directory_filter);
                 QSet<QString> old_subdirs = directory->getSubdirectorySet();
                 foreach (QFileInfo info, dir.entryInfoList()) {
                     if (info.isFile()) {
@@ -330,7 +334,6 @@ void Library::scanDirectory(const QString& path)
                         if (file) {
                             if (file->mtime != info.lastModified().toTime_t()) {
                                 file = scanFile(info.filePath());
-                                dirty_ = true;
                                 emit libraryChanged(LibraryEvent(file, MODIFY));
                             }
                             new_directory->addFile(file);
@@ -345,8 +348,6 @@ void Library::scanDirectory(const QString& path)
                         old_subdirs.remove(info.absoluteFilePath());
                     }
                 }
-                if (!old_files.empty())
-                    dirty_ = true;
                 foreach (QString deleted_file, old_files) {
                     emit libraryChanged(LibraryEvent(directory->getFile(QFileInfo(deleted_file).fileName()), DELETE));
                 }
@@ -355,6 +356,11 @@ void Library::scanDirectory(const QString& path)
                     // since he is freshly crawled
                     removeDirectory(deleted_dir);
                 }
+                // Add subdirectories so we can set mtime and be done with this directory
+                foreach (QFileInfo info, subdirs) {
+                    addDirectory(shared_ptr<Directory>(new Directory(info.filePath(), 0)));
+                }
+                new_directory->setMtime(mtime);
             }
             foreach (QFileInfo info, subdirs) {
                 scanDirectory(info.filePath());
@@ -365,7 +371,8 @@ void Library::scanDirectory(const QString& path)
         shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, 0));
         addDirectory(directory);
         QDir dir(path);
-        dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
+        dir.setFilter(directory_filter);
+        QList<QString> subdirs;
         foreach (QFileInfo info, dir.entryInfoList()) {
             if (stopRescan())
                 return;
@@ -374,16 +381,23 @@ void Library::scanDirectory(const QString& path)
                 if (track)
                     addFile(track);
             } else {
-                scanDirectory(info.filePath());
+                addDirectory(shared_ptr<Directory>(new Directory(info.filePath(), 0)));
+                subdirs.append(info.absoluteFilePath());
             }
         }
-        directory->setMtime(mtime);
+        {
+            QMutexLocker locker(&mutex_);
+            directory->setMtime(mtime);
+        }
+        foreach (QFileInfo info, subdirs) {
+            scanDirectory(info.filePath());
+        }
     }
 }
 
 std::shared_ptr<Track> Library::scanFile(const QString& path)
 {
-    qDebug() << "Scanning file " << path;
+    qDebug() << "Scanning file" << path;
     QByteArray encodedName = QFile::encodeName(path);
 
     TagLib::FileRef fileref;
@@ -564,13 +578,13 @@ void Library::fileCallback(QString path, LibraryEventType event)
             } else {
                 // We tried taglib-reading this but it failed
                 // maybe now we have more data so try again
-                qDebug() << "Reading again with taglib " << path;
+                qDebug() << "Reading again with taglib" << path;
                 std::shared_ptr<Track> track = scanFile(path);
                 if (track)
                     addFile(track);
             }
         } else {
-            qDebug() << "Couldnt find the directory where the file was modified";
+            qDebug() << "Couldn't find the directory where the file was modified";
         }
     }
     //dumpDatabase();
