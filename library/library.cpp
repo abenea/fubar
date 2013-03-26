@@ -166,8 +166,9 @@ void Library::removeDirectory(QString path)
 
     // Delete tracks from views
     QList<PTrack> tracks = it.value()->getTracks();
-    if (!tracks.empty())
+    if (!tracks.empty()) {
         dirty_ = true;
+    }
     foreach (PTrack track, tracks) {
         emit libraryChanged(LibraryEvent(track, DELETE));
     }
@@ -249,10 +250,14 @@ void Library::loadFromDisk()
         addFile(track);
     }
     qDebug() << "Read metadata for" << plibrary.tracks_size() << "tracks in" << plibrary.directories_size() << "directories from disk";
+    dirty_ = false;
 }
 
 void Library::saveToDisk()
 {
+    if (!dirty_)
+        return;
+
     qDebug() << "Saving library file...";
     const char* filename = settingsDirFilePath(library_filename);
     FILE *f = std::fopen(filename, "wb");
@@ -274,25 +279,18 @@ void Library::saveToDisk()
     boost::scoped_array<char> tmp(new char[len]);
     plibrary.SerializeToArray(tmp.get(), len);
 
-    if (fwrite(&len, 4, 1, f) != 1) {
-        qDebug() << "Error writing library file" << filename;
-        fclose(f);
-        return;
-    }
-    if (fwrite(tmp.get(), len, 1, f) != 1) {
+    if ((fwrite(&len, 4, 1, f) == 1) && (fwrite(tmp.get(), len, 1, f) == 1)) {
+        dirty_ = false;
+    } else {
         qDebug() << "Error writing library file" << filename;
     }
-
     fclose(f);
 }
 
 void Library::persist()
 {
     QMutexLocker locker(&mutex_);
-    if (dirty_) {
-        saveToDisk();
-        dirty_ = false;
-    }
+    saveToDisk();
     QTimer::singleShot(persist_interval, this, SLOT(persist()));
 }
 
