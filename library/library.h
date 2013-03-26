@@ -59,8 +59,10 @@ signals:
 protected:
     void run();
 
+private slots:
+    void persist();
+
 private:
-    const char* libraryFilePath();
     void getFoldersFromSettings();
     void setFoldersInSettings();
     void saveToDisk();
@@ -97,6 +99,8 @@ private:
     bool rescanning_; // library is rescanning folders
     bool watching_;   // library is handling inotify events
     bool should_be_working_; // library should be working on something
+
+    bool dirty_; // library was modified since stored to disk
 };
 
 #endif // LIBRARY_H

@@ -16,12 +16,14 @@
 #include <QFileInfo>
 #include <QDebug>
 #include <QSettings>
-#include <qdatetime.h>
+#include <QTimer>
+#include <QDateTime>
 #include <set>
 
 using namespace std;
 
 const char* library_filename = "media_library";
+const int persist_interval = 5 * 60 * 1000;
 
 string LibraryEvent::op2str()
 {
@@ -40,11 +42,14 @@ string LibraryEvent::op2str()
 
 Library::Library(QObject * parent)
     : QThread(parent)
+    , mutex_(QMutex::Recursive)
     , quit_(false)
     , rescanning_(false)
     , watching_(false)
     , should_be_working_(true)
+    , dirty_(false)
 {
+    QTimer::singleShot(persist_interval, this, SLOT(persist()));
     getFoldersFromSettings();
     loadFromDisk();
 }
@@ -86,6 +91,7 @@ void Library::restartMonitoring(bool wipeDatabase)
     stopMonitoring();
     if (wipeDatabase) {
         QMutexLocker locker(&mutex_);
+        dirty_ = true;
         directories_.clear();
     }
     startMonitoring();
@@ -108,8 +114,9 @@ void Library::run()
         watcher_->setFileCallback(boost::bind(&Library::fileCallback, this, _1, _2));
         watcher_->setDirectoryCallback(boost::bind(&Library::directoryCallback, this, _1, _2));
 
-        if (!quit_)
+        if (!quit_) {
             rescan();
+        }
         else
             break;
         if (!should_be_working_)
@@ -130,6 +137,7 @@ void Library::quit()
 
 void Library::addDirectory(std::shared_ptr<Directory> directory)
 {
+    QMutexLocker locker(&mutex_);
     directories_.insert(directory->path(), directory);
 
     // Add child to father
@@ -142,6 +150,7 @@ void Library::addDirectory(std::shared_ptr<Directory> directory)
 
 void Library::removeDirectory(QString path)
 {
+    QMutexLocker locker(&mutex_);
     qDebug() << "Deleting dir " << path;
     DirectoryMap::iterator it = directories_.find(path);
     if (it == directories_.end()) {
@@ -157,6 +166,8 @@ void Library::removeDirectory(QString path)
 
     // Delete tracks from views
     QList<PTrack> tracks = it.value()->getTracks();
+    if (!tracks.empty())
+        dirty_ = true;
     foreach (PTrack track, tracks) {
         emit libraryChanged(LibraryEvent(track, DELETE));
     }
@@ -174,10 +185,12 @@ void Library::removeDirectory(QString path)
 
 void Library::addFile(std::shared_ptr<Track> track)
 {
+    QMutexLocker locker(&mutex_);
     // Add to directory
     QFileInfo file_info(track->location);
     DirectoryMap::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
+        dirty_ = true;
         it.value()->addFile(track);
         emit libraryChanged(LibraryEvent(track, CREATE));
     } else {
@@ -187,11 +200,13 @@ void Library::addFile(std::shared_ptr<Track> track)
 
 void Library::removeFile(QString path)
 {
+    QMutexLocker locker(&mutex_);
     QFileInfo file_info(path);
     DirectoryMap::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
         std::shared_ptr<Track> track = it.value()->removeFile(file_info.fileName());
         if (track) {
+            dirty_ = true;
             emit libraryChanged(LibraryEvent(track, DELETE));
         }
     } else {
@@ -237,6 +252,7 @@ void Library::loadFromDisk()
 
 void Library::saveToDisk()
 {
+    qDebug() << "Saving library file...";
     const char* filename = settingsDirFilePath(library_filename);
     FILE *f = std::fopen(filename, "wb");
     if (f == NULL) {
@@ -269,6 +285,16 @@ void Library::saveToDisk()
     fclose(f);
 }
 
+void Library::persist()
+{
+    QMutexLocker locker(&mutex_);
+    if (dirty_) {
+        saveToDisk();
+        dirty_ = false;
+    }
+    QTimer::singleShot(persist_interval, this, SLOT(persist()));
+}
+
 void Library::scanDirectory(const QString& path)
 {
     if (stopRescan())
@@ -289,40 +315,46 @@ void Library::scanDirectory(const QString& path)
             }
         // Stuff changed
         } else {
-            QSet<QString> old_files = directory->getFileSet();
-            shared_ptr<Directory> new_directory = shared_ptr<Directory>(new Directory(path, mtime));
-            addDirectory(new_directory);
-            QDir dir(path);
-            dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
             QList<QString> subdirs;
-            QSet<QString> old_subdirs = directory->getSubdirectorySet();
-            foreach (QFileInfo info, dir.entryInfoList()) {
-                if (info.isFile()) {
-                    shared_ptr<Track> file = directory->getFile(info.fileName());
-                    if (file) {
-                        if (file->mtime != info.lastModified().toTime_t()) {
+            {
+                QMutexLocker locker(&mutex_);
+                QSet<QString> old_files = directory->getFileSet();
+                shared_ptr<Directory> new_directory = shared_ptr<Directory>(new Directory(path, mtime));
+                addDirectory(new_directory);
+                QDir dir(path);
+                dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
+                QSet<QString> old_subdirs = directory->getSubdirectorySet();
+                foreach (QFileInfo info, dir.entryInfoList()) {
+                    if (info.isFile()) {
+                        shared_ptr<Track> file = directory->getFile(info.fileName());
+                        if (file) {
+                            if (file->mtime != info.lastModified().toTime_t()) {
+                                file = scanFile(info.filePath());
+                                dirty_ = true;
+                                emit libraryChanged(LibraryEvent(file, MODIFY));
+                            }
+                            new_directory->addFile(file);
+                            old_files.erase(old_files.find(file->location));
+                        } else {
                             file = scanFile(info.filePath());
-                            emit libraryChanged(LibraryEvent(file, MODIFY));
+                            if (file)
+                                addFile(file);
                         }
-                        new_directory->addFile(file);
-                        old_files.erase(old_files.find(file->location));
                     } else {
-                        file = scanFile(info.filePath());
-                        if (file)
-                            addFile(file);
+                        subdirs.append(info.absoluteFilePath());
+                        old_subdirs.remove(info.absoluteFilePath());
                     }
-                } else {
-                    subdirs.append(info.absoluteFilePath());
-                    old_subdirs.remove(info.absoluteFilePath());
                 }
-            }
-            foreach (QString deleted_file, old_files) {
-                emit libraryChanged(LibraryEvent(directory->getFile(QFileInfo(deleted_file).fileName()), DELETE));
-            }
-            foreach (QString deleted_dir, old_subdirs) {
-                // Here removing child from father wont work as the nrew father has no son like deleted dir_path
-                // since he is freshly crawled
-                removeDirectory(deleted_dir);
+                if (!old_files.empty())
+                    dirty_ = true;
+                foreach (QString deleted_file, old_files) {
+                    emit libraryChanged(LibraryEvent(directory->getFile(QFileInfo(deleted_file).fileName()), DELETE));
+                }
+                foreach (QString deleted_dir, old_subdirs) {
+                    // Here removing child from father wont work as the new father has no son like deleted dir_path
+                    // since he is freshly crawled
+                    removeDirectory(deleted_dir);
+                }
             }
             foreach (QFileInfo info, subdirs) {
                 scanDirectory(info.filePath());
@@ -526,6 +558,7 @@ void Library::fileCallback(QString path, LibraryEventType event)
 //                    qDebug() << "FILE MODIFY " << path;
                     PTrack track = scanFile(path);
                     it.value()->addFile(track);
+                    dirty_ = true;
                     emit libraryChanged(LibraryEvent(track, MODIFY));
                 }
             } else {
