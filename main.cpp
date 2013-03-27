@@ -12,6 +12,9 @@
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setApplicationName("fubar");
+    QCoreApplication::setOrganizationName("fubar");
+
     // Single instance
     int fd = open(settingsDirFilePath("lock"), O_RDONLY | O_CREAT);
     if (fd == -1) {
@@ -32,8 +35,6 @@ int main(int argc, char *argv[])
     }
 
     QApplication a(argc, argv);
-    QCoreApplication::setApplicationName("fubar");
-    QCoreApplication::setOrganizationName("fubar");
 
     qRegisterMetaType<LibraryEvent>("LibraryEvent");
     Library library;
