@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("fubar");
 
     // Single instance
-    int fd = open(settingsDirFilePath("lock"), O_RDONLY | O_CREAT);
+    int fd = open(settingsDirFilePath("lock"), O_WRONLY | O_CREAT);
     if (fd == -1) {
         qDebug()  << "Cant open lock file " << settingsDirFilePath("lock") << ": " << strerror(errno);
         return 1;
