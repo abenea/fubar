@@ -77,7 +77,7 @@ void Directory::addFilesFromDirectory(shared_ptr<Directory> directory)
     files_ = directory->files_;
 }
 
-QList<QString> Directory::getSubdirectories()
+QList<QString> Directory::getSubdirectoriesNames()
 {
     QList<QString> subdirs;
     subdirs.reserve(subdirs_.size());
@@ -92,6 +92,15 @@ shared_ptr<Track> Directory::getFile(QString name)
     shared_ptr<Track> result;
     FileMap::iterator it = files_.find(name);
     if (it != files_.end())
+        result = it.value();
+    return result;
+}
+
+shared_ptr<Directory> Directory::getSubdirectory(QString name)
+{
+    shared_ptr<Directory> result;
+    SubdirectoryMap::iterator it = subdirs_.find(name);
+    if (it != subdirs_.end())
         result = it.value();
     return result;
 }
@@ -114,7 +123,7 @@ QSet<QString> Directory::getFileSet()
     return files;
 }
 
-QSet<QString> Directory::getSubdirectorySet()
+QSet<QString> Directory::getSubdirectoriesPathsSet()
 {
     QSet<QString> subdirectories;
     foreach (QString path, subdirs_.keys()) {

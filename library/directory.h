@@ -24,11 +24,12 @@ public:
     std::shared_ptr<Track> removeFile(QString fileName);
     void addFilesFromDirectory(std::shared_ptr<Directory> directory);
 
-    QList<QString> getSubdirectories();
+    QList<QString> getSubdirectoriesNames();
     std::shared_ptr<Track> getFile(QString name);
-    QList<std::shared_ptr<Track> > getTracks();
+    std::shared_ptr<Directory> getSubdirectory(QString name);
+    QList<std::shared_ptr<Track>> getTracks();
     QSet<QString> getFileSet();
-    QSet<QString> getSubdirectorySet();
+    QSet<QString> getSubdirectoriesPathsSet();
     void clearFiles();
 
     void addFilesToProto(proto::Library& library);
@@ -39,8 +40,8 @@ public:
     void setMtime(uint mtime) { mtime_ = mtime; }
 
 private:
-    typedef QMap<QString, std::shared_ptr<Directory> > SubdirectoryMap;
-    typedef QMap<QString, std::shared_ptr<Track> > FileMap;
+    typedef QMap<QString, std::shared_ptr<Directory>> SubdirectoryMap;
+    typedef QMap<QString, std::shared_ptr<Track>> FileMap;
 
     QString location_;
     uint mtime_;

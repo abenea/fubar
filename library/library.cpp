@@ -157,7 +157,7 @@ void Library::removeDirectory(QString path)
 //        qDebug() << " Maybe wanted to remove directory " << path << ". No dice";
         return;
     }
-    QList<QString> subdirs = it.value()->getSubdirectories();
+    QList<QString> subdirs = it.value()->getSubdirectoriesNames();
     foreach (QString subdir, subdirs) {
         removeDirectory(QFileInfo(QDir(path), subdir).absoluteFilePath());
     }
@@ -307,7 +307,7 @@ void Library::scanDirectory(const QString& path)
         shared_ptr<Directory> directory = it.value();
         // Nothing changed in this dir
         if (mtime == directory->mtime()) {
-            QList<QString> subdirs = directory->getSubdirectories();
+            QList<QString> subdirs = directory->getSubdirectoriesNames();
             foreach (QString subdir, subdirs) {
                 scanDirectory(QFileInfo(path, subdir).absoluteFilePath());
                 if (stopRescan())
@@ -315,7 +315,7 @@ void Library::scanDirectory(const QString& path)
             }
         // Stuff changed
         } else {
-            QList<QString> subdirs;
+            QList<QString> newly_created_subdirs;
             shared_ptr<Directory> new_directory;
             {
                 QMutexLocker locker(&mutex_);
@@ -325,7 +325,7 @@ void Library::scanDirectory(const QString& path)
                 addDirectory(new_directory);
                 QDir dir(path);
                 dir.setFilter(directory_filter);
-                QSet<QString> old_subdirs = directory->getSubdirectorySet();
+                QSet<QString> deleted_subdirs = directory->getSubdirectoriesPathsSet();
                 foreach (QFileInfo info, dir.entryInfoList()) {
                     if (info.isFile()) {
                         shared_ptr<Track> file = directory->getFile(info.fileName());
@@ -342,26 +342,32 @@ void Library::scanDirectory(const QString& path)
                                 addFile(file);
                         }
                     } else {
-                        subdirs.append(info.absoluteFilePath());
-                        old_subdirs.remove(info.absoluteFilePath());
+                        shared_ptr<Directory> subdir = directory->getSubdirectory(info.fileName());
+                        if (subdir) {
+                            new_directory->addSubdirectory(subdir);
+                            deleted_subdirs.remove(info.absoluteFilePath());
+                        } else {
+                            // New directory
+                            newly_created_subdirs.append(info.absoluteFilePath());
+                        }
                     }
                 }
                 foreach (QString deleted_file, old_files) {
                     emit libraryChanged(LibraryEvent(directory->getFile(QFileInfo(deleted_file).fileName()), DELETE));
                 }
-                foreach (QString deleted_dir, old_subdirs) {
+                foreach (QString deleted_dir, deleted_subdirs) {
                     // Here removing child from father wont work as the new father has no son like deleted dir_path
                     // since he is freshly crawled
                     removeDirectory(deleted_dir);
                 }
                 // Add subdirectories so we can set mtime and be done with this directory
-                foreach (QFileInfo info, subdirs) {
+                foreach (QFileInfo info, newly_created_subdirs) {
                     addDirectory(shared_ptr<Directory>(new Directory(info.filePath(), 0)));
                 }
                 new_directory->setMtime(mtime);
             }
-            foreach (QFileInfo info, subdirs) {
-                scanDirectory(info.filePath());
+            foreach (QString subdir_path, new_directory->getSubdirectoriesPathsSet()) {
+                scanDirectory(subdir_path);
             }
         }
     // Full scan
