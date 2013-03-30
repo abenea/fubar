@@ -66,19 +66,10 @@ std::pair<PlaylistTab*, QPersistentModelIndex> Queue::popTrack()
     return getNextTrack(true);
 }
 
-void Queue::popPeekedTrack()
-{
-    getFirst(true);
-    peeked_ = false;
-}
-
-void Queue::clear()
+std::pair<PlaylistTab*, QPersistentModelIndex> Queue::popPeekedTrack()
 {
     peeked_ = false;
-    while (!queue_.empty()) {
-        queue_.pop();
-    }
-    paths_.clear();
+    return getFirst(true);
 }
 
 bool Queue::isQueued(PlaylistTab* playlistTab, std::shared_ptr<Track> track)
@@ -97,4 +88,21 @@ bool Queue::isEmpty()
 bool Queue::peeked()
 {
     return peeked_;
+}
+
+std::vector<QPersistentModelIndex> Queue::getTracksAndClear(PlaylistTab* playlist)
+{
+    peeked_ = false;
+    std::vector<QPersistentModelIndex> result;
+    while (!queue_.empty()) {
+        PlaylistTab* p;
+        QPersistentModelIndex index;
+        QString path;
+        std::tie(p, index, path) = queue_.front();
+        if (p == playlist)
+            result.push_back(index);
+        queue_.pop();
+    }
+    paths_.clear();
+    return result;
 }

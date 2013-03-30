@@ -8,6 +8,7 @@
 #include <memory>
 #include <map>
 #include <queue>
+#include <vector>
 
 class Track;
 class PlaylistTab;
@@ -20,12 +21,13 @@ public:
     void pushTracks(PlaylistTab* playlistTab, QModelIndexList tracks);
     std::pair<PlaylistTab*, QPersistentModelIndex> peekTrack();
     std::pair<PlaylistTab*, QPersistentModelIndex> popTrack();
-    void popPeekedTrack();
+    std::pair<PlaylistTab*, QPersistentModelIndex> popPeekedTrack();
 
     // A track was handed out but not deleted from the queue
     bool peeked();
 
-    void clear();
+    // Clears queue and returns the tracks from *playlist*
+    std::vector<QPersistentModelIndex> getTracksAndClear(PlaylistTab* playlist);
 
     bool isEmpty();
     bool isQueued(PlaylistTab* playlistTab, std::shared_ptr<Track> track);

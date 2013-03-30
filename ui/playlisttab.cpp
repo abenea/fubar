@@ -181,6 +181,11 @@ void PlaylistTab::updateCursorAndScroll()
     ui_.playlist->scrollTo(filterModel_.mapFromSource(currentIndex_), QAbstractItemView::PositionAtCenter);
 }
 
+void PlaylistTab::repaintTrack(const QModelIndex& index)
+{
+    ui_.playlist->update(filterModel_.mapFromSource(index));
+}
+
 void PlaylistTab::addDirectory(const QString& directory)
 {
     if (!synced_)

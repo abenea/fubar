@@ -26,6 +26,7 @@ public slots:
     void updateCurrentIndex();
     void updateCursor();
     void updateCursorAndScroll();
+    void repaintTrack(const QModelIndex& index);
     void focusFilter();
     virtual void addDirectory(const QString &directory);
     virtual void addFiles(const QStringList &files);

@@ -189,7 +189,8 @@ void MainWindow::on_pluginsAction_triggered()
 void MainWindow::on_clearQueueAction_triggered()
 {
 //     bool peeked = queue.peeked();
-    queue.clear();
+    for (auto index : queue.getTracksAndClear(current()))
+        current()->repaintTrack(index);
     // We can't buffer next song 'cause gstreamer is bugged to hell
 //     if (peeked) {
 //         // buffer next song
@@ -269,8 +270,9 @@ void MainWindow::aboutToFinish()
     if (!queue.isEmpty()) {
         auto enqueued = queue.peekTrack();
         if (enqueued.second.isValid()) {
-            if (currentlyPlayingPlaylist_ != enqueued.first)
+            if (currentlyPlayingPlaylist_ != enqueued.first) {
                 bufferingTrackPlaylist_ = enqueued.first;
+            }
             enqueued.first->enqueueTrack(enqueued.second);
             return;
         }
@@ -281,35 +283,31 @@ void MainWindow::aboutToFinish()
 void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
 {
     qDebug() << "currentSourceChanged() " << mediaObject->currentTime() << " " << mediaObject->totalTime();
-    if (queue.peeked())
-        queue.popPeekedTrack();
     if (bufferingTrackPlaylist_) {
-        if (playlistTabs->indexOf(currentlyPlayingPlaylist_) != -1) {
+        if (playlistTabs->indexOf(bufferingTrackPlaylist_) != -1)
             currentlyPlayingPlaylist_ = bufferingTrackPlaylist_;
-        } else {
-            // Playlist was deleted
+        else
             currentlyPlayingPlaylist_ = nullptr;
-        }
         bufferingTrackPlaylist_= nullptr;
     }
-    if (currentlyPlayingPlaylist_)
+    if (queue.peeked()) {
+        auto enqueued =  queue.popPeekedTrack();
+        repaintEnqueuedTrack(enqueued.second);
+    }
+    PTrack track = nullptr;
+    if (currentlyPlayingPlaylist_) {
         currentlyPlayingPlaylist_->updateCurrentIndex();
-    PTrack track = bufferingTrack_ ? bufferingTrack_ : currentlyPlayingPlaylist_->getCurrentTrack();
+        track = currentlyPlayingPlaylist_->getCurrentTrack();
+    }
+    if (bufferingTrack_)
+        track = bufferingTrack_;
     if (track) {
         emit trackPlaying(track);
         emit trackPositionChanged(0, true);
     } else {
-        qDebug() << "OMFG! source changed to null track!!!";
+        qDebug() << "Source changed to null track!";
     }
     bufferingTrack_ = nullptr;
-}
-
-PlaylistTab* MainWindow::getPlayingPlaylist()
-{
-    if (currentlyPlayingPlaylist_ == 0) {
-        setCurrentPlayingPlaylist(current());
-    }
-    return currentlyPlayingPlaylist_;
 }
 
 PlaylistTab* MainWindow::getActivePlaylist()
@@ -319,7 +317,7 @@ PlaylistTab* MainWindow::getActivePlaylist()
 
 PTrack MainWindow::getCurrentTrack()
 {
-    PlaylistTab* playlist = getPlayingPlaylist();
+    PlaylistTab* playlist = currentlyPlayingPlaylist_;
     if (!playlist)
         return PTrack(0);
     return playlist->getCurrentTrack();
@@ -327,7 +325,7 @@ PTrack MainWindow::getCurrentTrack()
 
 void MainWindow::play()
 {
-    if (getPlayingPlaylist()) {
+    if (currentlyPlayingPlaylist_) {
         currentlyPlayingPlaylist_->play();
         PTrack track = getCurrentTrack();
         if (track) {
@@ -352,16 +350,17 @@ void MainWindow::next()
         if (enqueued.second.isValid()) {
             currentlyPlayingPlaylist_ = enqueued.first;
             currentlyPlayingPlaylist_->play(enqueued.second);
+            repaintEnqueuedTrack(enqueued.second);
             return;
         }
     }
-    if (getPlayingPlaylist())
+    if (currentlyPlayingPlaylist_)
         currentlyPlayingPlaylist_->playNext(+1);
 }
 
 void MainWindow::prev()
 {
-    if (getPlayingPlaylist())
+    if (currentlyPlayingPlaylist_)
         currentlyPlayingPlaylist_->playNext(-1);
 }
 
@@ -398,10 +397,8 @@ void MainWindow::statusBarDoubleClicked()
 
 void MainWindow::focusFilter()
 {
-    PlaylistTab* playlist = getPlayingPlaylist();
-    if (playlist) {
-        playlist->focusFilter();
-    }
+    if (current())
+        current()->focusFilter();
 }
 
 void MainWindow::updateUI(PTrack track)
@@ -430,6 +427,13 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
     if (reason == QSystemTrayIcon::Trigger) {
         showHide();
     }
+}
+
+void MainWindow::repaintEnqueuedTrack(const QPersistentModelIndex& index)
+{
+    if (!currentlyPlayingPlaylist_ || currentlyPlayingPlaylist_ != current())
+        return;
+    currentlyPlayingPlaylist_->repaintTrack(index);
 }
 
 #include "mainwindow.moc"

@@ -39,7 +39,6 @@ public:
     bool random() { return random_; }
 
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
-    PlaylistTab* getPlayingPlaylist();
     PlaylistTab* getActivePlaylist();
     PTrack getCurrentTrack();
 
@@ -90,6 +89,8 @@ private slots:
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
 
 private:
+    void repaintEnqueuedTrack(const QPersistentModelIndex& index);
+
     void setShortcuts();
     void addShortcut(QKeySequence shortcut, const char* func, QString name);
 
