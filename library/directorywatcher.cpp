@@ -151,7 +151,7 @@ void DirectoryWatcher::handleEvent(inotify_event* event)
 
     WatchMap::left_iterator it = watches_.left.find(event->wd);
     if (it == watches_.left.end()) {
-        qDebug() << "ffs can't map the inotify wd to path";
+//         qDebug() << "Can't map the inotify watch descriptor to path";
         return;
     }
     LibraryEventType eventType = UNKNOWN;
@@ -162,9 +162,7 @@ void DirectoryWatcher::handleEvent(inotify_event* event)
     } else if (event->mask & IN_DELETE || event->mask & IN_MOVED_FROM) {
         eventType = DELETE;
     }
-    if (eventType != UNKNOWN) {
-        if (event->len == 0)
-            qDebug() << "wtf no event->name";
+    if (eventType != UNKNOWN && event->len != 0) {
         QString path = QFileInfo(QDir(it->second), QString::fromUtf8(event->name)).absoluteFilePath();
         if (event->mask & IN_ISDIR) {
             if (eventType != MODIFY)
