@@ -2,6 +2,7 @@
 #include "ui/mainwindow.h"
 #include "library/library.h"
 #include "plugins/pluginmanager.h"
+#include "unixsignalshandler.h"
 #include <QtGui/QApplication>
 #include <QDebug>
 #include <sys/file.h>
@@ -41,6 +42,8 @@ int main(int argc, char *argv[])
 
     MainWindow w(library);
     w.show();
+
+    UnixSignalsHandler signalsHandler(&w);
 
     PluginManager pluginmanager(w);
 
