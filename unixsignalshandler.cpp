@@ -1,6 +1,5 @@
 #include "unixsignalshandler.h"
 #include "ui/mainwindow.h"
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <signal.h>
 #include <unistd.h>
@@ -15,8 +14,10 @@ static void setup_unix_signal_handlers()
     sigemptyset(&term.sa_mask);
     term.sa_flags |= SA_RESTART;
 
-    if (sigaction(SIGTERM, &term, 0) == -1)
-        qDebug() << "sigaction failed";
+    for (auto signal : {SIGTERM, SIGINT}) {
+        if (sigaction(signal, &term, 0) == -1)
+            qDebug() << "sigaction failed for" << strsignal(signal) << strerror(errno);
+    }
 }
 
 
