@@ -137,6 +137,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::addPlaylist(PlaylistTab* playlistTab, QString name)
 {
     playlistTabs->addTab(playlistTab, name);
+    playlistTabs->setCurrentWidget(playlistTab);
 }
 
 void MainWindow::removePlaylistTab(int index)
@@ -393,7 +394,6 @@ void MainWindow::next()
             return;
         }
     }
-    qDebug() << "queue is empty";
     if (currentlyPlayingPlaylist_)
         currentlyPlayingPlaylist_->playNext(+1);
 }
