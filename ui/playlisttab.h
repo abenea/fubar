@@ -19,6 +19,9 @@ public:
 
     PTrack getCurrentTrack();
 
+    // Can the user edit it?
+    bool isEditable() { return !synced_; }
+
     void play(const QModelIndex &index);
     void play();
     void playNext(int offset);

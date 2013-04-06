@@ -76,6 +76,7 @@ private slots:
     void on_cursorFollowsPlaybackAction_triggered();
     void on_randomAction_triggered();
 
+    void menuFileAboutToShow();
     void on_mainToolBar_actionTriggered(QAction* action);
 
     void tick(qint64 pos);

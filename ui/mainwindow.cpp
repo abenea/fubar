@@ -64,6 +64,7 @@ MainWindow::MainWindow(Library* library, AudioOutput* audioOutput, QWidget *pare
 
     playlistTabs->setTabsClosable(true);
     QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(removePlaylistTab(int)));
+    QObject::connect(menu_File, SIGNAL(aboutToShow()), this, SLOT(menuFileAboutToShow()));
 
     setWindowIcon(QIcon(":/icon/logo.gif"));
 
@@ -147,6 +148,13 @@ void MainWindow::removePlaylistTab(int index)
         playlistTabs->removeTab(index);
         delete widget;
     }
+}
+
+void MainWindow::menuFileAboutToShow()
+{
+    PlaylistTab* current = getActivePlaylist();
+    addFilesAction->setEnabled(current && current->isEditable());
+    addDirectoryAction->setEnabled(current && current->isEditable());
 }
 
 void MainWindow::on_addDirectoryAction_triggered()
