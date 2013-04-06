@@ -1,5 +1,5 @@
 #include "pluginspreferences.h"
-#include "../plugins/pluginmanager.h"
+#include "plugins/pluginmanager.h"
 #include <QDebug>
 
 PluginsPreferences::PluginsPreferences(QWidget* parent)

@@ -127,6 +127,15 @@ void PlaylistModel::addTracks(QList<std::shared_ptr<Track>> tracks)
     endInsertRows();
 }
 
+void PlaylistModel::removeTracks(QModelIndexList tracks)
+{
+    for (auto track : tracks) {
+        beginRemoveRows(QModelIndex(), track.row(), track.row());
+        playlist_.tracks.removeAt(track.row());
+        endRemoveRows();
+    }
+}
+
 QModelIndex PlaylistModel::getIndex(QString path)
 {
     int i = 0;

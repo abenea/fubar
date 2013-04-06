@@ -1,5 +1,6 @@
 #include "unixsignalshandler.h"
 #include "ui/mainwindow.h"
+#include <QDebug>
 #include <sys/socket.h>
 #include <signal.h>
 #include <unistd.h>

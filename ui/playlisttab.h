@@ -17,26 +17,32 @@ public:
     // so uncool having this here
     QModelIndexList mapToSource(QModelIndexList indexes) const;
 
-public slots:
+    PTrack getCurrentTrack();
+
     void play(const QModelIndex &index);
     void play();
     void playNext(int offset);
+
     void enqueueNextTrack();
     void enqueueTrack(QModelIndex index);
-    void updateCurrentIndex();
-    void updateCursor();
+
+    void currentSourceChanged();
+
     void updateCursorAndScroll();
     void repaintTrack(const QModelIndex& index);
     void focusFilter();
-    virtual void addDirectory(const QString &directory);
-    virtual void addFiles(const QStringList &files);
-    virtual void addTracks(const QList<std::shared_ptr<Track>> &tracks);
-    virtual void libraryChanged(LibraryEvent event);
-    virtual void libraryChanged(QList<std::shared_ptr<Track>> tracks);
 
-    PTrack getCurrentTrack();
+    void addDirectory(const QString &directory);
+    void addFiles(const QStringList &files);
+    void addTracks(const QList<std::shared_ptr<Track>> &tracks);
+    void removeTracks(QModelIndexList trackList);
+
+public slots:
+    void libraryChanged(LibraryEvent event);
+    void libraryChanged(QList<std::shared_ptr<Track>> tracks);
 
 protected slots:
+    void updateCursor();
     void changedFilter(const QString &filter);
     void doubleClicked(const QModelIndex &filterIndex);
     void clearFilterAndPlay();
@@ -52,6 +58,13 @@ protected:
     PlaylistFilter filterModel_;
     QPersistentModelIndex currentIndex_;
     QPersistentModelIndex nextIndex_;
+
+private:
+    // Used for testing
+    void removeTrackAt(int position);
+    void enqueuePosition(int pos);
+
+    friend class PlayerTest;
 };
 
 #endif // PLAYLISTTAB_H

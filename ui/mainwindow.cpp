@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "../audiooutput.h"
 #include "playlistfilter.h"
 #include "playlistmodel.h"
 #include "ui/ui_mainwindow.h"
@@ -11,16 +12,20 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QFileInfo>
+#include <QTextStream>
+#include <QDebug>
 #include <QtCore/qmath.h>
 #include <kwindowsystem.h>
 #include <kaction.h>
 
 MainWindow *MainWindow::instance = 0;
 
-MainWindow::MainWindow(Library& library, QWidget *parent)
+MainWindow::MainWindow(Library* library, AudioOutput* audioOutput, QWidget *parent, bool testing)
     : QMainWindow(parent)
     , statusBar_(this)
     , library_(library)
+    , audioOutput_(audioOutput)
+    , testing_(testing)
     , currentlyPlayingPlaylist_(nullptr)
     , bufferingTrackPlaylist_(nullptr)
     , cursorFollowsPlayback_(false)
@@ -30,16 +35,14 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
 
     // questionable code
     QObject::connect(this, SIGNAL(trackPlaying(PTrack)), this, SLOT(updateUI(PTrack)));
-    audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
-    mediaObject = new Phonon::MediaObject(this);
-    mediaObject->setTickInterval(1000);
-    Phonon::createPath(mediaObject, audioOutput);
-    QObject::connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
-    QObject::connect(mediaObject, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)), this, SLOT(currentSourceChanged(const Phonon::MediaSource &)));
-    QObject::connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
-    // TODO: report bug to phonon about totalTimeChanged reporting crap when enqueue is used
-//    QObject::connect(mediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
-    seekSlider_ = new SeekSlider(mediaObject, this);
+    audioOutput_->setTickInterval(1000);
+    QObject::connect(audioOutput_, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
+    QObject::connect(audioOutput_, SIGNAL(currentSourceChanged()), this, SLOT(currentSourceChanged()));
+    QObject::connect(audioOutput_, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
+    // Not using Phono totalTimeChanged() signal because it returns 0 when used with enqueue()
+    // TODO: report bug to phonon
+//    QObject::connect(audioOutput_, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
+    seekSlider_ = new SeekSlider(audioOutput_, this);
     // questionable code
     QObject::connect(seekSlider_, SIGNAL(movedByUser(int)), this, SLOT(sliderMovedByUser(int)));
     volumeSlider_ = new QSlider(this);
@@ -59,11 +62,17 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
     setStatusBar(&statusBar_);
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
 
+    playlistTabs->setTabsClosable(true);
+    QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(removePlaylistTab(int)));
+
     setWindowIcon(QIcon(":/icon/logo.gif"));
 
     readSettings();
 
     instance = this;
+
+    if (testing)
+        return;
 
     on_newLibraryViewAction_triggered();
 
@@ -72,7 +81,6 @@ MainWindow::MainWindow(Library& library, QWidget *parent)
 
 void MainWindow::addShortcut(QKeySequence shortcut, const char* func, QString name)
 {
-    // Not saving a reference to it
     KAction* action = new KAction(name, this);
     action->setObjectName(name);
     action->setGlobalShortcut(KShortcut(shortcut), KAction::ActiveShortcut, KAction::Autoloading);
@@ -113,7 +121,7 @@ void MainWindow::tick(qint64 pos)
     emit trackPositionChanged(pos, false);
     PTrack track = getCurrentTrack();
     if (track) {
-        QString progress = msToHumanTime(mediaObject->currentTime()) + " / " + msToHumanTime(track->audioproperties.length * 1000);
+        QString progress = msToHumanTime(audioOutput_->currentTime()) + " / " + msToHumanTime(track->audioproperties.length * 1000);
         QString format = QFileInfo(track->location).suffix().toUpper();
         statusBar_.showMessage(QString("%1 %2kbps %3Hz  %4  %5").arg(format).arg(track->audioproperties.bitrate).arg(track->audioproperties.samplerate).arg(QChar(164)).arg(progress));
     }
@@ -126,9 +134,18 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QWidget::closeEvent(event);
 }
 
-PlaylistTab* MainWindow::current()
+void MainWindow::addPlaylist(PlaylistTab* playlistTab, QString name)
 {
-    return dynamic_cast<PlaylistTab *>(playlistTabs->currentWidget());
+    playlistTabs->addTab(playlistTab, name);
+}
+
+void MainWindow::removePlaylistTab(int index)
+{
+    QWidget* widget = playlistTabs->widget(index);
+    if (widget) {
+        playlistTabs->removeTab(index);
+        delete widget;
+    }
 }
 
 void MainWindow::on_addDirectoryAction_triggered()
@@ -139,7 +156,7 @@ void MainWindow::on_addDirectoryAction_triggered()
     if (directory.isEmpty())
         return;
 
-    PlaylistTab *tab = current();
+    PlaylistTab *tab = getActivePlaylist();
     if (tab) {
         tab->addDirectory(directory);
     }
@@ -151,7 +168,7 @@ void MainWindow::on_addFilesAction_triggered()
     if (files.isEmpty())
         return;
 
-    PlaylistTab *tab = current();
+    PlaylistTab *tab = getActivePlaylist();
     if (tab) {
         // Apparently you should iterate over a copy
         QStringList files2 = files;
@@ -161,16 +178,18 @@ void MainWindow::on_addFilesAction_triggered()
 
 void MainWindow::on_newLibraryViewAction_triggered()
 {
-    PlaylistTab* tab = new PlaylistTab(true, this);
-    tab->addTracks(library_.getTracks());
-    QObject::connect(&library_, SIGNAL(libraryChanged(LibraryEvent)), tab, SLOT(libraryChanged(LibraryEvent)));
-    QObject::connect(&library_, SIGNAL(libraryChanged(QList<std::shared_ptr<Track>>)), tab, SLOT(libraryChanged(QList<std::shared_ptr<Track>>)));
-    playlistTabs->addTab(tab, "All");
+    if (library_) {
+        PlaylistTab* tab = new PlaylistTab(true, this);
+        tab->addTracks(library_->getTracks());
+        QObject::connect(library_, SIGNAL(libraryChanged(LibraryEvent)), tab, SLOT(libraryChanged(LibraryEvent)));
+        QObject::connect(library_, SIGNAL(libraryChanged(QList<std::shared_ptr<Track>>)), tab, SLOT(libraryChanged(QList<std::shared_ptr<Track>>)));
+        addPlaylist(tab, "All");
+    }
 }
 
 void MainWindow::on_newPlaylistAction_triggered()
 {
-    playlistTabs->addTab(new PlaylistTab(false, this), "Unnamed playlist");
+    addPlaylist(new PlaylistTab(false, this));
 }
 
 void MainWindow::on_quitAction_triggered()
@@ -180,8 +199,10 @@ void MainWindow::on_quitAction_triggered()
 
 void MainWindow::on_libraryPreferencesAction_triggered()
 {
-    LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(library_, this);
-    widget->show();
+    if (library_) {
+        LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(*library_, this);
+        widget->show();
+    }
 }
 
 void MainWindow::on_pluginsAction_triggered()
@@ -193,8 +214,8 @@ void MainWindow::on_pluginsAction_triggered()
 void MainWindow::on_clearQueueAction_triggered()
 {
 //     bool peeked = queue.peeked();
-    for (auto index : queue.getTracksAndClear(current()))
-        current()->repaintTrack(index);
+    for (auto index : queue.getTracksAndClear(getActivePlaylist()))
+        getActivePlaylist()->repaintTrack(index);
     // We can't buffer next song 'cause gstreamer is bugged to hell
 //     if (peeked) {
 //         // buffer next song
@@ -215,6 +236,8 @@ void MainWindow::on_randomAction_triggered()
 
 void MainWindow::readSettings()
 {
+    if (testing_)
+        return;
     QSettings settings;
     restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
     qreal volume = settings.value("mainwindow/volume", -1).toReal();
@@ -230,6 +253,8 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
+    if (testing_)
+        return;
     QSettings settings;
     settings.setValue("mainwindow/geometry", saveGeometry());
     settings.setValue("mainwindow/volume", currentVolume());
@@ -259,8 +284,8 @@ void MainWindow::on_mainToolBar_actionTriggered(QAction* action)
 
 void MainWindow::enqueueTrack(PTrack track)
 {
-    mediaObject->clearQueue();
-    mediaObject->enqueue(Phonon::MediaSource(track->location));
+    audioOutput_->clearQueue();
+    audioOutput_->enqueue(track->location);
     bufferingTrack_ = track;
     qDebug() << "Enqueue " << track->location;
 }
@@ -268,9 +293,10 @@ void MainWindow::enqueueTrack(PTrack track)
 void MainWindow::playTrack(PTrack track)
 {
     bufferingTrack_ = nullptr;
-    mediaObject->clearQueue();
-    mediaObject->setCurrentSource(Phonon::MediaSource(track->location));
-    mediaObject->play();
+    audioOutput_->clearQueue();
+    audioOutput_->setCurrentSource(track->location);
+    volumeChanged();
+    audioOutput_->play();
 }
 
 void MainWindow::aboutToFinish()
@@ -288,9 +314,9 @@ void MainWindow::aboutToFinish()
     currentlyPlayingPlaylist_->enqueueNextTrack();
 }
 
-void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
+void MainWindow::currentSourceChanged()
 {
-    qDebug() << "currentSourceChanged() " << mediaObject->currentTime() << " " << mediaObject->totalTime();
+    qDebug() << "currentSourceChanged() " << audioOutput_->currentTime() << " " << audioOutput_->totalTime();
     if (bufferingTrackPlaylist_) {
         if (playlistTabs->indexOf(bufferingTrackPlaylist_) != -1)
             currentlyPlayingPlaylist_ = bufferingTrackPlaylist_;
@@ -304,7 +330,7 @@ void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
     }
     PTrack track = nullptr;
     if (currentlyPlayingPlaylist_) {
-        currentlyPlayingPlaylist_->updateCurrentIndex();
+        currentlyPlayingPlaylist_->currentSourceChanged();
         track = currentlyPlayingPlaylist_->getCurrentTrack();
     }
     if (bufferingTrack_)
@@ -321,8 +347,9 @@ void MainWindow::currentSourceChanged(const Phonon::MediaSource& /*source*/)
 
 PlaylistTab* MainWindow::getActivePlaylist()
 {
-    return dynamic_cast<PlaylistTab*>(playlistTabs->currentWidget());
+    return dynamic_cast<PlaylistTab *>(playlistTabs->currentWidget());
 }
+
 
 PTrack MainWindow::getCurrentTrack()
 {
@@ -334,8 +361,11 @@ PTrack MainWindow::getCurrentTrack()
 
 void MainWindow::play()
 {
-    if (currentlyPlayingPlaylist_) {
-        currentlyPlayingPlaylist_->play();
+    auto playlistTab = currentlyPlayingPlaylist_;
+    if (!playlistTab)
+        playlistTab = getActivePlaylist();
+    if (playlistTab) {
+        playlistTab->play();
         PTrack track = getCurrentTrack();
         if (track) {
             emit trackPlaying(track);
@@ -346,10 +376,10 @@ void MainWindow::play()
 
 void MainWindow::playPause()
 {
-    if (mediaObject->state() == Phonon::PausedState)
-        mediaObject->play();
+    if (audioOutput_->paused())
+        audioOutput_->play();
     else
-        mediaObject->pause();
+        audioOutput_->pause();
 }
 
 void MainWindow::next()
@@ -363,6 +393,7 @@ void MainWindow::next()
             return;
         }
     }
+    qDebug() << "queue is empty";
     if (currentlyPlayingPlaylist_)
         currentlyPlayingPlaylist_->playNext(+1);
 }
@@ -375,10 +406,10 @@ void MainWindow::prev()
 
 void MainWindow::stop()
 {
-    mediaObject->stop();
+    audioOutput_->stop();
     PTrack track = getCurrentTrack();
     if (track)
-        emit stopped(mediaObject->totalTime(), mediaObject->currentTime());
+        emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
     updateUI(0);
     statusBar_.clearMessage();
 }
@@ -406,8 +437,8 @@ void MainWindow::statusBarDoubleClicked()
 
 void MainWindow::focusFilter()
 {
-    if (current())
-        current()->focusFilter();
+    if (getActivePlaylist())
+        getActivePlaylist()->focusFilter();
 }
 
 void MainWindow::updateUI(PTrack track)
@@ -440,7 +471,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 
 void MainWindow::repaintEnqueuedTrack(const QPersistentModelIndex& index)
 {
-    if (!currentlyPlayingPlaylist_ || currentlyPlayingPlaylist_ != current())
+    if (!currentlyPlayingPlaylist_ || currentlyPlayingPlaylist_ != getActivePlaylist())
         return;
     currentlyPlayingPlaylist_->repaintTrack(index);
 }
@@ -477,8 +508,8 @@ void MainWindow::setVolume(qreal value)
         }
         volume *= rg;
     }
-    qDebug() << "Setting volume to " << volume;
-    audioOutput->setVolume(volume);
+//     qDebug() << "Setting volume to " << volume;
+    audioOutput_->setVolume(volume);
 }
 
 #include "mainwindow.moc"

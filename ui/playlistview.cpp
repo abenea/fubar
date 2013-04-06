@@ -25,10 +25,17 @@ void PlaylistView::keyPressEvent(QKeyEvent* event)
         emit returnPressed(currentIndex());
     } else if (event->key() == Qt::Key_Q) {
         PlaylistTab* playlistTab = MainWindow::instance->getActivePlaylist();
-        auto selected = selectedIndexes();
-        MainWindow::instance->queue.pushTracks(playlistTab, playlistTab->mapToSource(selected));
-        for (auto index : selected)
-            update(index);
+        if (playlistTab) {
+            auto selected = selectedIndexes();
+            MainWindow::instance->queue.pushTracks(playlistTab, playlistTab->mapToSource(selected));
+            for (auto index : selected)
+                update(index);
+        }
+    } else if (event->key() == Qt::Key_Delete) {
+        PlaylistTab* playlistTab = MainWindow::instance->getActivePlaylist();
+        if (playlistTab) {
+            playlistTab->removeTracks(selectedIndexes());
+        }
     } else {
         QAbstractItemView::keyPressEvent(event);
     }

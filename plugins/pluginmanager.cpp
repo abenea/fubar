@@ -2,6 +2,7 @@
 #include "plugins/PluginInterface.h"
 #include <QDir>
 #include <QPluginLoader>
+#include <QDebug>
 
 PluginManager *PluginManager::instance = 0;
 

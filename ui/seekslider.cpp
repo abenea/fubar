@@ -1,14 +1,15 @@
 #include "seekslider.h"
+#include "../audiooutput.h"
 #include <QStyle>
 #include <QStyleOptionSlider>
 #include <QDebug>
 
-SeekSlider::SeekSlider(Phonon::MediaObject* mediaObject, QWidget* parent)
+SeekSlider::SeekSlider(AudioOutput* mediaObject, QWidget* parent)
     : QSlider(Qt::Horizontal, parent)
     , mediaObject_(mediaObject)
     , pressed_(false)
 {
-    QObject::connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
+    QObject::connect(mediaObject_, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
     QObject::connect(this, SIGNAL(sliderPressed()), this, SLOT(sliderPressedAction()));
     QObject::connect(this, SIGNAL(sliderReleased()), this, SLOT(sliderReleasedAction()));
     setLimits(0, 0);

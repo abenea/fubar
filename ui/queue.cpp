@@ -14,7 +14,7 @@ void Queue::pushTracks(PlaylistTab* playlistTab, QModelIndexList tracks)
         auto track = index.data(TrackRole).value<PTrack>();
         auto it = paths_.find(track->path());
         if (it == paths_.end()) {
-             paths_.insert({track->path(), {{playlistTab, 1}}});
+            paths_.insert({track->path(), {{playlistTab, 1}}});
         } else {
             paths_[track->path()][playlistTab]++;
         }

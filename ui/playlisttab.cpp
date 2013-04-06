@@ -1,6 +1,7 @@
 #include "playlisttab.h"
 #include "mainwindow.h"
 #include "library/library.h"
+#include <QDebug>
 #include <memory>
 
 using std::shared_ptr;
@@ -12,7 +13,7 @@ PlaylistTab::PlaylistTab(bool synced, QWidget* parent)
 {
     ui_.setupUi(this);
     filterModel_.setSourceModel(&model_);
-    filterModel_.setDynamicSortFilter(true);
+    filterModel_.setDynamicSortFilter(synced);
     filterModel_.sort(0);
     ui_.playlist->setModel(&filterModel_);
 
@@ -52,13 +53,11 @@ void PlaylistTab::doubleClicked(const QModelIndex& filterIndex)
 {
     if (!filterIndex.isValid())
         return;
-    MainWindow::instance->mediaObject->clearQueue();
     return play(filterModel_.mapToSource(filterIndex));
 }
 
 void PlaylistTab::clearFilterAndPlay()
 {
-    MainWindow::instance->mediaObject->clearQueue();
     QModelIndex filterIndex = filterModel_.index(0, 0);
     if (filterIndex.isValid()) {
         play(filterModel_.mapToSource(filterIndex));
@@ -103,7 +102,6 @@ void PlaylistTab::play(const QModelIndex& index)
     nextIndex_ = QPersistentModelIndex();
     shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track> >();
     MainWindow::instance->playTrack(track);
-    MainWindow::instance->volumeChanged();
     updateCursor();
 }
 
@@ -160,8 +158,9 @@ QModelIndex PlaylistTab::getNextModelIndex(int offset)
     return filterModel_.mapToSource(filterIndex);
 }
 
-void PlaylistTab::updateCurrentIndex()
+void PlaylistTab::currentSourceChanged()
 {
+    // update current index
     if (nextIndex_.isValid()) {
         currentIndex_ = nextIndex_;
         nextIndex_ = QPersistentModelIndex();
@@ -204,6 +203,12 @@ void PlaylistTab::addTracks(const QList<shared_ptr<Track>>& tracks)
     model_.addTracks(tracks);
 }
 
+void PlaylistTab::removeTracks(QModelIndexList trackList)
+{
+    if (!synced_)
+        model_.removeTracks(mapToSource(trackList));
+}
+
 void PlaylistTab::libraryChanged(LibraryEvent event)
 {
     if (synced_)
@@ -232,6 +237,18 @@ QModelIndexList PlaylistTab::mapToSource(QModelIndexList indexes) const
     for (auto index : indexes)
         result.append(filterModel_.mapToSource(index));
     return result;
+}
+
+void PlaylistTab::removeTrackAt(int position)
+{
+    if (synced_)
+        return;
+    model_.removeTracks({model_.index(position, 0)});
+}
+
+void PlaylistTab::enqueuePosition(int pos)
+{
+    MainWindow::instance->queue.pushTracks(this, {QModelIndex(model_.index(pos, 0))});
 }
 
 #include "playlisttab.moc"

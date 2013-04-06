@@ -5,8 +5,8 @@
 #include <QtPlugin>
 #include <QMap>
 #include <QString>
-#include "../PluginInterface.h"
-#include "../../library/track.h"
+#include "plugins/PluginInterface.h"
+#include "library/track.h"
 #include <lastfm/Track.h>
 #include <lastfm/Audioscrobbler.h>
 #include <memory>

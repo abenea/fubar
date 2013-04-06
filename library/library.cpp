@@ -301,12 +301,14 @@ void Library::scanDirectory(const QString& path)
         return;
     DirectoryMap::const_iterator it = directories_.find(path);
     watcher_->addWatch(path);
+    // This mtime may be currentTime() because of god-knows-how-stat-and-move-dir-works-in-linux.
+    // So we use an incorrect mtime. Not a problem since we use <= to determine if the the directory changed.
     uint mtime = QFileInfo(path).lastModified().toTime_t();
 
     if (it != directories_.end()) {
         shared_ptr<Directory> directory = it.value();
         // Nothing changed in this dir
-        if (mtime == directory->mtime()) {
+        if (mtime <= directory->mtime()) {
             QList<QString> subdirs = directory->getSubdirectoriesNames();
             foreach (QString subdir, subdirs) {
                 scanDirectory(QFileInfo(path, subdir).absoluteFilePath());

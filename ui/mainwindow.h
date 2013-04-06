@@ -11,26 +11,23 @@
 #include <QModelIndex>
 #include <QKeySequence>
 #include <QSystemTrayIcon>
-#include <phonon/Phonon/MediaObject>
-#include <phonon/Phonon/AudioOutput>
-#include <phonon/VolumeSlider>
-
+#include <QPointer>
+#include <boost/concept_check.hpp>
 
 class PlaylistTab;
 class Library;
+class AudioOutput;
 
 class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {
     Q_OBJECT
 public:
-    MainWindow(Library& library, QWidget *parent = 0);
+    MainWindow(Library* library, AudioOutput* audioOutput, QWidget *parent = 0, bool testing = false);
     ~MainWindow();
 
-    Phonon::MediaObject *mediaObject;
-    Phonon::AudioOutput *audioOutput;
-    Queue queue;
-
     static MainWindow *instance;
+
+    Queue queue;
 
     void enqueueTrack(PTrack track);
     void playTrack(PTrack track);
@@ -39,11 +36,23 @@ public:
     bool random() { return random_; }
 
     void setCurrentPlayingPlaylist(PlaylistTab *playlist);
+
+    // Returns the playlist that is the active tab
     PlaylistTab* getActivePlaylist();
     PTrack getCurrentTrack();
 
+    void addPlaylist(PlaylistTab* playlistTab, QString name = "Unnamed playlist");
+
 public slots:
     void volumeChanged();
+    void play();
+    void playPause();
+    void stop();
+    void next();
+    void prev();
+    void showHide();
+    void removePlaylistTab(int index);
+    void on_clearQueueAction_triggered();
 
 signals:
     void trackPlaying(PTrack track);
@@ -64,7 +73,6 @@ private slots:
     void on_libraryPreferencesAction_triggered();
     void on_pluginsAction_triggered();
 
-    void on_clearQueueAction_triggered();
     void on_cursorFollowsPlaybackAction_triggered();
     void on_randomAction_triggered();
 
@@ -72,14 +80,7 @@ private slots:
 
     void tick(qint64 pos);
     void aboutToFinish();
-    void currentSourceChanged(const Phonon::MediaSource &);
-
-    void play();
-    void playPause();
-    void stop();
-    void next();
-    void prev();
-    void showHide();
+    void currentSourceChanged();
 
     qreal currentVolume();
     void setVolume(qreal value);
@@ -98,8 +99,6 @@ private:
     void setShortcuts();
     void addShortcut(QKeySequence shortcut, const char* func, QString name);
 
-    PlaylistTab *current();
-
     void writeSettings();
     void readSettings();
 
@@ -109,10 +108,14 @@ private:
     StatusBar statusBar_;
     QSystemTrayIcon *trayIcon_;
 
-    Library& library_;
+    Library* library_;
+    AudioOutput* audioOutput_;
 
-    PlaylistTab *currentlyPlayingPlaylist_;
-    PlaylistTab *bufferingTrackPlaylist_;
+    bool testing_;
+
+    // TODO: QPointer<PlaylistTab> currentlyPlayingPlaylist_(); // sets a currentlyPlayingPlaylist_ to currently active if none
+    QPointer<PlaylistTab> currentlyPlayingPlaylist_;
+    QPointer<PlaylistTab> bufferingTrackPlaylist_;
     // PTrack currentPlayingTrack_; // Needed for cue sheets
     // Needed by lastfm when the current playing track is deleted from playlist before currentSourceChanged() is called
     PTrack bufferingTrack_;

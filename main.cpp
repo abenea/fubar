@@ -1,5 +1,6 @@
 #include "util.h"
 #include "ui/mainwindow.h"
+#include "phononaudiooutput.h"
 #include "library/library.h"
 #include "plugins/pluginmanager.h"
 #include "unixsignalshandler.h"
@@ -39,8 +40,8 @@ int main(int argc, char *argv[])
 
     qRegisterMetaType<LibraryEvent>("LibraryEvent");
     Library library;
-
-    MainWindow w(library);
+    PhononAudioOutput audio;
+    MainWindow w(&library, &audio);
     w.show();
 
     UnixSignalsHandler signalsHandler(&w);
