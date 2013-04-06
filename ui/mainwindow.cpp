@@ -62,8 +62,8 @@ MainWindow::MainWindow(Library* library, AudioOutput* audioOutput, QWidget *pare
     setStatusBar(&statusBar_);
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
 
-    playlistTabs->setTabsClosable(true);
-    QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(removePlaylistTab(int)));
+//     playlistTabs->setTabsClosable(true);
+//     QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(removePlaylistTab(int)));
     QObject::connect(menu_File, SIGNAL(aboutToShow()), this, SLOT(menuFileAboutToShow()));
 
     setWindowIcon(QIcon(":/icon/logo.gif"));
@@ -72,7 +72,7 @@ MainWindow::MainWindow(Library* library, AudioOutput* audioOutput, QWidget *pare
 
     instance = this;
 
-    if (testing)
+    if (testing_)
         return;
 
     on_newLibraryViewAction_triggered();
@@ -80,7 +80,7 @@ MainWindow::MainWindow(Library* library, AudioOutput* audioOutput, QWidget *pare
     setShortcuts();
 }
 
-void MainWindow::addShortcut(QKeySequence shortcut, const char* func, QString name)
+void MainWindow::addGlobalShortcut(QKeySequence shortcut, const char* func, QString name)
 {
     KAction* action = new KAction(name, this);
     action->setObjectName(name);
@@ -89,20 +89,26 @@ void MainWindow::addShortcut(QKeySequence shortcut, const char* func, QString na
 
 }
 
+void MainWindow::addShortcut(QKeySequence shortcut, const char* func)
+{
+    QShortcut* q = new QShortcut(shortcut, this);
+    QObject::connect(q, SIGNAL(activated()), this, func);
+}
+
 void MainWindow::setShortcuts()
 {
     // Global shortcuts
-    addShortcut(QKeySequence(Qt::META + Qt::Key_W), SLOT(showHide()), "Show/Hide");
-    addShortcut(QKeySequence(Qt::META + Qt::Key_P), SLOT(showHide()), "Show/Hide");
-    addShortcut(QKeySequence(Qt::META + Qt::Key_X), SLOT(play()), "Play");
-    addShortcut(QKeySequence(Qt::META + Qt::Key_C), SLOT(playPause()), "Play/Pause");
-    addShortcut(QKeySequence(Qt::META + Qt::Key_A), SLOT(prev()), "Prev");
-    addShortcut(QKeySequence(Qt::META + Qt::Key_Z), SLOT(next()), "Next");
-    addShortcut(QKeySequence(Qt::META + Qt::Key_V), SLOT(stop()), "Stop");
+    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_W), SLOT(showHide()), "Show/Hide");
+    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_P), SLOT(showHide()), "Show/Hide");
+    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_X), SLOT(play()), "Play");
+    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_C), SLOT(playPause()), "Play/Pause");
+    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_A), SLOT(prev()), "Prev");
+    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Z), SLOT(next()), "Next");
+    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_V), SLOT(stop()), "Stop");
 
     // App shortcuts
-    QShortcut* q = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), this);
-    QObject::connect(q, SIGNAL(activated()), this, SLOT(focusFilter()));
+    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), SLOT(focusFilter()));
+    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), SLOT(removeActivePlaylist()));
 }
 
 MainWindow::~MainWindow()
@@ -135,10 +141,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QWidget::closeEvent(event);
 }
 
-void MainWindow::addPlaylist(PlaylistTab* playlistTab, QString name)
+void MainWindow::addPlaylist(PlaylistTab* playlistTab, QString name, bool makeCurrent)
 {
     playlistTabs->addTab(playlistTab, name);
-    playlistTabs->setCurrentWidget(playlistTab);
+    if (makeCurrent)
+        playlistTabs->setCurrentWidget(playlistTab);
 }
 
 void MainWindow::removePlaylistTab(int index)
@@ -148,6 +155,11 @@ void MainWindow::removePlaylistTab(int index)
         playlistTabs->removeTab(index);
         delete widget;
     }
+}
+
+void MainWindow::removeActivePlaylist()
+{
+    removePlaylistTab(playlistTabs->currentIndex());
 }
 
 void MainWindow::menuFileAboutToShow()

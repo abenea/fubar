@@ -29,9 +29,8 @@ private slots:
     void enqueueDeletedPlaylist();
 
 private:
-    void verify(QString track);
+    void addPlaylist(PlaylistTab* p);
 
-private:
     MainWindow* mw_;
     MockAudioOutput* audio_;
 };

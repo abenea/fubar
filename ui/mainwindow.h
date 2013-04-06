@@ -41,7 +41,7 @@ public:
     PlaylistTab* getActivePlaylist();
     PTrack getCurrentTrack();
 
-    void addPlaylist(PlaylistTab* playlistTab, QString name = "Unnamed playlist");
+    void addPlaylist(PlaylistTab* playlistTab, QString name = "Unnamed playlist", bool makeCurrent = true);
 
 public slots:
     void volumeChanged();
@@ -94,11 +94,14 @@ private slots:
 
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
 
+    void removeActivePlaylist();
+
 private:
     void repaintEnqueuedTrack(const QPersistentModelIndex& index);
 
     void setShortcuts();
-    void addShortcut(QKeySequence shortcut, const char* func, QString name);
+    void addGlobalShortcut(QKeySequence shortcut, const char* func, QString name);
+    void addShortcut(QKeySequence shortcut, const char* func);
 
     void writeSettings();
     void readSettings();
@@ -112,6 +115,8 @@ private:
     Library* library_;
     AudioOutput* audioOutput_;
 
+    // If true, settings won't be read/written and shortcuts will be disabled.
+    // useful for unit testing
     bool testing_;
 
     // TODO: QPointer<PlaylistTab> currentlyPlayingPlaylist_(); // sets a currentlyPlayingPlaylist_ to currently active if none

@@ -3,6 +3,8 @@
 #include <ui/playlisttab.h>
 #include <QDebug>
 
+#define verify(track) {if (audio_->currentSource() != track) qDebug() << "Current source is" << audio_->currentSource() << "!=" << track; QVERIFY(audio_->currentSource() == track); }
+
 PlaylistTab* newPlaylist()
 {
     return new PlaylistTab(false);
@@ -31,11 +33,9 @@ QList<PTrack> generateTracks(int no)
     return generateTracks(0, no);
 }
 
-void PlayerTest::verify(QString track)
+void PlayerTest::addPlaylist(PlaylistTab* p)
 {
-    if (audio_->currentSource() != track)
-        qDebug() << "Current source is" << audio_->currentSource() << "!=" << track;
-    QVERIFY(audio_->currentSource() == track);
+    mw_->addPlaylist(p, "", false);
 }
 
 void PlayerTest::init()
@@ -57,13 +57,13 @@ void PlayerTest::noPlaylists()
 
 void PlayerTest::oneEmptyPlaylist()
 {
-    mw_->addPlaylist(newPlaylist());
+    addPlaylist(newPlaylist());
     mw_->play();
 }
 
 void PlayerTest::oneTrack()
 {
-    mw_->addPlaylist(newPlaylist(generateTracks(1)));
+    addPlaylist(newPlaylist(generateTracks(1)));
     mw_->play();
     verify("0");
     mw_->next();
@@ -72,7 +72,7 @@ void PlayerTest::oneTrack()
 
 void PlayerTest::prevNext()
 {
-    mw_->addPlaylist(newPlaylist(generateTracks(2)));
+    addPlaylist(newPlaylist(generateTracks(2)));
     mw_->play();
     verify("0");
     mw_->next();
@@ -83,7 +83,7 @@ void PlayerTest::prevNext()
 
 void PlayerTest::autoEnqueueNext()
 {
-    mw_->addPlaylist(newPlaylist(generateTracks(2)));
+    addPlaylist(newPlaylist(generateTracks(2)));
     mw_->play();
     audio_->triggerAboutToFinish();
     audio_->triggerCurrentSourceChanged();
@@ -98,7 +98,7 @@ void PlayerTest::autoEnqueueNext()
 void PlayerTest::autoEnqueueNextDeleted()
 {
     auto p = newPlaylist(generateTracks(3));
-    mw_->addPlaylist(p);
+    addPlaylist(p);
     mw_->play();
     audio_->triggerAboutToFinish();
     p->removeTrackAt(1);
@@ -111,7 +111,7 @@ void PlayerTest::autoEnqueueNextDeleted()
 void PlayerTest::autoEnqueueNextDeletedThenAutoEnqueue()
 {
     auto p = newPlaylist(generateTracks(3));
-    mw_->addPlaylist(p);
+    addPlaylist(p);
     mw_->play();
     audio_->triggerAboutToFinish();
     p->removeTrackAt(1);
@@ -126,8 +126,8 @@ void PlayerTest::enqueue()
 {
     auto p1 = newPlaylist(generateTracks(3));
     auto p2 = newPlaylist(generateTracks(3, 3));
-    mw_->addPlaylist(p1);
-    mw_->addPlaylist(p2);
+    addPlaylist(p1);
+    addPlaylist(p2);
     mw_->play();
     verify("0");
     p1->enqueuePosition(2);
@@ -155,7 +155,7 @@ void PlayerTest::enqueue()
 void PlayerTest::enqueueDeleted()
 {
     auto p1 = newPlaylist(generateTracks(3));
-    mw_->addPlaylist(p1);
+    addPlaylist(p1);
     mw_->play();
     verify("0");
     p1->enqueuePosition(1);
@@ -175,8 +175,8 @@ void PlayerTest::enqueueDeletedPlaylist()
 {
     auto p1 = newPlaylist(generateTracks(3));
     auto p2 = newPlaylist(generateTracks(3, 3));
-    mw_->addPlaylist(p1);
-    mw_->addPlaylist(p2);
+    addPlaylist(p1);
+    addPlaylist(p2);
     mw_->play();
     verify("0");
     p2->enqueuePosition(1);
@@ -186,7 +186,7 @@ void PlayerTest::enqueueDeletedPlaylist()
 
     // Delete playlist after buffering
     p2 = newPlaylist(generateTracks(3, 3));
-    mw_->addPlaylist(p2);
+    addPlaylist(p2);
     p2->enqueuePosition(1);
     audio_->triggerAboutToFinish();
     mw_->removePlaylistTab(1);
@@ -194,6 +194,25 @@ void PlayerTest::enqueueDeletedPlaylist()
     verify("4");
     mw_->next();
     verify("2");
+
+    // Delete playlist before buffering
+    mw_->prev();
+    verify("1");
+    p2 = newPlaylist(generateTracks(3, 3));
+    addPlaylist(p2);
+    p2->enqueuePosition(1);
+    mw_->removePlaylistTab(1);
+    audio_->triggerAboutToFinish();
+    audio_->triggerCurrentSourceChanged();
+    verify("2");
+
+    // Delete same playlist before buffering
+    mw_->prev();
+    verify("1");
+    p1->enqueuePosition(0);
+    mw_->removePlaylistTab(0);
+    audio_->triggerAboutToFinish();
+    audio_->triggerCurrentSourceChanged();
 }
 
 QTEST_MAIN(PlayerTest)
