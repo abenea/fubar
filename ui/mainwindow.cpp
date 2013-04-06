@@ -490,6 +490,10 @@ qreal MainWindow::currentVolume()
 
 void MainWindow::setVolume(qreal value)
 {
+    audioOutput_->setVolume(value);
+    return;
+
+    // TODO fix album formula and write a config UI
     PTrack track = getCurrentTrack();
     qreal volume = value;
     if (track) {
