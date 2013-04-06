@@ -7,7 +7,7 @@
 #include <utility>
 #include <memory>
 #include <map>
-#include <queue>
+#include <deque>
 #include <vector>
 
 class Track;
@@ -32,11 +32,13 @@ public:
     bool isEmpty();
     bool isQueued(PlaylistTab* playlistTab, std::shared_ptr<Track> track);
 
+    void removePlaylistTab(PlaylistTab* playlistTab);
+
 private:
     std::pair<PlaylistTab*, QPersistentModelIndex> getFirst(bool pop);
     std::pair<PlaylistTab*, QPersistentModelIndex> getNextTrack(bool pop);
 
-    std::queue<std::tuple<PlaylistTab*, QPersistentModelIndex, QString>> queue_;
+    std::deque<std::tuple<PlaylistTab*, QPersistentModelIndex, QString>> queue_;
     std::map<QString, std::map<PlaylistTab*, int>> paths_;
     bool peeked_;
 };

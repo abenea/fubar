@@ -152,6 +152,7 @@ void MainWindow::removePlaylistTab(int index)
 {
     QWidget* widget = playlistTabs->widget(index);
     if (widget) {
+        queue.removePlaylistTab(qobject_cast<PlaylistTab*>(widget));
         playlistTabs->removeTab(index);
         delete widget;
     }
@@ -332,7 +333,8 @@ void MainWindow::aboutToFinish()
             return;
         }
     }
-    currentlyPlayingPlaylist_->enqueueNextTrack();
+    if (currentlyPlayingPlaylist_)
+        currentlyPlayingPlaylist_->enqueueNextTrack();
 }
 
 void MainWindow::currentSourceChanged()

@@ -213,6 +213,7 @@ void PlayerTest::enqueueDeletedPlaylist()
     mw_->removePlaylistTab(0);
     audio_->triggerAboutToFinish();
     audio_->triggerCurrentSourceChanged();
+    verify("");
 }
 
 QTEST_MAIN(PlayerTest)

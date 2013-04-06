@@ -18,7 +18,7 @@ void Queue::pushTracks(PlaylistTab* playlistTab, QModelIndexList tracks)
         } else {
             paths_[track->path()][playlistTab]++;
         }
-        queue_.push(std::make_tuple(playlistTab, QPersistentModelIndex(index), track->path()));
+        queue_.push_back(std::make_tuple(playlistTab, QPersistentModelIndex(index), track->path()));
     }
 }
 
@@ -30,7 +30,7 @@ std::pair<PlaylistTab*, QPersistentModelIndex> Queue::getFirst(bool pop)
     QString path;
     std::tie(playlistTab, index, path) = queue_.front();
     if (!index.isValid() || (index.isValid() && pop)) {
-        queue_.pop();
+        queue_.pop_front();
         auto it = paths_.find(path);
         if (!--it->second[playlistTab]) {
             it->second.erase(playlistTab);
@@ -101,8 +101,26 @@ std::vector<QPersistentModelIndex> Queue::getTracksAndClear(PlaylistTab* playlis
         std::tie(p, index, path) = queue_.front();
         if (p == playlist)
             result.push_back(index);
-        queue_.pop();
+        queue_.pop_front();
     }
     paths_.clear();
     return result;
+}
+
+void Queue::removePlaylistTab(PlaylistTab* playlistTab)
+{
+    auto it = queue_.begin();
+    while (it != queue_.end()) {
+        PlaylistTab* p;
+        QPersistentModelIndex index;
+        QString path;
+        std::tie(p, index, path) = *it;
+        if (p == playlistTab) {
+            if (it == queue_.begin())
+                peeked_ = false;
+            it = queue_.erase(it);
+            paths_.erase(path);
+        } else
+            ++it;
+    }
 }
