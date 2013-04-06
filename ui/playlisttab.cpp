@@ -206,7 +206,7 @@ void PlaylistTab::addTracks(const QList<shared_ptr<Track>>& tracks)
 void PlaylistTab::removeTracks(QModelIndexList trackList)
 {
     if (!synced_)
-        model_.removeTracks(mapToSource(trackList));
+        model_.removeIndexes(mapToSource(trackList));
 }
 
 void PlaylistTab::libraryChanged(LibraryEvent event)
@@ -243,7 +243,7 @@ void PlaylistTab::removeTrackAt(int position)
 {
     if (synced_)
         return;
-    model_.removeTracks({model_.index(position, 0)});
+    model_.removeIndexes({model_.index(position, 0)});
 }
 
 void PlaylistTab::enqueuePosition(int pos)

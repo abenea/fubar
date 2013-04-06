@@ -127,11 +127,15 @@ void PlaylistModel::addTracks(QList<std::shared_ptr<Track>> tracks)
     endInsertRows();
 }
 
-void PlaylistModel::removeTracks(QModelIndexList tracks)
+void PlaylistModel::removeIndexes(QModelIndexList indexes)
 {
-    for (auto track : tracks) {
-        beginRemoveRows(QModelIndex(), track.row(), track.row());
-        playlist_.tracks.removeAt(track.row());
+    std::vector<QPersistentModelIndex> pindexes;
+    pindexes.reserve(indexes.size());
+    for (auto index : indexes)
+        pindexes.push_back(QPersistentModelIndex(index));
+    for (auto index : pindexes) {
+        beginRemoveRows(QModelIndex(), index.row(), index.row());
+        playlist_.tracks.removeAt(index.row());
         endRemoveRows();
     }
 }

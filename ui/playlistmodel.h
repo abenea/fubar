@@ -25,7 +25,7 @@ public:
     void addFiles(const QStringList& files);
     void libraryChanged(LibraryEvent event);
     void addTracks(QList<std::shared_ptr<Track>> tracks);
-    void removeTracks(QModelIndexList tracks);
+    void removeIndexes(QModelIndexList indexes);
     void clear();
 
     QModelIndex getIndex(QString path);
