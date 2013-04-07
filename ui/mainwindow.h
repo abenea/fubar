@@ -97,6 +97,11 @@ private slots:
     void removeActivePlaylist();
 
 private:
+    void setTrayIcon(bool disabled);
+    void pauseAudio();
+    void playAudio();
+    void stopAudio();
+
     void repaintEnqueuedTrack(const QPersistentModelIndex& index);
 
     void setShortcuts();

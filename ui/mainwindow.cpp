@@ -55,7 +55,7 @@ MainWindow::MainWindow(Library* library, AudioOutput* audioOutput, QWidget *pare
     mainToolBar->addWidget(volumeSlider_);
 
     trayIcon_ = new QSystemTrayIcon(this);
-    trayIcon_->setIcon(QIcon(":/icon/logo.gif"));
+    setTrayIcon(true);
     connect(trayIcon_, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
     trayIcon_->show();
 
@@ -66,7 +66,7 @@ MainWindow::MainWindow(Library* library, AudioOutput* audioOutput, QWidget *pare
 //     QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(removePlaylistTab(int)));
     QObject::connect(menu_File, SIGNAL(aboutToShow()), this, SLOT(menuFileAboutToShow()));
 
-    setWindowIcon(QIcon(":/icon/logo.gif"));
+    setWindowIcon(QIcon(":/icon/logo22.png"));
 
     readSettings();
 
@@ -318,7 +318,7 @@ void MainWindow::playTrack(PTrack track)
     audioOutput_->clearQueue();
     audioOutput_->setCurrentSource(track->location);
     volumeChanged();
-    audioOutput_->play();
+    playAudio();
 }
 
 void MainWindow::aboutToFinish()
@@ -397,12 +397,38 @@ void MainWindow::play()
     }
 }
 
+void MainWindow::setTrayIcon(bool disabled)
+{
+    if (disabled)
+        trayIcon_->setIcon(QIcon(QIcon(":/icon/logo22.png").pixmap(22, 22, QIcon::Disabled)));
+    else
+        trayIcon_->setIcon(QIcon(":/icon/logo22.png"));
+}
+
+void MainWindow::playAudio()
+{
+    audioOutput_->play();
+    setTrayIcon(false);
+}
+
+void MainWindow::pauseAudio()
+{
+    audioOutput_->pause();
+    setTrayIcon(true);
+}
+
+void MainWindow::stopAudio()
+{
+    audioOutput_->stop();
+    setTrayIcon(true);
+}
+
 void MainWindow::playPause()
 {
     if (audioOutput_->paused())
-        audioOutput_->play();
+        playAudio();
     else
-        audioOutput_->pause();
+        pauseAudio();
 }
 
 void MainWindow::next()
@@ -428,7 +454,8 @@ void MainWindow::prev()
 
 void MainWindow::stop()
 {
-    audioOutput_->stop();
+    stopAudio();
+    setWindowIcon(QIcon(":/icon/logo22playing.png"));
     PTrack track = getCurrentTrack();
     if (track)
         emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
