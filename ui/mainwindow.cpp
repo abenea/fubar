@@ -108,7 +108,7 @@ void MainWindow::setShortcuts()
 
     // App shortcuts
     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), SLOT(focusFilter()));
-    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), SLOT(removeActivePlaylist()));
+//     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), SLOT(removeActivePlaylist()));
 }
 
 MainWindow::~MainWindow()
