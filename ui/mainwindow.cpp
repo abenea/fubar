@@ -399,10 +399,7 @@ void MainWindow::play()
 
 void MainWindow::setTrayIcon(bool disabled)
 {
-    if (disabled)
-        trayIcon_->setIcon(QIcon(QIcon(":/icon/logo22.png").pixmap(22, 22, QIcon::Disabled)));
-    else
-        trayIcon_->setIcon(QIcon(":/icon/logo22.png"));
+    trayIcon_->setIcon(QIcon(disabled ? ":/icon/logo22.png" : ":/icon/logo22play.png"));
 }
 
 void MainWindow::playAudio()
@@ -455,7 +452,6 @@ void MainWindow::prev()
 void MainWindow::stop()
 {
     stopAudio();
-    setWindowIcon(QIcon(":/icon/logo22playing.png"));
     PTrack track = getCurrentTrack();
     if (track)
         emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
