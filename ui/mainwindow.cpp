@@ -68,14 +68,14 @@ MainWindow::MainWindow(Library* library, AudioOutput* audioOutput, QWidget *pare
 
     setWindowIcon(QIcon(":/icon/logo22.png"));
 
-    readSettings();
-
     instance = this;
 
     if (testing_)
         return;
 
     on_newLibraryViewAction_triggered();
+
+    readSettings();
 
     setShortcuts();
 }
@@ -271,6 +271,12 @@ void MainWindow::readSettings()
     cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
     random_ = settings.value("mainwindow/random", random_).toBool();
     randomAction->setChecked(random_);
+
+    int lastPlayingPosition = settings.value("mainwindow/lastPlayingPosition", -1).toInt();
+    if (lastPlayingPosition != -1) {
+        getActivePlaylist()->setCurrentPosition(lastPlayingPosition);
+        getActivePlaylist()->updateCursorAndScroll();
+    }
 }
 
 void MainWindow::writeSettings()
@@ -282,6 +288,8 @@ void MainWindow::writeSettings()
     settings.setValue("mainwindow/volume", currentVolume());
     settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
     settings.setValue("mainwindow/random", random_);
+    if (currentlyPlayingPlaylist_ && !currentlyPlayingPlaylist_->isEditable())
+        settings.setValue("mainwindow/lastPlayingPosition", currentlyPlayingPlaylist_->getCurrentPosition());
 }
 
 void MainWindow::setCurrentPlayingPlaylist(PlaylistTab* playlist)

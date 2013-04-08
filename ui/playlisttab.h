@@ -18,6 +18,8 @@ public:
     QModelIndexList mapToSource(QModelIndexList indexes) const;
 
     PTrack getCurrentTrack();
+    int getCurrentPosition();
+    void setCurrentPosition(int position);
 
     // Can the user edit it?
     bool isEditable() { return !synced_; }

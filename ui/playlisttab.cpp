@@ -231,6 +231,18 @@ PTrack PlaylistTab::getCurrentTrack()
     return PTrack();
 }
 
+int PlaylistTab::getCurrentPosition()
+{
+    if (currentIndex_.isValid())
+        return currentIndex_.row();
+    return -1;
+}
+
+void PlaylistTab::setCurrentPosition(int position)
+{
+    currentIndex_ = QPersistentModelIndex(model_.index(position, 0));
+}
+
 QModelIndexList PlaylistTab::mapToSource(QModelIndexList indexes) const
 {
     QModelIndexList result;
