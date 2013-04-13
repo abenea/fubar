@@ -6,8 +6,10 @@
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
 #include <taglib/mpegfile.h>
-#include <taglib/id3v2tag.h>
+#include <taglib/flacfile.h>
+#include <taglib/xiphcomment.h>
 #include <taglib/id3v1tag.h>
+#include <taglib/id3v2tag.h>
 #include <taglib/tpropertymap.h>
 #include <boost/foreach.hpp>
 #include <boost/scoped_array.hpp>
@@ -358,8 +360,9 @@ void Library::scanDirectory(const QString& path)
                     emit libraryChanged(LibraryEvent(directory->getFile(QFileInfo(deleted_file).fileName()), DELETE));
                 }
                 foreach (QString deleted_dir, deleted_subdirs) {
-                    // Here removing child from father wont work as the new father has no son like deleted dir_path
-                    // since he is freshly crawled
+                    // Here removing child from father wont work
+                    // because the new_directory does not have deleted_dir as a son since he is freshly crawled
+                    // (directory had him as son)
                     removeDirectory(deleted_dir);
                 }
                 // Add subdirectories so we can set mtime and be done with this directory
@@ -401,26 +404,48 @@ void Library::scanDirectory(const QString& path)
     }
 }
 
+template<class T>
+void set_tag_and_properties(T tag, TagLib::Tag **tag_ptr, TagLib::PropertyMap& properties)
+{
+    if (*tag_ptr && !(*tag_ptr)->title().isEmpty() && !(*tag_ptr)->artist().isEmpty())
+        return;
+    if (tag) {
+        *tag_ptr = tag;
+        properties = tag->properties();
+    }
+}
+
 std::shared_ptr<Track> Library::scanFile(const QString& path)
 {
     qDebug() << "Scanning file" << path;
     QByteArray encodedName = QFile::encodeName(path);
 
+    TagLib::AudioProperties *audioProperties = nullptr;
+    std::unique_ptr<TagLib::File> file;
     TagLib::FileRef fileref;
-    std::unique_ptr<TagLib::MPEG::File> mpegFile;
-    TagLib::AudioProperties *audioProperties = 0;
-    TagLib::Tag *tag = 0;
+    TagLib::Tag *tag = nullptr;
+    TagLib::PropertyMap properties;
 
     shared_ptr<Track> track;
 
     if (path.toLower().endsWith(".mp3")) {
-        mpegFile.reset(new TagLib::MPEG::File(encodedName));
-        if (!mpegFile->isValid())
+        TagLib::MPEG::File* mpegFile = new TagLib::MPEG::File(encodedName);
+        file.reset(mpegFile);
+        if (!file->isValid())
             return track;
-        tag = mpegFile->ID3v2Tag();
-        if (!tag || tag->title().isEmpty() || tag->artist().isEmpty())
-            tag = mpegFile->ID3v1Tag();
-        audioProperties = mpegFile->audioProperties();
+        set_tag_and_properties(mpegFile->ID3v2Tag(), &tag, properties);
+        set_tag_and_properties(mpegFile->ID3v1Tag(), &tag, properties);
+    } else if (path.toLower().endsWith(".flac")) {
+        TagLib::FLAC::File* flacFile = new TagLib::FLAC::File(encodedName);
+        file.reset(flacFile);
+        if (!file->isValid())
+            return track;
+        set_tag_and_properties(flacFile->xiphComment(), &tag, properties);
+        set_tag_and_properties(flacFile->ID3v2Tag(), &tag, properties);
+        set_tag_and_properties(flacFile->ID3v1Tag(), &tag, properties);
+    }
+    if (file) {
+        audioProperties = file->audioProperties();
     } else {
         fileref = TagLib::FileRef(encodedName.constData(), true);
         if (fileref.isNull())
@@ -439,39 +464,32 @@ std::shared_ptr<Track> Library::scanFile(const QString& path)
         track->metadata["genre"] = TStringToQString(tag->genre());
         track->metadata["year"] = QString::number(tag->year());
         track->metadata["track"] = QString::number(tag->track());
+
+        // Get album artist and replaygain
+//         qDebug() << "Metadata for " << track->location;
+//         for (auto item : properties) {
+//             qDebug() << TStringToQString(item.first) << " " << TStringToQString(item.second.front());
+//         }
+        std::map<QString, QString> tags{{"ALBUM ARTIST", "album artist"}, {"ALBUMARTIST", "album artist"}};
+        std::set<QString> replayGainTags = {"REPLAYGAIN_ALBUM_GAIN", "REPLAYGAIN_ALBUM_PEAK", "REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_TRACK_PEAK"};
+        for (const auto& rgtag : replayGainTags) {
+            tags.insert(std::make_pair(rgtag, rgtag));
+        }
+
+        for (const auto& tag_pair: tags) {
+            TagLib::PropertyMap::Iterator it = properties.find(tag_pair.first.toStdString().c_str());
+            if (it != properties.end() && !it->second.isEmpty()) {
+                QString value = TStringToQString(it->second.front());
+                if (!value.isEmpty())
+                    track->metadata[tag_pair.second] = value;
+            }
+        }
     }
     if (audioProperties) {
         track->audioproperties.length = audioProperties->length();
         track->audioproperties.bitrate = audioProperties->bitrate();
         track->audioproperties.samplerate = audioProperties->sampleRate();
         track->audioproperties.channels = audioProperties->channels();
-    }
-
-    // mp3: Get album artist and replaygain
-    if (mpegFile && mpegFile->isValid()) {
-        TagLib::ID3v2::Tag* id3v2 = mpegFile->ID3v2Tag();
-        if (id3v2) {
-            auto properties = id3v2->properties();
-//             qDebug() << "Metadata for " << track->location;
-//             for (auto item : properties) {
-//                 qDebug() << TStringToQString(item.first) << " " << TStringToQString(item.second.front());
-//             }
-
-            std::map<QString, QString> mp3Tags{{"ALBUM ARTIST", "album artist"}, {"ALBUMARTIST", "album artist"}};
-            std::set<QString> replayGainTags = {"REPLAYGAIN_ALBUM_GAIN", "REPLAYGAIN_ALBUM_PEAK", "REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_TRACK_PEAK"};
-            for (const auto& rgtag : replayGainTags) {
-                mp3Tags.insert(std::make_pair(rgtag, rgtag));
-            }
-
-            for (const auto& mp3tag: mp3Tags) {
-                TagLib::PropertyMap::Iterator it = properties.find(mp3tag.first.toStdString().c_str());
-                if (it != properties.end() && !it->second.isEmpty()) {
-                    QString tmp = TStringToQString(it->second.front());
-                    if (!tmp.isEmpty())
-                        track->metadata[mp3tag.second] = tmp;
-                }
-            }
-        }
     }
 
     track->mtime = QFileInfo(path).lastModified().toTime_t();
