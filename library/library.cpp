@@ -347,6 +347,12 @@ void Library::scanDirectory(const QString& path)
                         }
                     } else {
                         shared_ptr<Directory> subdir = directory->getSubdirectory(info.fileName());
+                        // Maybe this is a newly monitored directory, but its subdir may be in library already
+                        if (!subdir) {
+                            DirectoryMap::const_iterator subdir_it = directories_.find(info.absoluteFilePath());
+                            if (subdir_it != directories_.end())
+                                subdir = *subdir_it;
+                        }
                         if (subdir) {
                             new_directory->addSubdirectory(subdir);
                             deleted_subdirs.remove(info.absoluteFilePath());
@@ -390,7 +396,8 @@ void Library::scanDirectory(const QString& path)
                 if (track)
                     addFile(track);
             } else {
-                addDirectory(shared_ptr<Directory>(new Directory(info.filePath(), 0)));
+                if (directories_.find(info.absoluteFilePath()) == directories_.end())
+                    addDirectory(shared_ptr<Directory>(new Directory(info.filePath(), 0)));
                 subdirs.append(info.absoluteFilePath());
             }
         }
