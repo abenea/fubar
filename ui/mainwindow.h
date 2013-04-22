@@ -1,63 +1,55 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "playlisttab.h"
+#include "player/audioplayer.h"
 #include "ui/ui_mainwindow.h"
 #include "statusbar.h"
 #include "seekslider.h"
-#include "queue.h"
 #include "pluginspreferences.h"
 #include <QtGui/QMainWindow>
 #include <QModelIndex>
 #include <QKeySequence>
 #include <QSystemTrayIcon>
-#include <QPointer>
-#include <boost/concept_check.hpp>
+#include <boost/bimap.hpp>
+#include <memory>
 
 class PlaylistTab;
 class Library;
 class AudioOutput;
+class PlaylistModel;
+class AudioPlayer;
 
 class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {
     Q_OBJECT
 public:
-    MainWindow(Library* library, AudioOutput* audioOutput, QWidget *parent = 0, bool testing = false);
+    MainWindow(AudioPlayer& player, Library* library, QWidget *parent = 0);
     ~MainWindow();
 
     static MainWindow *instance;
 
-    Queue queue;
-
-    void enqueueTrack(PTrack track);
-    void playTrack(PTrack track);
-
     bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
-    bool random() { return random_; }
-
-    void setCurrentPlayingPlaylist(PlaylistTab *playlist);
 
     // Returns the playlist that is the active tab
     PlaylistTab* getActivePlaylist();
-    PTrack getCurrentTrack();
+    std::shared_ptr<PlaylistModel> getActivePlaylistModel();
 
-    void addPlaylist(PlaylistTab* playlistTab, QString name = "Unnamed playlist", bool makeCurrent = true);
+    void addPlaylist(std::shared_ptr<PlaylistModel> playlistTab, QString name = "Unnamed playlist", bool makeCurrent = true);
+
+    void enqueueTracks(PModel playlistModel, QModelIndexList tracks);
+
+    QModelIndex getRandomFilteredIndex(PModel playlistModel);
+    QModelIndex getFilteredIndex(PModel playlistModel, QModelIndex current, int offset);
+    QModelIndex getCurrentIndex(PModel playlistModel);
+
+    bool isEnqueued(PlaylistTab* playlistTab, PTrack track);
 
 public slots:
-    void volumeChanged();
-    void play();
-    void playPause();
-    void stop();
-    void next();
-    void prev();
+    void randomChanged(bool random);
+    void volumeChanged(int value);
     void showHide();
     void removePlaylistTab(int index);
     void on_clearQueueAction_triggered();
-
-signals:
-    void trackPlaying(PTrack track);
-    void stopped(qint64 /*ms*/ finalPosition, qint64 /*ms*/ trackLength);
-    void trackPositionChanged(qint64 position, bool userSeek);
 
 protected:
     virtual void closeEvent(QCloseEvent* );
@@ -80,32 +72,26 @@ private slots:
     void on_mainToolBar_actionTriggered(QAction* action);
 
     void tick(qint64 pos);
-    void aboutToFinish();
-    void currentSourceChanged();
 
-    qreal currentVolume();
-    void setVolume(qreal value);
-    void sliderMovedByUser(int pos);
     void statusBarDoubleClicked();
     void focusFilter();
 
     void updateUI(PTrack track);
-    void totalTimeChanged(qint64 time);
 
+    void playingStateChanged(bool playing);
+    void stoppedPlaying();
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
 
     void removeActivePlaylist();
 
 private:
-    void setTrayIcon(bool disabled);
-    void pauseAudio();
-    void playAudio();
-    void stopAudio();
+    PlaylistTab* getPlayingPlaylistTab();
+    PlaylistTab* getPlaylistTab(PModel playlistModel);
 
-    void repaintEnqueuedTrack(const QPersistentModelIndex& index);
+    void setTrayIcon(bool playing);
 
     void setShortcuts();
-    void addGlobalShortcut(QKeySequence shortcut, const char* func, QString name);
+    void addGlobalShortcut(QKeySequence shortcut, QObject* object, const char* slot, QString name);
     void addShortcut(QKeySequence shortcut, const char* func);
 
     void writeSettings();
@@ -117,22 +103,17 @@ private:
     StatusBar statusBar_;
     QSystemTrayIcon *trayIcon_;
 
+    AudioPlayer& player_;
     Library* library_;
     AudioOutput* audioOutput_;
+
+    boost::bimap<std::shared_ptr<PlaylistModel>, PlaylistTab*> playlistModels_;
 
     // If true, settings won't be read/written and shortcuts will be disabled.
     // useful for unit testing
     bool testing_;
 
-    // TODO: QPointer<PlaylistTab> currentlyPlayingPlaylist_(); // sets a currentlyPlayingPlaylist_ to currently active if none
-    QPointer<PlaylistTab> currentlyPlayingPlaylist_;
-    QPointer<PlaylistTab> bufferingTrackPlaylist_;
-    // PTrack currentPlayingTrack_; // Needed for cue sheets
-    // Needed by lastfm when the current playing track is deleted from playlist before currentSourceChanged() is called
-    PTrack bufferingTrack_;
-
     bool cursorFollowsPlayback_;
-    bool random_;
 
     friend class PluginsPreferences;
 };

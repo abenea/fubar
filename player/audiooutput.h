@@ -1,5 +1,5 @@
-#ifndef AUDIOPLAYER_H
-#define AUDIOPLAYER_H
+#ifndef AUDIOOUTPUT_H
+#define AUDIOOUTPUT_H
 
 #include <QObject>
 
@@ -14,6 +14,7 @@ signals:
     void aboutToFinish();
     void currentSourceChanged();
     void tick(qint64 time);
+    void playingStateChanged(bool playing);
 
 public slots:
     virtual void setVolume(qreal newVolume) = 0;
@@ -33,4 +34,4 @@ public:
     virtual void clearQueue() = 0;
 };
 
-#endif // AUDIOPLAYER_H
+#endif // AUDIOOUTPUT_H

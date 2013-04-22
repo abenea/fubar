@@ -1,8 +1,8 @@
 #ifndef PLAYLISTITEMDELEGATE_H
 #define PLAYLISTITEMDELEGATE_H
 
-#include <QStyledItemDelegate>
 #include "playlistfilter.h"
+#include <QStyledItemDelegate>
 
 class PlaylistItemDelegate : public QStyledItemDelegate
 {

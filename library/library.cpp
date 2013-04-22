@@ -1,7 +1,6 @@
 #include "library.h"
 
 #include "util.h"
-#include "playlist.h"
 #include "track.pb.h"
 #include <taglib/fileref.h>
 #include <taglib/tag.h>

@@ -1,6 +1,6 @@
 #include "playlist.h"
-#include "track.pb.h"
-#include "track.h"
+// #include "track.pb.h"
+#include "library/track.h"
 #include <QDebug>
 #include <QDir>
 #include <sstream>
@@ -14,7 +14,6 @@ using namespace std;
 
 void Playlist::load(const char */*fileName*/)
 {
-    // TODO: code moar pls
 /*    FILE *f = fopen(fileName, "rb");
     if (f == NULL) {
         throw runtime_error("Couldn't open " + string(fileName));

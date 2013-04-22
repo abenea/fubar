@@ -1,22 +1,17 @@
-#ifndef SEEKSLIDER_H
-#define SEEKSLIDER_H
-
+#pragma once
+#include "player/audioplayer.h"
 #include <QMouseEvent>
 #include <QSlider>
 
-class AudioOutput;
 
 class SeekSlider : public QSlider
 {
     Q_OBJECT
 public:
-    explicit SeekSlider(AudioOutput* mediaObject, QWidget* parent = 0);
+    explicit SeekSlider(AudioPlayer& player, QWidget* parent = 0);
 
     void setLimits(int min, int max);
     void scrollTo(int pos);
-
-signals:
-    void movedByUser(int position);
 
 private slots:
     void tick(qint64 pos);
@@ -28,8 +23,6 @@ private:
     inline int pick(const QPoint &pt) const;
     int pixelPosToRangeValue(int pos) const;
 
-    AudioOutput* mediaObject_;
+    AudioPlayer& player_;
     bool pressed_;
 };
-
-#endif // SEEKSLIDER_H

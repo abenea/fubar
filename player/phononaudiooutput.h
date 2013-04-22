@@ -30,6 +30,7 @@ public:
     bool paused() const;
 
 private slots:
+    void stateChanged(Phonon::State newstate);
     void aboutToFinishHandler();
     void currentSourceChangedHandler();
     void tickHandler(qint64 time);

@@ -1,5 +1,7 @@
 #include "playlistview.h"
 #include "mainwindow.h"
+#include "playlistitemdelegate.h"
+#include "playlisttab.h"
 #include <QHeaderView>
 #include <QAction>
 #include <QKeyEvent>
@@ -26,10 +28,8 @@ void PlaylistView::keyPressEvent(QKeyEvent* event)
     } else if (event->key() == Qt::Key_Q) {
         PlaylistTab* playlistTab = MainWindow::instance->getActivePlaylist();
         if (playlistTab) {
-            auto selected = selectedIndexes();
-            MainWindow::instance->queue.pushTracks(playlistTab, playlistTab->mapToSource(selected));
-            for (auto index : selected)
-                update(index);
+            MainWindow::instance->enqueueTracks(playlistTab->model_,
+                                                playlistTab->filterModel_.mapSelectionToSource(selectionModel()->selection()).indexes());
         }
     } else if (event->key() == Qt::Key_Delete) {
         PlaylistTab* playlistTab = MainWindow::instance->getActivePlaylist();

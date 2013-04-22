@@ -7,8 +7,6 @@
 #include <QWaitCondition>
 #include <boost/function.hpp>
 #include <boost/bimap.hpp>
-#include <map>
-
 
 struct inotify_event;
 

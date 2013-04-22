@@ -6,21 +6,26 @@
 
 using std::shared_ptr;
 
-PlaylistTab::PlaylistTab(bool synced, QWidget* parent)
+PlaylistTab::PlaylistTab(std::shared_ptr<PlaylistModel> model, QWidget* parent)
     : QWidget(parent)
-    , synced_(synced)
-    , model_(playlist_)
+    , model_(model)
 {
     ui_.setupUi(this);
-    filterModel_.setSourceModel(&model_);
-    filterModel_.setDynamicSortFilter(synced);
+    filterModel_.setSourceModel(model_.get());
+    filterModel_.setDynamicSortFilter(model_->playlist().synced);
     filterModel_.sort(0);
     ui_.playlist->setModel(&filterModel_);
 
+    connect(model_.get(), SIGNAL(queueStatusChanged(std::vector<QPersistentModelIndex>)), this, SLOT(repaintTracks(std::vector<QPersistentModelIndex>)));
     connect(ui_.filter, SIGNAL(textChanged(QString)), this, SLOT(changedFilter(QString)));
     connect(ui_.filter, SIGNAL(returnPressed()), this, SLOT(clearFilterAndPlay()));
     connect(ui_.playlist, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(doubleClicked(const QModelIndex &)));
     connect(ui_.playlist, SIGNAL(returnPressed(QModelIndex)), this, SLOT(doubleClicked(const QModelIndex &)));
+}
+
+bool PlaylistTab::isEditable()
+{
+    return !model_->playlist().synced;
 }
 
 void PlaylistTab::changedFilter(const QString &filter)
@@ -53,21 +58,18 @@ void PlaylistTab::doubleClicked(const QModelIndex& filterIndex)
 {
     if (!filterIndex.isValid())
         return;
-    return play(filterModel_.mapToSource(filterIndex));
+    AudioPlayer::instance->play(model_, filterModel_.mapToSource(filterIndex));
 }
 
 void PlaylistTab::clearFilterAndPlay()
 {
-    QModelIndex filterIndex = filterModel_.index(0, 0);
-    if (filterIndex.isValid()) {
-        play(filterModel_.mapToSource(filterIndex));
-    }
+    auto index = filterModel_.mapToSource(filterModel_.index(0, 0));
     ui_.filter->clear();
-    if (currentIndex_.isValid()) {
-        ui_.playlist->setCurrentIndex(filterModel_.mapFromSource(currentIndex_));
-        ui_.playlist->scrollTo(filterModel_.mapFromSource(currentIndex_), QAbstractItemView::PositionAtTop);
-    }
     ui_.playlist->setFocus();
+    if (index.isValid()) {
+        AudioPlayer::instance->play(model_, index);
+        ui_.playlist->scrollTo(filterModel_.mapFromSource(index), QAbstractItemView::PositionAtTop);
+    }
 }
 
 void PlaylistTab::focusFilter()
@@ -75,74 +77,62 @@ void PlaylistTab::focusFilter()
     ui_.filter->setFocus();
 }
 
-void PlaylistTab::play()
+void PlaylistTab::updateCursor(QModelIndex index)
 {
-    QModelIndex filterIndex = ui_.playlist->currentIndex();
-    if (currentIndex_.isValid()) {
-        play(currentIndex_);
-    } else if (filterIndex.isValid()) {
-        play(filterModel_.mapToSource(filterIndex));
-    } else {
-        // Try playing first item in playlist?
-        filterIndex = filterModel_.index(0, 0);
-        if (filterIndex.isValid()) {
-            play(filterModel_.mapToSource(filterIndex));
-        }
-        else {
-            qDebug() << "No clue what item in what playlist to play";
-        }
-    }
+    ui_.playlist->setCurrentIndex(filterModel_.mapFromSource(index));
 }
 
-// Takes a model index, not a filterIndex
-void PlaylistTab::play(const QModelIndex& index)
+void PlaylistTab::updateCursorAndScroll(QModelIndex index)
 {
-    MainWindow::instance->setCurrentPlayingPlaylist(this);
-    currentIndex_ = QPersistentModelIndex(index);
-    nextIndex_ = QPersistentModelIndex();
-    shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track> >();
-    MainWindow::instance->playTrack(track);
-    updateCursor();
+    updateCursor(index);
+    ui_.playlist->scrollTo(filterModel_.mapFromSource(index), QAbstractItemView::PositionAtCenter);
 }
 
-void PlaylistTab::playNext(int offset)
+void PlaylistTab::repaintTracks(std::vector<QPersistentModelIndex> indexes)
 {
-    QModelIndex index = getNextModelIndex(offset);
-    if (!index.isValid()) {
-        return;
-    }
-    currentIndex_ = QPersistentModelIndex(index);
-    nextIndex_ = QPersistentModelIndex();
-    if (!currentIndex_.isValid())
-        return;
-    play(currentIndex_);
+    for (const auto& index : indexes)
+        ui_.playlist->update(filterModel_.mapFromSource(index));
 }
 
-void PlaylistTab::enqueueNextTrack()
+void PlaylistTab::addDirectory(const QString& directory)
 {
-    QModelIndex index = getNextModelIndex(1);
-    if (!index.isValid())
-        return;
-    enqueueTrack(index);
+    if (!model_->playlist().synced)
+        model_->addDirectory(directory);
 }
 
-void PlaylistTab::enqueueTrack(QModelIndex index)
+void PlaylistTab::addFiles(const QStringList& files)
 {
-    nextIndex_ = QPersistentModelIndex(index);
-    shared_ptr<Track> track = index.data(TrackRole).value<shared_ptr<Track>>();
-    MainWindow::instance->enqueueTrack(track);
+    if (!model_->playlist().synced)
+        model_->addFiles(files);
 }
 
-QModelIndex PlaylistTab::getNextModelIndex(int offset)
+void PlaylistTab::addTracks(const QList<shared_ptr<Track>>& tracks)
 {
-    if (MainWindow::instance->random()) {
-        if (filterModel_.rowCount() == 0)
-            return QModelIndex();
-        QModelIndex filterIndex = filterModel_.index(rand() % filterModel_.rowCount(), 0);
-        return filterModel_.mapToSource(filterIndex);
-    }
+    model_->addTracks(tracks);
+}
 
-    QModelIndex filterIndex = filterModel_.mapFromSource(currentIndex_);
+void PlaylistTab::removeTracks(QModelIndexList trackList)
+{
+    if (!model_->playlist().synced)
+        model_->removeIndexes(mapToSource(trackList));
+}
+
+QModelIndexList PlaylistTab::mapToSource(QModelIndexList indexes) const
+{
+    QModelIndexList result;
+    for (auto index : indexes)
+        result.append(filterModel_.mapToSource(index));
+    return result;
+}
+
+QModelIndex PlaylistTab::getCurrentIndex()
+{
+    return filterModel_.mapToSource(ui_.playlist->currentIndex());
+}
+
+QModelIndex PlaylistTab::getFilteredIndex(QModelIndex current, int offset)
+{
+    QModelIndex filterIndex = filterModel_.mapFromSource(current);
     // If current index is filtered out, play first track from filtered list
     if (!filterIndex.isValid()) {
         filterIndex = filterModel_.index(0, 0);
@@ -158,109 +148,12 @@ QModelIndex PlaylistTab::getNextModelIndex(int offset)
     return filterModel_.mapToSource(filterIndex);
 }
 
-void PlaylistTab::currentSourceChanged()
+QModelIndex PlaylistTab::getRandomFilteredIndex()
 {
-    // update current index
-    if (nextIndex_.isValid()) {
-        currentIndex_ = nextIndex_;
-        nextIndex_ = QPersistentModelIndex();
-        updateCursor();
-    }
-}
-
-void PlaylistTab::updateCursor()
-{
-    if (MainWindow::instance->cursorFollowsPlayback()) {
-        ui_.playlist->setCurrentIndex(filterModel_.mapFromSource(currentIndex_));
-    }
-}
-
-void PlaylistTab::updateCursorAndScroll()
-{
-    ui_.playlist->setCurrentIndex(filterModel_.mapFromSource(currentIndex_));
-    ui_.playlist->scrollTo(filterModel_.mapFromSource(currentIndex_), QAbstractItemView::PositionAtCenter);
-}
-
-void PlaylistTab::repaintTrack(const QModelIndex& index)
-{
-    ui_.playlist->update(filterModel_.mapFromSource(index));
-}
-
-void PlaylistTab::addDirectory(const QString& directory)
-{
-    if (!synced_)
-        model_.addDirectory(directory);
-}
-
-void PlaylistTab::addFiles(const QStringList& files)
-{
-    if (!synced_)
-        model_.addFiles(files);
-}
-
-void PlaylistTab::addTracks(const QList<shared_ptr<Track>>& tracks)
-{
-    model_.addTracks(tracks);
-}
-
-void PlaylistTab::removeTracks(QModelIndexList trackList)
-{
-    if (!synced_)
-        model_.removeIndexes(mapToSource(trackList));
-}
-
-void PlaylistTab::libraryChanged(LibraryEvent event)
-{
-    if (synced_)
-        model_.libraryChanged(event);
-}
-
-void PlaylistTab::libraryChanged(QList<std::shared_ptr<Track>> tracks)
-{
-    if (synced_) {
-        model_.clear();
-        model_.addTracks(tracks);
-    }
-}
-
-PTrack PlaylistTab::getCurrentTrack()
-{
-    if (currentIndex_.isValid()) {
-        return currentIndex_.data(TrackRole).value<shared_ptr<Track>>();
-    }
-    return PTrack();
-}
-
-int PlaylistTab::getCurrentPosition()
-{
-    if (currentIndex_.isValid())
-        return currentIndex_.row();
-    return -1;
-}
-
-void PlaylistTab::setCurrentPosition(int position)
-{
-    currentIndex_ = QPersistentModelIndex(model_.index(position, 0));
-}
-
-QModelIndexList PlaylistTab::mapToSource(QModelIndexList indexes) const
-{
-    QModelIndexList result;
-    for (auto index : indexes)
-        result.append(filterModel_.mapToSource(index));
-    return result;
-}
-
-void PlaylistTab::removeTrackAt(int position)
-{
-    if (synced_)
-        return;
-    model_.removeIndexes({model_.index(position, 0)});
-}
-
-void PlaylistTab::enqueuePosition(int pos)
-{
-    MainWindow::instance->queue.pushTracks(this, {QModelIndex(model_.index(pos, 0))});
+    if (filterModel_.rowCount() == 0)
+        return QModelIndex();
+    QModelIndex filterIndex = filterModel_.index(rand() % filterModel_.rowCount(), 0);
+    return filterModel_.mapToSource(filterIndex);
 }
 
 #include "playlisttab.moc"

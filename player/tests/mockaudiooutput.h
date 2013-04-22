@@ -1,7 +1,7 @@
 #ifndef MOCKAUDIOOUTPUT_H
 #define MOCKAUDIOOUTPUT_H
 
-#include "../../audiooutput.h"
+#include "player/audiooutput.h"
 
 class MockAudioOutput : public AudioOutput
 {

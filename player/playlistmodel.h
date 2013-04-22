@@ -1,17 +1,21 @@
 #ifndef PLAYLISTMODEL_H
 #define PLAYLISTMODEL_H
 
-#include <QAbstractTableModel>
-#include <library/playlist.h>
-#include <QStringList>
+#include "player/playlist.h"
 
+#include <QAbstractTableModel>
+#include <QStringList>
+#include <memory>
+#include <vector>
+
+class Library;
 class LibraryEvent;
 
 class PlaylistModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    PlaylistModel(Playlist &playlist, QObject *parent = 0);
+    PlaylistModel(Library* library, QObject *parent = 0);
 
     virtual int rowCount(const QModelIndex &) const;
     virtual int columnCount(const QModelIndex &) const;
@@ -23,16 +27,24 @@ public:
     Playlist &playlist() { return playlist_; }
     void addDirectory(const QString &path);
     void addFiles(const QStringList& files);
-    void libraryChanged(LibraryEvent event);
     void addTracks(QList<std::shared_ptr<Track>> tracks);
     void removeIndexes(QModelIndexList indexes);
     void clear();
 
-    QModelIndex getIndex(QString path);
+    void notifyQueueStatusChanged(std::vector<QPersistentModelIndex> indexes);
+
+signals:
+    void queueStatusChanged(std::vector<QPersistentModelIndex> indexes);
+
+protected slots:
+    void libraryChanged(LibraryEvent event);
+    void libraryChanged(QList<std::shared_ptr<Track>> tracks);
 
 private:
-    Playlist &playlist_;
+    Playlist playlist_;
 };
+
+typedef std::shared_ptr<PlaylistModel> PModel;
 
 enum PlaylistRoles {
     TrackRole = Qt::UserRole,
@@ -40,19 +52,6 @@ enum PlaylistRoles {
     GroupItemsRole
 };
 
-namespace Grouping
-{
-    enum Mode
-    {
-        None = 1,
-        Head,
-        Body,
-        Tail,
-        Invalid
-    };
-}
-
 Q_DECLARE_METATYPE(std::shared_ptr<Track>)
-Q_DECLARE_METATYPE(Grouping::Mode)
 
 #endif // PLAYLISTMODEL_H

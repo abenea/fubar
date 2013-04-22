@@ -1,9 +1,21 @@
 #ifndef PLAYLISTFILTER_H
 #define PLAYLISTFILTER_H
 
+#include "player/playlistmodel.h"
 #include <QSortFilterProxyModel>
 #include <QStringList>
-#include "playlistmodel.h"
+
+namespace Grouping
+{
+    enum Mode
+    {
+        None = 1,
+        Head,
+        Body,
+        Tail,
+        Invalid
+    };
+};
 
 class PlaylistFilter : public QSortFilterProxyModel
 {
@@ -29,5 +41,7 @@ private:
 private slots:
     void invalidateGrouping();
 };
+
+Q_DECLARE_METATYPE(Grouping::Mode)
 
 #endif // PLAYLISTFILTER_H

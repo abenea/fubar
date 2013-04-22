@@ -4,7 +4,6 @@
 #include "track.h"
 #include "directory.h"
 #include "directorywatcher.h"
-#include "playlist.h"
 #include "libraryeventtype.h"
 
 #include <QString>

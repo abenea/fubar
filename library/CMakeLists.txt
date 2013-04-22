@@ -6,6 +6,5 @@ add_library(library
             directory.cpp
             track.cpp
             library.cpp
-            playlist.cpp
             ${PROTO_GENERATED})
 target_link_libraries(library ${PROTOBUF_LIBRARY} ${TAGLIB_LIBRARY})

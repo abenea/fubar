@@ -1,14 +1,16 @@
 #ifndef PLAYLIST_H
 #define PLAYLIST_H
 
-#include "track.h"
+#include "library/track.h"
 #include <QString>
 #include <QFileInfo>
 
 class Playlist
 {
 public:
-    QList<std::shared_ptr<Track> > tracks;
+    QList<std::shared_ptr<Track>> tracks;
+    QString name;
+    bool synced;
 
     void load(const char *fileName);
     void addDirectory(const QString &path);

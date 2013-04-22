@@ -1,6 +1,7 @@
 #include "util.h"
+#include "player/audioplayer.h"
+#include "player/phononaudiooutput.h"
 #include "ui/mainwindow.h"
-#include "phononaudiooutput.h"
 #include "library/library.h"
 #include "plugins/pluginmanager.h"
 #include "unixsignalshandler.h"
@@ -39,14 +40,15 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     qRegisterMetaType<LibraryEvent>("LibraryEvent");
+    PhononAudioOutput audioOutput;
     Library library;
-    PhononAudioOutput audio;
-    MainWindow w(&library, &audio);
+    AudioPlayer player(&library, &audioOutput);
+    MainWindow w(player, &library);
     w.show();
 
     UnixSignalsHandler signalsHandler(&w);
 
-    PluginManager pluginmanager(w);
+    PluginManager pluginmanager(player);
 
     library.start();
     QObject::connect(&a, SIGNAL(lastWindowClosed()), &library, SLOT(quit()));

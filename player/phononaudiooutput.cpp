@@ -10,6 +10,7 @@ PhononAudioOutput::PhononAudioOutput()
     QObject::connect(mediaObject_, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinishHandler()));
     QObject::connect(mediaObject_, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)), this, SLOT(currentSourceChangedHandler()));
     QObject::connect(mediaObject_, SIGNAL(tick(qint64)), this, SLOT(tickHandler(qint64)));
+    QObject::connect(mediaObject_, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(stateChanged(Phonon::State)));
 }
 
 PhononAudioOutput::~PhononAudioOutput()
@@ -88,6 +89,11 @@ void PhononAudioOutput::currentSourceChangedHandler()
 void PhononAudioOutput::tickHandler(qint64 time)
 {
     emit tick(time);
+}
+
+void PhononAudioOutput::stateChanged(Phonon::State newstate)
+{
+    emit playingStateChanged(newstate == Phonon::PlayingState);
 }
 
 #include "phononaudiooutput.moc"

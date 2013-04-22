@@ -21,10 +21,10 @@ LastfmPlugin::~LastfmPlugin()
     qDebug() << "[Lastfm] LastfmPlugin::~LastfmPlugin()";
 }
 
-void LastfmPlugin::init(QObject& mainWindow)
+void LastfmPlugin::init(QObject& fubar)
 {
     qDebug() << "[Lastfm] LastfmPlugin::init()";
-    mainWindow_ = &mainWindow;
+    fubar_ = &fubar;
     login();
 }
 
@@ -66,7 +66,7 @@ void LastfmPlugin::logout()
 {
     m_scrobbler.reset();
     resetVariables();
-    disconnect(mainWindow_, 0, this, 0);
+    disconnect(fubar_, 0, this, 0);
 }
 
 void LastfmPlugin::onAuthenticated()
@@ -129,9 +129,9 @@ void LastfmPlugin::gotSession()
         ldir.mkpath( lpath );
     }
 
-    connect(mainWindow_, SIGNAL(trackPlaying(PTrack)), this, SLOT(trackPlaying(PTrack)));
-    connect(mainWindow_, SIGNAL(stopped(qint64, qint64)), this, SLOT(stopped(qint64, qint64)));
-    connect(mainWindow_, SIGNAL(trackPositionChanged(qint64, bool)), this, SLOT(trackPositionChanged(qint64, bool)));
+    connect(fubar_, SIGNAL(trackPlaying(PTrack)), this, SLOT(trackPlaying(PTrack)));
+    connect(fubar_, SIGNAL(stopped(qint64, qint64)), this, SLOT(stopped(qint64, qint64)));
+    connect(fubar_, SIGNAL(trackPositionChanged(qint64, bool)), this, SLOT(trackPositionChanged(qint64, bool)));
 }
 
 void LastfmPlugin::stopped(qint64 finalPosition, qint64 /*trackLength*/)

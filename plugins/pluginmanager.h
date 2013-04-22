@@ -2,6 +2,7 @@
 #define PLUGINMANAGER_H
 
 #include "ui/mainwindow.h"
+#include "player/audioplayer.h"
 #include <map>
 #include <vector>
 #include <memory>
@@ -11,7 +12,7 @@ class QPluginLoader;
 class PluginManager
 {
 public:
-    PluginManager(MainWindow& mainWindow);
+    PluginManager(AudioPlayer& player);
 
     static PluginManager *instance;
 
@@ -21,7 +22,7 @@ public:
     std::vector<QString> getPlugins();
 
 private:
-    MainWindow& mainWindow_;
+    AudioPlayer& player_;
     typedef std::map<QString, std::shared_ptr<QPluginLoader>> PluginMap;
     PluginMap plugins_;
 };

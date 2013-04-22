@@ -2,8 +2,9 @@
 #define PLAYLISTVIEW_H
 
 #include <QListView>
-#include <QMenu>
-#include "playlistitemdelegate.h"
+//#include <QMenu>
+
+class PlaylistItemDelegate;
 
 class PlaylistView : public QListView
 {

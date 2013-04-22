@@ -1,40 +1,28 @@
 #ifndef PLAYLISTTAB_H
 #define PLAYLISTTAB_H
 
-#include "playlistmodel.h"
+#include "../player/playlistmodel.h"
 #include "playlistfilter.h"
 #include "ui/ui_playlist.h"
 #include <QWidget>
 #include <QStringList>
 #include <QList>
+#include <memory>
+
+class PlaylistModel;
+class PlaylistView;
 
 class PlaylistTab : public QWidget
 {
     Q_OBJECT
 public:
-    PlaylistTab(bool synced, QWidget* parent = 0);
-
-    // so uncool having this here
-    QModelIndexList mapToSource(QModelIndexList indexes) const;
-
-    PTrack getCurrentTrack();
-    int getCurrentPosition();
-    void setCurrentPosition(int position);
+    PlaylistTab(std::shared_ptr<PlaylistModel> model, QWidget* parent = 0);
 
     // Can the user edit it?
-    bool isEditable() { return !synced_; }
+    bool isEditable();
 
-    void play(const QModelIndex &index);
-    void play();
-    void playNext(int offset);
-
-    void enqueueNextTrack();
-    void enqueueTrack(QModelIndex index);
-
-    void currentSourceChanged();
-
-    void updateCursorAndScroll();
-    void repaintTrack(const QModelIndex& index);
+    void updateCursor(QModelIndex index);
+    void updateCursorAndScroll(QModelIndex index);
     void focusFilter();
 
     void addDirectory(const QString &directory);
@@ -42,34 +30,24 @@ public:
     void addTracks(const QList<std::shared_ptr<Track>> &tracks);
     void removeTracks(QModelIndexList trackList);
 
-public slots:
-    void libraryChanged(LibraryEvent event);
-    void libraryChanged(QList<std::shared_ptr<Track>> tracks);
+    QModelIndex getRandomFilteredIndex();
+    QModelIndex getFilteredIndex(QModelIndex current, int offset);
+    QModelIndex getCurrentIndex();
 
 protected slots:
-    void updateCursor();
     void changedFilter(const QString &filter);
     void doubleClicked(const QModelIndex &filterIndex);
     void clearFilterAndPlay();
-
-protected:
-    QModelIndex getNextModelIndex(int offset);
-
-protected:
-    bool synced_;
-    Ui::PlaylistFrame ui_;
-    Playlist playlist_;
-    PlaylistModel model_;
-    PlaylistFilter filterModel_;
-    QPersistentModelIndex currentIndex_;
-    QPersistentModelIndex nextIndex_;
+    void repaintTracks(std::vector<QPersistentModelIndex> indexes);
 
 private:
-    // Used for testing
-    void removeTrackAt(int position);
-    void enqueuePosition(int pos);
+    QModelIndexList mapToSource(QModelIndexList indexes) const;
 
-    friend class PlayerTest;
+    Ui::PlaylistFrame ui_;
+    std::shared_ptr<PlaylistModel> model_;
+    PlaylistFilter filterModel_;
+
+    friend class PlaylistView;
 };
 
 #endif // PLAYLISTTAB_H

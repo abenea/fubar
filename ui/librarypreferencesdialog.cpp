@@ -1,5 +1,6 @@
 #include "librarypreferencesdialog.h"
 #include <QDebug>
+#include <QFileInfo>
 
 const QString FOLDER_SEPARATOR = ";";
 LibraryPreferencesDialog::LibraryPreferencesDialog(Library& library, QWidget* parent)

@@ -56,7 +56,7 @@ private:
     QString m_sessionKey;
     char *m_sessionKeyArray;
 
-    QObject* mainWindow_;
+    QObject* fubar_;
 
     friend class Preferences;
 };

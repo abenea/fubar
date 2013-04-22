@@ -6,9 +6,16 @@
 
 using namespace std;
 
-PlaylistModel::PlaylistModel(Playlist &playlist, QObject *parent)
-    : QAbstractItemModel(parent), playlist_(playlist)
+PlaylistModel::PlaylistModel(Library* library, QObject *parent)
+    : QAbstractItemModel(parent)
 {
+    if (library) {
+        playlist_.synced = true;
+        addTracks(library->getTracks());
+        QObject::connect(library, SIGNAL(libraryChanged(LibraryEvent)), this, SLOT(libraryChanged(LibraryEvent)));
+        QObject::connect(library, SIGNAL(libraryChanged(QList<std::shared_ptr<Track>>)), this, SLOT(libraryChanged(QList<std::shared_ptr<Track>>)));
+    } else
+        playlist_.synced = false;
 }
 
 int PlaylistModel::rowCount(const QModelIndex &) const
@@ -80,6 +87,9 @@ void PlaylistModel::addFiles(const QStringList& files)
 
 void PlaylistModel::libraryChanged(LibraryEvent event)
 {
+    if (!playlist_.synced)
+        return;
+
     if (event.op == CREATE) {
         beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size());
         playlist_.tracks.append(event.track);
@@ -88,8 +98,8 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
         endInsertRows();
     } else if (event.op == MODIFY) {
         int i = 0;
-        // todo should probably use setData()
-        foreach (PTrack track, playlist_.tracks) {
+        // could be using setData, but not sure it's worth it
+        for (const auto& track : playlist_.tracks) {
             if (track->location == event.track->location) {
                 playlist_.tracks.replace(i, event.track);
                 emit dataChanged(index(i, 0, QModelIndex()), index(i, 0, QModelIndex()));
@@ -99,7 +109,6 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
         }
     } else if (event.op == DELETE) {
         int i = 0;
-        // todo should probably use setData()
         for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end(); ++it) {
             PTrack track = *it;
             if (track->location == event.track->location) {
@@ -110,6 +119,14 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
             }
             ++i;
         }
+    }
+}
+
+void PlaylistModel::libraryChanged(QList<std::shared_ptr<Track>> tracks)
+{
+    if (playlist_.synced) {
+        clear();
+        addTracks(tracks);
     }
 }
 
@@ -140,17 +157,9 @@ void PlaylistModel::removeIndexes(QModelIndexList indexes)
     }
 }
 
-QModelIndex PlaylistModel::getIndex(QString path)
+void PlaylistModel::notifyQueueStatusChanged(vector<QPersistentModelIndex> indexes)
 {
-    int i = 0;
-    for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end(); ++it) {
-        PTrack track = *it;
-        if (track->location == path) {
-            return index(i, 0);
-        }
-        ++i;
-    }
-    return QModelIndex();
+    emit queueStatusChanged(indexes);
 }
 
 #include "playlistmodel.moc"
