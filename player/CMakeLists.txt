@@ -11,6 +11,6 @@ set(player_SOURCES
 qt4_automoc(${player_SOURCES})
 
 add_library(player ${player_SOURCES})
-target_link_libraries(player ${QT_LIBRARIES})
+target_link_libraries(player ui ${QT_LIBRARIES})
 
 add_subdirectory(tests)
