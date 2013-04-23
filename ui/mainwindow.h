@@ -17,7 +17,6 @@ class PlaylistTab;
 class Library;
 class AudioOutput;
 class PlaylistModel;
-class AudioPlayer;
 
 class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {
@@ -105,7 +104,6 @@ private:
 
     AudioPlayer& player_;
     Library* library_;
-    AudioOutput* audioOutput_;
 
     boost::bimap<std::shared_ptr<PlaylistModel>, PlaylistTab*> playlistModels_;
 
