@@ -1,7 +1,7 @@
 #ifndef PLAYLISTTAB_H
 #define PLAYLISTTAB_H
 
-#include "../player/playlistmodel.h"
+#include "player/playlistmodel_forward.h"
 #include "playlistfilter.h"
 #include "ui/ui_playlist.h"
 #include <QWidget>
@@ -9,7 +9,6 @@
 #include <QList>
 #include <memory>
 
-class PlaylistModel;
 class PlaylistView;
 
 class PlaylistTab : public QWidget

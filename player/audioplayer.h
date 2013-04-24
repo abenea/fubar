@@ -1,6 +1,8 @@
 #ifndef AUDIOPLAYER_H
 #define AUDIOPLAYER_H
 
+#include "library/track_forward.h"
+#include "playlistmodel_forward.h"
 #include "queue.h"
 #include <QObject>
 #include <memory>
@@ -8,12 +10,7 @@
 
 class Library;
 class MainWindow;
-class Track;
 class AudioOutput;
-class PlaylistModel;
-
-typedef std::shared_ptr<PlaylistModel> PModel;
-typedef std::shared_ptr<Track> PTrack;
 
 class AudioPlayer : public QObject
 {

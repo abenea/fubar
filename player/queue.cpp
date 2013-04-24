@@ -8,7 +8,7 @@ Queue::Queue() : peeked_(false)
 
 }
 
-void Queue::pushTracks(std::shared_ptr<PlaylistModel> playlistModel, QModelIndexList tracks)
+void Queue::pushTracks(PModel playlistModel, QModelIndexList tracks)
 {
     for (const auto& index : tracks) {
         auto track = index.data(TrackRole).value<PTrack>();
@@ -27,9 +27,9 @@ void Queue::pushTracks(std::shared_ptr<PlaylistModel> playlistModel, QModelIndex
 }
 
 
-std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> Queue::getFirst(bool pop)
+std::pair<PModel, QPersistentModelIndex> Queue::getFirst(bool pop)
 {
-    std::shared_ptr<PlaylistModel> playlistModel;
+    PModel playlistModel;
     QPersistentModelIndex index;
     QString path;
     std::tie(playlistModel, index, path) = queue_.front();
@@ -45,7 +45,7 @@ std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> Queue::getFirst
     return {playlistModel, index};
 }
 
-std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> Queue::getNextTrack(bool pop)
+std::pair<PModel, QPersistentModelIndex> Queue::getNextTrack(bool pop)
 {
     while (!queue_.empty()) {
         auto item = getFirst(pop);
@@ -56,7 +56,7 @@ std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> Queue::getNextT
     return {nullptr, QPersistentModelIndex(QModelIndex())};
 }
 
-std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> Queue::peekTrack()
+std::pair<PModel, QPersistentModelIndex> Queue::peekTrack()
 {
     auto result = getNextTrack(false);
     peeked_ = result.second.isValid();
@@ -64,10 +64,10 @@ std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> Queue::peekTrac
 }
 
 
-std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> Queue::popTrack()
+std::pair<PModel, QPersistentModelIndex> Queue::popTrack()
 {
     peeked_ = false;
-    std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> p = getNextTrack(true);
+    std::pair<PModel, QPersistentModelIndex> p = getNextTrack(true);
     if (p.first)
         p.first->notifyQueueStatusChanged({p.second});
     return p;
@@ -76,11 +76,11 @@ std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> Queue::popTrack
 void Queue::popPeekedTrack()
 {
     peeked_ = false;
-    std::pair<std::shared_ptr<PlaylistModel>, QPersistentModelIndex> p = getFirst(true);
+    std::pair<PModel, QPersistentModelIndex> p = getFirst(true);
     p.first->notifyQueueStatusChanged({p.second});
 }
 
-bool Queue::isQueued(std::shared_ptr<PlaylistModel> playlistModel, std::shared_ptr<Track> track)
+bool Queue::isQueued(PModel playlistModel, std::shared_ptr<Track> track)
 {
     auto it = paths_.find(track->path());
     if (it == paths_.end())
@@ -102,9 +102,9 @@ bool Queue::peeked()
 void Queue::clear()
 {
     peeked_ = false;
-    std::map<std::shared_ptr<PlaylistModel>, std::vector<QPersistentModelIndex>> tracks;
+    std::map<PModel, std::vector<QPersistentModelIndex>> tracks;
     while (!queue_.empty()) {
-        std::shared_ptr<PlaylistModel> p;
+        PModel p;
         QPersistentModelIndex index;
         QString path;
         std::tie(p, index, path) = queue_.front();
@@ -119,11 +119,11 @@ void Queue::clear()
         kv.first->notifyQueueStatusChanged(kv.second);
 }
 
-void Queue::removePlaylistModel(std::shared_ptr<PlaylistModel> playlistModel)
+void Queue::removePlaylistModel(PModel playlistModel)
 {
     auto it = queue_.begin();
     while (it != queue_.end()) {
-        std::shared_ptr<PlaylistModel> p;
+        PModel p;
         QPersistentModelIndex index;
         QString path;
         std::tie(p, index, path) = *it;

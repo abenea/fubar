@@ -1,6 +1,4 @@
-#ifndef PLAYLISTMODEL_H
-#define PLAYLISTMODEL_H
-
+#pragma once
 #include "player/playlist.h"
 
 #include <QAbstractTableModel>
@@ -44,14 +42,10 @@ private:
     Playlist playlist_;
 };
 
-typedef std::shared_ptr<PlaylistModel> PModel;
-
 enum PlaylistRoles {
     TrackRole = Qt::UserRole,
     GroupingModeRole,
     GroupItemsRole
 };
 
-Q_DECLARE_METATYPE(std::shared_ptr<Track>)
-
-#endif // PLAYLISTMODEL_H
+Q_DECLARE_METATYPE(PTrack)

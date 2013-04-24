@@ -1,4 +1,5 @@
 #include "directory.h"
+#include "track.h"
 #include "track.pb.h"
 #include <QFileInfo>
 #include <QDir>

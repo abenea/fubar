@@ -1,7 +1,7 @@
 #ifndef DIRECTORY_H
 #define DIRECTORY_H
 
-#include "track.h"
+#include "track_forward.h"
 #include <QString>
 #include <QList>
 #include <QMap>

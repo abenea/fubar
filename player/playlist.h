@@ -1,14 +1,14 @@
 #ifndef PLAYLIST_H
 #define PLAYLIST_H
 
-#include "library/track.h"
+#include "library/track_forward.h"
 #include <QString>
 #include <QFileInfo>
 
 class Playlist
 {
 public:
-    QList<std::shared_ptr<Track>> tracks;
+    QList<PTrack> tracks;
     QString name;
     bool synced;
 

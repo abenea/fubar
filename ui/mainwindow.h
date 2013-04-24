@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "player/audioplayer.h"
+#include "player/playlistmodel_forward.h"
 #include "ui/ui_mainwindow.h"
 #include "statusbar.h"
 #include "seekslider.h"
@@ -16,7 +17,6 @@
 class PlaylistTab;
 class Library;
 class AudioOutput;
-class PlaylistModel;
 
 class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {

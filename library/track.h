@@ -1,9 +1,7 @@
-#ifndef TRACK_H
-#define TRACK_H
+#pragma once
 
 #include <QString>
 #include <QMap>
-#include <cstdio>
 #include <memory>
 
 namespace proto {
@@ -30,7 +28,3 @@ public:
 
     void fillProtoTrack(proto::Track& ptrack);
 };
-
-typedef std::shared_ptr<Track> PTrack;
-
-#endif // TRACK_H
