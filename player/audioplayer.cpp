@@ -22,7 +22,7 @@ AudioPlayer::AudioPlayer(Library* library, AudioOutput* audioOutput, bool testin
     QObject::connect(audioOutput_, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
     QObject::connect(audioOutput_, SIGNAL(currentSourceChanged()), this, SLOT(currentSourceChanged()));
     QObject::connect(audioOutput_, SIGNAL(tick(qint64)), this, SLOT(slotTick(qint64)));
-    QObject::connect(audioOutput_, SIGNAL(playingStateChanged(bool)), this, SIGNAL(playingStateChanged(bool)));
+    QObject::connect(audioOutput_, SIGNAL(stateChanged(AudioState)), this, SLOT(slotAudioStateChanged(AudioState)));
     // Not using Phono totalTimeChanged() signal because it returns 0 when used with enqueue()
     // TODO: report bug to phonon
 //    QObject::connect(audioOutput_, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
@@ -182,10 +182,6 @@ void AudioPlayer::prev()
 void AudioPlayer::stop()
 {
     audioOutput_->stop();
-    emit playingStateChanged(false);
-    PTrack track = getCurrentTrack();
-    if (track)
-        emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
 }
 
 PModel AudioPlayer::createPlaylist(bool synced)
@@ -237,7 +233,6 @@ std::pair<PModel, QModelIndex> AudioPlayer::getLastPlayed()
 
 void AudioPlayer::play(PModel playlistModel, const QModelIndex& index)
 {
-    emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
     if (!index.isValid())
         return;
     setPlaying(playlistModel, index);
@@ -320,6 +315,13 @@ void AudioPlayer::setVolume(qreal value)
     }
 //     qDebug() << "Setting volume to " << volume;
     audioOutput_->setVolume(volume);
+}
+
+void AudioPlayer::slotAudioStateChanged(AudioState newState)
+{
+    emit audioStateChanged(newState);
+    if (newState == StoppedState)
+        emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
 }
 
 #include "audioplayer.moc"

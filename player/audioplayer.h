@@ -1,5 +1,6 @@
 #pragma once
 
+#include "audiostate.h"
 #include "library/track_forward.h"
 #include "playlistmodel_forward.h"
 #include "queue.h"
@@ -48,9 +49,9 @@ public:
     bool isEnqueued(PModel playlistModel, PTrack track);
 
 signals:
-    void playingStateChanged(bool playing);
     void randomChanged(bool random);
 
+    void audioStateChanged(AudioState newState);
     void tick(qint64 pos);
     void trackPlaying(PTrack track);
     void stopped(qint64 /*ms*/ finalPosition, qint64 /*ms*/ trackLength);
@@ -64,6 +65,7 @@ public slots:
     void prev();
 
 private slots:
+    void slotAudioStateChanged(AudioState newState);
     void aboutToFinish();
     void currentSourceChanged();
     void slotTick(qint64 pos);

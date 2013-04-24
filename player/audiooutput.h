@@ -1,5 +1,6 @@
 #pragma once
 
+#include "audiostate.h"
 #include <QObject>
 
 class AudioOutput : public QObject
@@ -13,7 +14,7 @@ signals:
     void aboutToFinish();
     void currentSourceChanged();
     void tick(qint64 time);
-    void playingStateChanged(bool playing);
+    void stateChanged(AudioState state);
 
 public slots:
     virtual void setVolume(qreal newVolume) = 0;

@@ -34,9 +34,8 @@ MainWindow::MainWindow(AudioPlayer& player, Library* library, QWidget *parent)
     player.setMainWindow(this);
 
     QObject::connect(&player_, SIGNAL(randomChanged(bool)), this, SLOT(randomChanged(bool)));
-    QObject::connect(&player_, SIGNAL(playingStateChanged(bool)), this, SLOT(playingStateChanged(bool)));
+    QObject::connect(&player_, SIGNAL(audioStateChanged(AudioState)), this, SLOT(slotAudioStateChanged(AudioState)));
     QObject::connect(&player_, SIGNAL(trackPlaying(PTrack)), this, SLOT(updateUI(PTrack)));
-    QObject::connect(&player_, SIGNAL(stopped(qint64, qint64)), this, SLOT(stoppedPlaying()));
     randomChanged(player_.random());
 
     QObject::connect(&player_, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
@@ -114,9 +113,13 @@ void MainWindow::randomChanged(bool random)
     randomAction->setChecked(random);
 }
 
-void MainWindow::playingStateChanged(bool playing)
+void MainWindow::slotAudioStateChanged(AudioState newState)
 {
-    setTrayIcon(playing);
+    setTrayIcon(newState == PlayingState);
+    if (newState == StoppedState)  {
+        updateUI(nullptr);
+        statusBar_.clearMessage();
+    }
 }
 
 QString msToHumanTime(qint64 pos)
@@ -416,12 +419,6 @@ PlaylistTab* MainWindow::getPlayingPlaylistTab()
 bool MainWindow::isEnqueued(PlaylistTab* playlistTab, PTrack track)
 {
     return player_.isEnqueued(playlistModels_.right.at(playlistTab), track);
-}
-
-void MainWindow::stoppedPlaying()
-{
-    updateUI(0);
-    statusBar_.clearMessage();
 }
 
 #include "mainwindow.moc"

@@ -1,4 +1,5 @@
 #include "phononaudiooutput.h"
+#include "audiostate.h"
 #include <phonon/Phonon/MediaObject>
 #include <phonon/Phonon/AudioOutput>
 
@@ -10,7 +11,7 @@ PhononAudioOutput::PhononAudioOutput()
     QObject::connect(mediaObject_, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinishHandler()));
     QObject::connect(mediaObject_, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)), this, SLOT(currentSourceChangedHandler()));
     QObject::connect(mediaObject_, SIGNAL(tick(qint64)), this, SLOT(tickHandler(qint64)));
-    QObject::connect(mediaObject_, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(stateChanged(Phonon::State)));
+    QObject::connect(mediaObject_, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(slotStateChanged(Phonon::State)));
 }
 
 PhononAudioOutput::~PhononAudioOutput()
@@ -91,9 +92,24 @@ void PhononAudioOutput::tickHandler(qint64 time)
     emit tick(time);
 }
 
-void PhononAudioOutput::stateChanged(Phonon::State newstate)
+void PhononAudioOutput::slotStateChanged(Phonon::State newstate)
 {
-    emit playingStateChanged(newstate == Phonon::PlayingState);
+    switch (newstate) {
+        case Phonon::PlayingState:
+            emit stateChanged(PlayingState);
+            break;
+        case Phonon::StoppedState:
+            emit stateChanged(StoppedState);
+            break;
+        case Phonon::PausedState:
+            emit stateChanged(PausedState);
+            break;
+        case Phonon::BufferingState:
+        case Phonon::LoadingState:
+        case Phonon::ErrorState:
+            emit stateChanged(UnknownState);
+            break;
+    }
 }
 
 #include "phononaudiooutput.moc"

@@ -15,7 +15,6 @@
 
 class PlaylistTab;
 class Library;
-class AudioOutput;
 
 class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {
@@ -76,8 +75,7 @@ private slots:
 
     void updateUI(PTrack track);
 
-    void playingStateChanged(bool playing);
-    void stoppedPlaying();
+    void slotAudioStateChanged(AudioState newState);
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
 
     void removeActivePlaylist();
