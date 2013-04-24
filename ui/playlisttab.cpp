@@ -157,4 +157,17 @@ QModelIndex PlaylistTab::getRandomFilteredIndex()
     return filterModel_.mapToSource(filterIndex);
 }
 
+int PlaylistTab::getUnfilteredPosition(QModelIndex index)
+{
+    // this actually clears the filter but we don't care
+    // because it's only called at exit
+    filterModel_.setFilter("");
+    return filterModel_.mapFromSource(index).row();
+}
+
+QModelIndex PlaylistTab::getUnfilteredPosition(int pos)
+{
+    return filterModel_.mapToSource(filterModel_.index(pos, 0));
+}
+
 #include "playlisttab.moc"

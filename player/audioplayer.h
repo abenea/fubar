@@ -40,6 +40,9 @@ public:
 
     void play(PModel playlistModel, const QModelIndex &index);
 
+    void setLastPlayed(PModel playlistModel, const QModelIndex &index);
+    std::pair<PModel, QModelIndex> getLastPlayed();
+
     void setMainWindow(MainWindow* mainWindow);
 
     bool isEnqueued(PModel playlistModel, PTrack track);

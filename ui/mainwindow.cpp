@@ -261,6 +261,12 @@ void MainWindow::readSettings()
     restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
     cursorFollowsPlayback_ = settings.value("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_).toBool();
     cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
+    int lastPlayingPosition = settings.value("mainwindow/lastPlayingPosition", -1).toInt();
+    if (lastPlayingPosition != -1 && getActivePlaylist()) {
+        QModelIndex index = getActivePlaylist()->getUnfilteredPosition(lastPlayingPosition);
+        player_.setLastPlayed(getActivePlaylistModel(), index);
+        getActivePlaylist()->updateCursorAndScroll(index);
+    }
 }
 
 void MainWindow::writeSettings()
@@ -268,6 +274,13 @@ void MainWindow::writeSettings()
     QSettings settings;
     settings.setValue("mainwindow/geometry", saveGeometry());
     settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
+    int position = -1;
+    auto lastPlayed = player_.getLastPlayed();
+    if (lastPlayed.first && lastPlayed.second.isValid()) {
+        auto playlistTab = playlistModels_.left.at(lastPlayed.first);
+        position = playlistTab->getUnfilteredPosition(lastPlayed.second);
+    }
+    settings.setValue("mainwindow/lastPlayingPosition", position);
 }
 
 void MainWindow::on_mainToolBar_actionTriggered(QAction* action)

@@ -47,12 +47,6 @@ void AudioPlayer::readSettings()
     QSettings settings;
     random_ = settings.value("mainwindow/random", random_).toBool();
     emit randomChanged(random_);
-// TODO save/load last position
-//     int lastPlayingPosition = settings.value("mainwindow/lastPlayingPosition", -1).toInt();
-//     if (lastPlayingPosition != -1) {
-//         mainWindow_->getActivePlaylistModel()->setCurrentPosition(lastPlayingPosition);
-//         mainWindow_->getActivePlaylistModel()->updateCursorAndScroll();
-//     }
     volume_ = settings.value("mainwindow/volume", 0).toReal();
     if (volume_ < 0 or volume_ > 1)
         volume_ = 0;
@@ -65,11 +59,6 @@ void AudioPlayer::writeSettings()
         return;
     QSettings settings;
     settings.setValue("mainwindow/random", random_);
-//     int position = -1;
-//     QModelIndex index = playingIndex_.isValid() ? playingIndex_ : lastPlayedIndex_;
-//     if (playingModel_ && playingModel_->playlist().synced && index.isValid())
-//         position = index.row();
-//     settings.setValue("mainwindow/lastPlayingPosition", position);
     settings.setValue("mainwindow/volume", volume_);
 }
 
@@ -106,6 +95,7 @@ void AudioPlayer::setPlaying(PModel playlistModel, QModelIndex index)
         lastPlayedIndex_ = playingIndex_;
     playingModel_ = playlistModel;
     playingIndex_ = QPersistentModelIndex(index);
+    qDebug() << "Set playing index"<< playingIndex_.row() << (playingIndex_.data(TrackRole).value<PTrack>())->path();
     if (index.isValid())
         playingTrack_ = index.data(TrackRole).value<PTrack>();
 }
@@ -234,6 +224,20 @@ void AudioPlayer::clearQueue()
 void AudioPlayer::enqueueTracks(PModel model, QModelIndexList tracks)
 {
     queue_.pushTracks(model, tracks);
+}
+
+void AudioPlayer::setLastPlayed(PModel playlistModel, const QModelIndex &index)
+{
+    playingModel_ = playlistModel;
+    lastPlayedIndex_ = QPersistentModelIndex(index);
+}
+
+std::pair<PModel, QModelIndex> AudioPlayer::getLastPlayed()
+{
+    QModelIndex index = playingIndex_.isValid() ? playingIndex_ : lastPlayedIndex_;
+    if (playingModel_ && playingModel_->playlist().synced && index.isValid())
+        return {playingModel_, index};
+    return {PModel(), QModelIndex()};
 }
 
 void AudioPlayer::play(PModel playlistModel, const QModelIndex& index)

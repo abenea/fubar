@@ -32,6 +32,10 @@ public:
     QModelIndex getFilteredIndex(QModelIndex current, int offset);
     QModelIndex getCurrentIndex();
 
+    // Returns the position of index in the sorted, unfiltered playlist
+    int getUnfilteredPosition(QModelIndex index);
+    QModelIndex getUnfilteredPosition(int pos);
+
 protected slots:
     void changedFilter(const QString &filter);
     void doubleClicked(const QModelIndex &filterIndex);
