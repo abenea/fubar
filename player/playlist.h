@@ -1,5 +1,4 @@
-#ifndef PLAYLIST_H
-#define PLAYLIST_H
+#pragma once
 
 #include "library/track_forward.h"
 #include <QString>
@@ -17,5 +16,3 @@ public:
     void addFile(const QFileInfo &file);
     void addFiles(const QStringList& files);
 };
-
-#endif // PLAYLIST_H

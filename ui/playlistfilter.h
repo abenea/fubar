@@ -1,5 +1,4 @@
-#ifndef PLAYLISTFILTER_H
-#define PLAYLISTFILTER_H
+#pragma once
 
 #include "player/playlistmodel.h"
 #include <QSortFilterProxyModel>
@@ -43,5 +42,3 @@ private slots:
 };
 
 Q_DECLARE_METATYPE(Grouping::Mode)
-
-#endif // PLAYLISTFILTER_H

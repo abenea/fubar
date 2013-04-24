@@ -1,5 +1,4 @@
-#ifndef AUDIOOUTPUT_H
-#define AUDIOOUTPUT_H
+#pragma once
 
 #include <QObject>
 
@@ -33,5 +32,3 @@ public:
     virtual void enqueue(const QString& source) = 0;
     virtual void clearQueue() = 0;
 };
-
-#endif // AUDIOOUTPUT_H

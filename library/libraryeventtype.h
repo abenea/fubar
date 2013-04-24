@@ -1,6 +1,3 @@
-#ifndef LIBRARYEVENTTYPE_H
-#define LIBRARYEVENTTYPE_H
+#pragma once
 
 enum LibraryEventType {DELETE, CREATE, MODIFY, UNKNOWN};
-
-#endif //LIBRARYEVENTTYPE_H

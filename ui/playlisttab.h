@@ -1,5 +1,4 @@
-#ifndef PLAYLISTTAB_H
-#define PLAYLISTTAB_H
+#pragma once
 
 #include "player/playlistmodel_forward.h"
 #include "playlistfilter.h"
@@ -48,5 +47,3 @@ private:
 
     friend class PlaylistView;
 };
-
-#endif // PLAYLISTTAB_H

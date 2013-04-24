@@ -1,5 +1,4 @@
-#ifndef DIRECTORYWATCHER_H
-#define DIRECTORYWATCHER_H
+#pragma once
 
 #include "library/libraryeventtype.h"
 #include <QString>
@@ -41,5 +40,3 @@ private:
     QMutex mutex_;
     QWaitCondition stop_condition_;
 };
-
-#endif // DIRECTORYWATCHER_H

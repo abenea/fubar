@@ -1,5 +1,4 @@
-#ifndef QUEUE_H
-#define QUEUE_H
+#pragma once
 
 #include "library/track_forward.h"
 #include "playlistmodel_forward.h"
@@ -41,5 +40,3 @@ private:
     std::map<QString, std::map<PModel, int>> paths_;
     bool peeked_;
 };
-
-#endif // QUEUE_H

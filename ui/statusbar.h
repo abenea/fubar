@@ -1,5 +1,4 @@
-#ifndef STATUSBAR_H
-#define STATUSBAR_H
+#pragma once
 
 #include <QStatusBar>
 
@@ -15,5 +14,3 @@ protected:
 signals:
     void statusBarDoubleClicked();
 };
-
-#endif // STATUSBAR_H

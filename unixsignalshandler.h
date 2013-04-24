@@ -1,6 +1,4 @@
-#ifndef UNIXSIGNALSHANDLER_H
-#define UNIXSIGNALSHANDLER_H
-
+#pragma once
 #include <QObject>
 #include <QSocketNotifier>
 
@@ -21,5 +19,3 @@ private:
     static int sigtermFd_[2];
     QSocketNotifier *snTerm_;
 };
-
-#endif // UNIXSIGNALSHANDLER_H

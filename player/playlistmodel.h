@@ -1,4 +1,5 @@
 #pragma once
+
 #include "player/playlist.h"
 
 #include <QAbstractTableModel>

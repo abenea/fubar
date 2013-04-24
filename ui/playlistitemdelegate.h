@@ -1,5 +1,4 @@
-#ifndef PLAYLISTITEMDELEGATE_H
-#define PLAYLISTITEMDELEGATE_H
+#pragma once
 
 #include "playlistfilter.h"
 #include <QStyledItemDelegate>
@@ -14,5 +13,3 @@ public:
 
     static Grouping::Mode getGroupMode(const QModelIndex& index);
 };
-
-#endif // PLAYLISTITEMDELEGATE_H

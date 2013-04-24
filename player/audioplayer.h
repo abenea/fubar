@@ -1,5 +1,4 @@
-#ifndef AUDIOPLAYER_H
-#define AUDIOPLAYER_H
+#pragma once
 
 #include "library/track_forward.h"
 #include "playlistmodel_forward.h"
@@ -105,5 +104,3 @@ private:
     // useful for unit testing
     bool testing_;
 };
-
-#endif // AUDIOPLAYER_H

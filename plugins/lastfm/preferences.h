@@ -1,5 +1,4 @@
-#ifndef PREFERENCES_H
-#define PREFERENCES_H
+#pragma once
 
 #include "plugins/lastfm/ui_config.h"
 #include "plugins/lastfm/lastfmplugin.h"
@@ -19,5 +18,3 @@ private:
     QString old_username_;
     QString old_password_;
 };
-
-#endif // PREFERENCES_H

@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include "player/audioplayer.h"
 #include "player/playlistmodel_forward.h"
@@ -115,5 +114,3 @@ private:
 
     friend class PluginsPreferences;
 };
-
-#endif // MAINWINDOW_H

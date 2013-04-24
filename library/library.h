@@ -1,5 +1,4 @@
-#ifndef LIBRARY_H
-#define LIBRARY_H
+#pragma once
 
 #include "track.h"
 #include "directory.h"
@@ -101,5 +100,3 @@ private:
 
     bool dirty_; // library was modified since stored to disk
 };
-
-#endif // LIBRARY_H

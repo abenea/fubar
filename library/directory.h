@@ -1,5 +1,4 @@
-#ifndef DIRECTORY_H
-#define DIRECTORY_H
+#pragma once
 
 #include "track_forward.h"
 #include <QString>
@@ -50,5 +49,3 @@ private:
     FileMap files_;
 };
 
-
-#endif // DIRECTORY_H

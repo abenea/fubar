@@ -1,5 +1,4 @@
-#ifndef MOCKAUDIOOUTPUT_H
-#define MOCKAUDIOOUTPUT_H
+#pragma once
 
 #include "player/audiooutput.h"
 
@@ -35,5 +34,3 @@ private:
     QString source_;
     QString nextSource_;
 };
-
-#endif // MOCKAUDIOOUTPUT_H

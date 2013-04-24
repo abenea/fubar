@@ -1,5 +1,4 @@
-#ifndef LASTFMPLUGIN_H
-#define LASTFMPLUGIN_H
+#pragma once
 
 #include <QObject>
 #include <QtPlugin>
@@ -60,5 +59,3 @@ private:
 
     friend class Preferences;
 };
-
-#endif // LASTFMPLUGIN_H

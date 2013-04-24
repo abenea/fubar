@@ -1,5 +1,4 @@
-#ifndef LIBRARYPREFERENCESDIALOG_H
-#define LIBRARYPREFERENCESDIALOG_H
+#pragma once
 
 #include "ui/ui_librarypreferences.h"
 #include "library/library.h"
@@ -22,5 +21,3 @@ private:
     QStringList getCurrentList();
     Library& library_;
 };
-
-#endif // LIBRARYPREFERENCESDIALOG_H

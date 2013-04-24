@@ -1,5 +1,4 @@
-#ifndef PLAYLISTVIEW_H
-#define PLAYLISTVIEW_H
+#pragma once
 
 #include <QListView>
 //#include <QMenu>
@@ -23,5 +22,3 @@ protected:
 private:
     PlaylistItemDelegate *itemDelegate_;
 };
-
-#endif // PLAYLISTVIEW_H

@@ -1,5 +1,4 @@
-#ifndef PHONONAUDIOOUTPUT_H
-#define PHONONAUDIOOUTPUT_H
+#pragma once
 
 #include "audiooutput.h"
 #include <phonon/Phonon/MediaObject>
@@ -39,5 +38,3 @@ private:
     Phonon::MediaObject* mediaObject_;
     Phonon::AudioOutput* audioOutput_;
 };
-
-#endif // PHONONAUDIOOUTPUT_H

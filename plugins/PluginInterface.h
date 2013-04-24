@@ -1,5 +1,4 @@
-#ifndef PLUGININTERFACE_H
-#define PLUGININTERFACE_H
+#pragma once
 
 #include <QtPlugin>
 #include <QObject>
@@ -15,5 +14,3 @@ public:
 QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(PluginInterface, "com.PluginInterface/1.0")
 QT_END_NAMESPACE
-
-#endif

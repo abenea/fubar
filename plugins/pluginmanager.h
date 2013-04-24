@@ -1,5 +1,4 @@
-#ifndef PLUGINMANAGER_H
-#define PLUGINMANAGER_H
+#pragma once
 
 #include "ui/mainwindow.h"
 #include "player/audioplayer.h"
@@ -26,5 +25,3 @@ private:
     typedef std::map<QString, std::shared_ptr<QPluginLoader>> PluginMap;
     PluginMap plugins_;
 };
-
-#endif // PLUGINMANAGER_H
