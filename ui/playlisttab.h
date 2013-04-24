@@ -14,7 +14,7 @@ class PlaylistTab : public QWidget
 {
     Q_OBJECT
 public:
-    PlaylistTab(std::shared_ptr<PlaylistModel> model, QWidget* parent = 0);
+    PlaylistTab(PModel model, QWidget* parent = 0);
 
     // Can the user edit it?
     bool isEditable();
@@ -25,7 +25,7 @@ public:
 
     void addDirectory(const QString &directory);
     void addFiles(const QStringList &files);
-    void addTracks(const QList<std::shared_ptr<Track>> &tracks);
+    void addTracks(const QList<PTrack> &tracks);
     void removeTracks(QModelIndexList trackList);
 
     QModelIndex getRandomFilteredIndex();
@@ -42,7 +42,7 @@ private:
     QModelIndexList mapToSource(QModelIndexList indexes) const;
 
     Ui::PlaylistFrame ui_;
-    std::shared_ptr<PlaylistModel> model_;
+    PModel model_;
     PlaylistFilter filterModel_;
 
     friend class PlaylistView;

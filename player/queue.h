@@ -27,7 +27,7 @@ public:
     void clear();
 
     bool isEmpty();
-    bool isQueued(PModel playlistModel, std::shared_ptr<Track> track);
+    bool isQueued(PModel playlistModel, PTrack track);
 
     void removePlaylistModel(PModel playlistModel);
 

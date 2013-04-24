@@ -19,14 +19,14 @@ public:
 
     void addSubdirectory(std::shared_ptr<Directory> directory);
     void removeSubdirectory(QString subdirName);
-    void addFile(std::shared_ptr<Track> file);
-    std::shared_ptr<Track> removeFile(QString fileName);
+    void addFile(PTrack file);
+    PTrack removeFile(QString fileName);
     void addFilesFromDirectory(std::shared_ptr<Directory> directory);
 
     QList<QString> getSubdirectoriesNames();
-    std::shared_ptr<Track> getFile(QString name);
+    PTrack getFile(QString name);
     std::shared_ptr<Directory> getSubdirectory(QString name);
-    QList<std::shared_ptr<Track>> getTracks();
+    QList<PTrack> getTracks();
     QSet<QString> getFileSet();
     QSet<QString> getSubdirectoriesPathsSet();
     void clearFiles();
@@ -40,7 +40,7 @@ public:
 
 private:
     typedef QMap<QString, std::shared_ptr<Directory>> SubdirectoryMap;
-    typedef QMap<QString, std::shared_ptr<Track>> FileMap;
+    typedef QMap<QString, PTrack> FileMap;
 
     QString location_;
     uint mtime_;

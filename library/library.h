@@ -1,7 +1,6 @@
 #pragma once
 
-#include "track.h"
-#include "directory.h"
+#include "track_forward.h"
 #include "directorywatcher.h"
 #include "libraryeventtype.h"
 
@@ -13,12 +12,14 @@
 #include <QList>
 #include <QMap>
 
+class Directory;
+
 struct LibraryEvent {
-    std::shared_ptr<Track> track;
+    PTrack track;
     LibraryEventType op;
 
     LibraryEvent() {}
-    LibraryEvent(std::shared_ptr<Track> t, LibraryEventType o) : track(t), op(o) {}
+    LibraryEvent(PTrack t, LibraryEventType o) : track(t), op(o) {}
 
     std::string op2str();
 };
@@ -36,7 +37,7 @@ public:
     void stopWatch();
 
     QStringList getMusicFolders();
-    QList<std::shared_ptr<Track> > getTracks();
+    QList<PTrack > getTracks();
 
 public slots:
     void setMusicFolders(QStringList folders);
@@ -52,7 +53,7 @@ signals:
     void libraryChanged(LibraryEvent event);
     // Emit when library directories change
     // Completely replace the contents of synced playlists with these tracks
-    void libraryChanged(QList<std::shared_ptr<Track>> tracks);
+    void libraryChanged(QList<PTrack> tracks);
 
 protected:
     void run();
@@ -73,10 +74,10 @@ private:
     void stopRescanning();
     bool stopRescan() { return quit_ || !should_be_working_; }
     void scanDirectory(const QString& path);
-    std::shared_ptr<Track> scanFile(const QString& path);
+    PTrack scanFile(const QString& path);
 
     void addDirectory(std::shared_ptr<Directory> directory);
-    void addFile(std::shared_ptr<Track> track);
+    void addFile(PTrack track);
     void removeFile(QString path);
     void removeDirectory(QString path);
 

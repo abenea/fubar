@@ -1,12 +1,13 @@
 #include "playlisttab.h"
 #include "mainwindow.h"
 #include "library/library.h"
+#include "player/playlistmodel.h"
 #include <QDebug>
 #include <memory>
 
 using std::shared_ptr;
 
-PlaylistTab::PlaylistTab(std::shared_ptr<PlaylistModel> model, QWidget* parent)
+PlaylistTab::PlaylistTab(PModel model, QWidget* parent)
     : QWidget(parent)
     , model_(model)
 {

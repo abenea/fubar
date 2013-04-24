@@ -1,6 +1,8 @@
 #include "library.h"
 
 #include "util.h"
+#include "track.h"
+#include "directory.h"
 #include "track.pb.h"
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
@@ -71,7 +73,7 @@ void Library::stopRescanning()
 void Library::startMonitoring()
 {
     QMutexLocker locker(&pause_monitoring_mutex_);
-    QList<std::shared_ptr<Track>> tracks = getTracks();
+    QList<PTrack> tracks = getTracks();
     emit(libraryChanged(tracks));
     should_be_working_ = true;
     pause_monitoring_.wakeAll();
@@ -185,7 +187,7 @@ void Library::removeDirectory(QString path)
     qDebug() << "Done deleting dir" << path;
 }
 
-void Library::addFile(std::shared_ptr<Track> track)
+void Library::addFile(PTrack track)
 {
     QMutexLocker locker(&mutex_);
     // Add to directory
@@ -206,7 +208,7 @@ void Library::removeFile(QString path)
     QFileInfo file_info(path);
     DirectoryMap::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
-        std::shared_ptr<Track> track = it.value()->removeFile(file_info.fileName());
+        PTrack track = it.value()->removeFile(file_info.fileName());
         if (track) {
             dirty_ = true;
             emit libraryChanged(LibraryEvent(track, DELETE));
@@ -391,7 +393,7 @@ void Library::scanDirectory(const QString& path)
             if (stopRescan())
                 return;
             if (info.isFile()) {
-                std::shared_ptr<Track> track = scanFile(info.filePath());
+                PTrack track = scanFile(info.filePath());
                 if (track)
                     addFile(track);
             } else {
@@ -421,7 +423,7 @@ void set_tag_and_properties(T tag, TagLib::Tag **tag_ptr, TagLib::PropertyMap& p
     }
 }
 
-std::shared_ptr<Track> Library::scanFile(const QString& path)
+PTrack Library::scanFile(const QString& path)
 {
     qDebug() << "Scanning file" << path;
     QByteArray encodedName = QFile::encodeName(path);
@@ -590,7 +592,7 @@ void Library::fileCallback(QString path, LibraryEventType event)
     QMutexLocker locker(&mutex_);
     if (event == CREATE) {
 //        qDebug() << "FILE ADD " << path;
-        std::shared_ptr<Track> track = scanFile(path);
+        PTrack track = scanFile(path);
         if (track)
             addFile(track);
     } else if (event == DELETE) {
@@ -613,7 +615,7 @@ void Library::fileCallback(QString path, LibraryEventType event)
                 // We tried taglib-reading this but it failed
                 // maybe now we have more data so try again
                 qDebug() << "Reading again with taglib" << path;
-                std::shared_ptr<Track> track = scanFile(path);
+                PTrack track = scanFile(path);
                 if (track)
                     addFile(track);
             }

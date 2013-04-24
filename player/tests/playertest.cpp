@@ -1,4 +1,5 @@
 #include "playertest.h"
+#include "library/track.h"
 #include "mockaudiooutput.h"
 #include "ui/mainwindow.h"
 #include <playlistmodel.h>
@@ -8,7 +9,7 @@
 
 QList<PTrack> generateTracks(int start, int no)
 {
-    QList<std::shared_ptr<Track>> result;
+    QList<PTrack> result;
     for (int i = start; i < start + no; ++i) {
         auto track = new Track();
         track->location = QString("%1").arg(i);

@@ -26,7 +26,7 @@ public:
     Playlist &playlist() { return playlist_; }
     void addDirectory(const QString &path);
     void addFiles(const QStringList& files);
-    void addTracks(QList<std::shared_ptr<Track>> tracks);
+    void addTracks(QList<PTrack> tracks);
     void removeIndexes(QModelIndexList indexes);
     void clear();
 
@@ -37,7 +37,7 @@ signals:
 
 protected slots:
     void libraryChanged(LibraryEvent event);
-    void libraryChanged(QList<std::shared_ptr<Track>> tracks);
+    void libraryChanged(QList<PTrack> tracks);
 
 private:
     Playlist playlist_;

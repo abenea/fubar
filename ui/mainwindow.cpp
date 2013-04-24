@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "library/track.h"
 #include "player/audiooutput.h"
 #include "player/playlistmodel.h"
 #include "playlisttab.h"
@@ -203,7 +204,7 @@ void MainWindow::removePlaylistTab(int index)
         return;
 
     playlistTabs->removeTab(index);
-    std::shared_ptr<PlaylistModel> playlistModel = playlistModels_.right.at(playlistTab);
+    PModel playlistModel = playlistModels_.right.at(playlistTab);
     playlistModels_.left.erase(playlistModel);
     player_.deletePlaylist(playlistModel);
     delete playlistTab;
@@ -289,7 +290,7 @@ PlaylistTab* MainWindow::getActivePlaylist()
     return dynamic_cast<PlaylistTab *>(playlistTabs->currentWidget());
 }
 
-std::shared_ptr<PlaylistModel> MainWindow::getActivePlaylistModel()
+PModel MainWindow::getActivePlaylistModel()
 {
     auto playlistTab = dynamic_cast<PlaylistTab *>(playlistTabs->currentWidget());
     if (!playlistTab)

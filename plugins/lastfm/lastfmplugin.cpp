@@ -1,4 +1,5 @@
 #include "lastfmplugin.h"
+#include "library/track.h"
 #include "preferences.h"
 #include <QDebug>
 #include <QCryptographicHash>

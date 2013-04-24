@@ -33,7 +33,7 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 {
     painter->save();
 
-    std::shared_ptr<Track> track = index.data(TrackRole).value<std::shared_ptr<Track> >();
+    PTrack track = index.data(TrackRole).value<PTrack >();
     if (!track) {
         painter->restore();
         return;

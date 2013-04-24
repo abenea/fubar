@@ -91,14 +91,14 @@ private:
 
     PModel playingModel_;
     QPersistentModelIndex playingIndex_;
-    std::shared_ptr<Track> playingTrack_;
+    PTrack playingTrack_;
 
     // Hack used for selecting next track after deleting current track
     QPersistentModelIndex lastPlayedIndex_;
 
     PModel bufferingTrackPlaylist_;
     QPersistentModelIndex bufferingIndex_;
-    std::shared_ptr<Track> bufferingTrack_;
+    PTrack bufferingTrack_;
 
     // If true, settings won't be read/written and shortcuts will be disabled.
     // useful for unit testing

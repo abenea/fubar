@@ -26,9 +26,9 @@ void Directory::addFile(shared_ptr<Track> file)
     files_.insert(QFileInfo(file->location).fileName(), file);
 }
 
-std::shared_ptr<Track> Directory::removeFile(QString fileName)
+PTrack Directory::removeFile(QString fileName)
 {
-    std::shared_ptr<Track> track;
+    PTrack track;
     FileMap::iterator it = files_.find(fileName);
     if (it != files_.end()) {
         track = it.value();
@@ -106,10 +106,10 @@ shared_ptr<Directory> Directory::getSubdirectory(QString name)
     return result;
 }
 
-QList<std::shared_ptr<Track> > Directory::getTracks()
+QList<PTrack > Directory::getTracks()
 {
-    QList<std::shared_ptr<Track> > tracks;
-    foreach (std::shared_ptr<Track> track, files_) {
+    QList<PTrack > tracks;
+    foreach (PTrack track, files_) {
         tracks.append(track);
     }
     return tracks;

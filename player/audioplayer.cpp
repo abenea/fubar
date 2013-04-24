@@ -97,7 +97,7 @@ void AudioPlayer::setBuffering(PModel playlistModel, QModelIndex index, bool cle
     if (clearTrack)
         bufferingTrack_.reset();
     else if (index.isValid())
-        bufferingTrack_ = index.data(TrackRole).value<std::shared_ptr<Track>>();
+        bufferingTrack_ = index.data(TrackRole).value<PTrack>();
 }
 
 void AudioPlayer::setPlaying(PModel playlistModel, QModelIndex index)
@@ -107,7 +107,7 @@ void AudioPlayer::setPlaying(PModel playlistModel, QModelIndex index)
     playingModel_ = playlistModel;
     playingIndex_ = QPersistentModelIndex(index);
     if (index.isValid())
-        playingTrack_ = index.data(TrackRole).value<std::shared_ptr<Track>>();
+        playingTrack_ = index.data(TrackRole).value<PTrack>();
 }
 
 void AudioPlayer::bufferTrack(PModel playlistModel, QModelIndex index)
@@ -144,7 +144,7 @@ void AudioPlayer::slotTick(qint64 pos)
     emit tick(pos);
 }
 
-std::shared_ptr<Track> AudioPlayer::getCurrentTrack()
+PTrack AudioPlayer::getCurrentTrack()
 {
     return playingTrack_;
 }
@@ -203,14 +203,14 @@ void AudioPlayer::stop()
         emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
 }
 
-std::shared_ptr<PlaylistModel> AudioPlayer::createPlaylist(bool synced)
+PModel AudioPlayer::createPlaylist(bool synced)
 {
-    std::shared_ptr<PlaylistModel> model(new PlaylistModel(synced ? library_ : nullptr));
+    PModel model(new PlaylistModel(synced ? library_ : nullptr));
     playlists_.insert(model);
     return model;
 }
 
-void AudioPlayer::deletePlaylist(std::shared_ptr<PlaylistModel> model)
+void AudioPlayer::deletePlaylist(PModel model)
 {
     queue_.removePlaylistModel(model);
     playlists_.erase(model);

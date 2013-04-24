@@ -1,6 +1,6 @@
 #pragma once
 
-#include "player/playlistmodel.h"
+#include "library/track_forward.h"
 #include <QSortFilterProxyModel>
 #include <QStringList>
 
@@ -35,7 +35,7 @@ private:
     mutable QHash<int, Grouping::Mode> groupingMode_;
 
     Grouping::Mode groupingMode(const QModelIndex& index) const;
-    static bool sameGroup(std::shared_ptr<Track> track1, std::shared_ptr<Track> track2);
+    static bool sameGroup(PTrack track1, PTrack track2);
 
 private slots:
     void invalidateGrouping();

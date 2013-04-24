@@ -30,9 +30,9 @@ public:
 
     // Returns the playlist that is the active tab
     PlaylistTab* getActivePlaylist();
-    std::shared_ptr<PlaylistModel> getActivePlaylistModel();
+    PModel getActivePlaylistModel();
 
-    void addPlaylist(std::shared_ptr<PlaylistModel> playlistTab, QString name = "Unnamed playlist", bool makeCurrent = true);
+    void addPlaylist(PModel playlistTab, QString name = "Unnamed playlist", bool makeCurrent = true);
 
     void enqueueTracks(PModel playlistModel, QModelIndexList tracks);
 
@@ -104,7 +104,7 @@ private:
     AudioPlayer& player_;
     Library* library_;
 
-    boost::bimap<std::shared_ptr<PlaylistModel>, PlaylistTab*> playlistModels_;
+    boost::bimap<PModel, PlaylistTab*> playlistModels_;
 
     // If true, settings won't be read/written and shortcuts will be disabled.
     // useful for unit testing

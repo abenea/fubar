@@ -5,7 +5,7 @@
 #include <QMap>
 #include <QString>
 #include "plugins/PluginInterface.h"
-#include "library/track.h"
+#include "library/track_forward.h"
 #include <lastfm/Track.h>
 #include <lastfm/Audioscrobbler.h>
 #include <memory>

@@ -80,7 +80,7 @@ void Queue::popPeekedTrack()
     p.first->notifyQueueStatusChanged({p.second});
 }
 
-bool Queue::isQueued(PModel playlistModel, std::shared_ptr<Track> track)
+bool Queue::isQueued(PModel playlistModel, PTrack track)
 {
     auto it = paths_.find(track->path());
     if (it == paths_.end())

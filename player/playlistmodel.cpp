@@ -13,7 +13,7 @@ PlaylistModel::PlaylistModel(Library* library, QObject *parent)
         playlist_.synced = true;
         addTracks(library->getTracks());
         QObject::connect(library, SIGNAL(libraryChanged(LibraryEvent)), this, SLOT(libraryChanged(LibraryEvent)));
-        QObject::connect(library, SIGNAL(libraryChanged(QList<std::shared_ptr<Track>>)), this, SLOT(libraryChanged(QList<std::shared_ptr<Track>>)));
+        QObject::connect(library, SIGNAL(libraryChanged(QList<PTrack>)), this, SLOT(libraryChanged(QList<PTrack>)));
     } else
         playlist_.synced = false;
 }
@@ -122,7 +122,7 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
     }
 }
 
-void PlaylistModel::libraryChanged(QList<std::shared_ptr<Track>> tracks)
+void PlaylistModel::libraryChanged(QList<PTrack> tracks)
 {
     if (playlist_.synced) {
         clear();
@@ -137,7 +137,7 @@ void PlaylistModel::clear()
     endRemoveRows();
 }
 
-void PlaylistModel::addTracks(QList<std::shared_ptr<Track>> tracks)
+void PlaylistModel::addTracks(QList<PTrack> tracks)
 {
     beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size() + tracks.size() - 1);
     playlist_.tracks.append(tracks);
