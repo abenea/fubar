@@ -59,7 +59,7 @@ MainWindow::MainWindow(AudioPlayer& player, Library* library, QWidget *parent)
     setStatusBar(&statusBar_);
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
 
-    playlistTabs->setTabsClosable(true);
+//     playlistTabs->setTabsClosable(true);
     QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(removePlaylistTab(int)));
 
     QObject::connect(menu_File, SIGNAL(aboutToShow()), this, SLOT(menuFileAboutToShow()));
