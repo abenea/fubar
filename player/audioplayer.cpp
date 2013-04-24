@@ -151,10 +151,6 @@ QModelIndex AudioPlayer::getPlayingIndex()
 void AudioPlayer::play()
 {
     playNext(0);
-    if (playingTrack_) {
-        emit trackPlaying(playingTrack_);
-        emit trackPositionChanged(0, true);
-    }
 }
 
 void AudioPlayer::playPause()
@@ -241,6 +237,7 @@ std::pair<PModel, QModelIndex> AudioPlayer::getLastPlayed()
 
 void AudioPlayer::play(PModel playlistModel, const QModelIndex& index)
 {
+    emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
     if (!index.isValid())
         return;
     setPlaying(playlistModel, index);
