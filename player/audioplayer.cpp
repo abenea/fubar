@@ -95,7 +95,6 @@ void AudioPlayer::setPlaying(PModel playlistModel, QModelIndex index)
         lastPlayedIndex_ = playingIndex_;
     playingModel_ = playlistModel;
     playingIndex_ = QPersistentModelIndex(index);
-    qDebug() << "Set playing index"<< playingIndex_.row() << (playingIndex_.data(TrackRole).value<PTrack>())->path();
     if (index.isValid())
         playingTrack_ = index.data(TrackRole).value<PTrack>();
 }
