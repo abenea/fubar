@@ -22,11 +22,10 @@
 
 MainWindow *MainWindow::instance = 0;
 
-MainWindow::MainWindow(AudioPlayer& player, Library* library, QWidget *parent)
+MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     : QMainWindow(parent)
     , statusBar_(this)
     , player_(player)
-    , library_(library)
     , cursorFollowsPlayback_(false)
 {
     setupUi(this);
@@ -189,6 +188,8 @@ void MainWindow::on_addFilesAction_triggered()
 
 void MainWindow::addPlaylist(PModel playlistModel, QString name, bool makeCurrent)
 {
+    if (!playlistModel)
+        return;
     PlaylistTab* tab = new PlaylistTab(playlistModel);
     playlistModel->playlist().name = name;
     playlistModels_.insert({playlistModel, tab});
@@ -215,8 +216,7 @@ void MainWindow::removePlaylistTab(int index)
 
 void MainWindow::on_newLibraryViewAction_triggered()
 {
-    if (library_)
-        addPlaylist(player_.createPlaylist(true), "All");
+    addPlaylist(player_.createPlaylist(true), "All");
 }
 
 void MainWindow::on_newPlaylistAction_triggered()
@@ -231,8 +231,8 @@ void MainWindow::on_quitAction_triggered()
 
 void MainWindow::on_libraryPreferencesAction_triggered()
 {
-    if (library_) {
-        LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(*library_, this);
+    if (player_.getLibrary()) {
+        LibraryPreferencesDialog* widget = new LibraryPreferencesDialog(*player_.getLibrary(), this);
         widget->show();
     }
 }

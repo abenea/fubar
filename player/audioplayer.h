@@ -21,6 +21,8 @@ public:
 
     static AudioPlayer *instance;
 
+    Library* getLibrary() { return library_; }
+
     void setRandom(bool random) { random_ = random; }
     bool random() { return random_; }
 

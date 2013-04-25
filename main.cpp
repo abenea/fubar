@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     PhononAudioOutput audioOutput;
     Library library;
     AudioPlayer player(&library, &audioOutput);
-    MainWindow w(player, &library);
+    MainWindow w(player);
     w.show();
 
     UnixSignalsHandler signalsHandler(&w);

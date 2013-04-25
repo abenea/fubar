@@ -56,7 +56,7 @@ void PlayerTest::init()
 {
     audio_ = new MockAudioOutput();
     player_ = new AudioPlayer(nullptr, audio_, true);
-    mw_ = new MainWindow(*player_, nullptr);
+    mw_ = new MainWindow(*player_);
     player_->setMainWindow(mw_);
 }
 

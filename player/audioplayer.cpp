@@ -186,6 +186,8 @@ void AudioPlayer::stop()
 
 PModel AudioPlayer::createPlaylist(bool synced)
 {
+    if (synced && !library_)
+        return PModel();
     PModel model(new PlaylistModel(synced ? library_ : nullptr));
     playlists_.insert(model);
     return model;

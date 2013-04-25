@@ -20,7 +20,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {
     Q_OBJECT
 public:
-    MainWindow(AudioPlayer& player, Library* library, QWidget *parent = 0);
+    MainWindow(AudioPlayer& player, QWidget *parent = 0);
     ~MainWindow();
 
     static MainWindow *instance;
@@ -100,7 +100,6 @@ private:
     QSystemTrayIcon *trayIcon_;
 
     AudioPlayer& player_;
-    Library* library_;
 
     boost::bimap<PModel, PlaylistTab*> playlistModels_;
 
