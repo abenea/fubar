@@ -10,5 +10,6 @@ set(playertest_SRC
     ../queue.cpp
     ../../util.cpp
     ../../plugins/pluginmanager.cpp
+    ../../console.cpp
     playertest.cpp)
 add_qtest(playertest playertest_SRC lib_DEPS)

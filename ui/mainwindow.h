@@ -15,6 +15,7 @@
 
 class PlaylistTab;
 class Library;
+class ConsoleWindow;
 
 class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {
@@ -80,6 +81,8 @@ private slots:
 
     void removeActivePlaylist();
 
+    void showConsole();
+
 private:
     PlaylistTab* getPlayingPlaylistTab();
     PlaylistTab* getPlaylistTab(PModel playlistModel);
@@ -98,6 +101,8 @@ private:
 
     StatusBar statusBar_;
     QSystemTrayIcon *trayIcon_;
+
+    ConsoleWindow* console_;
 
     AudioPlayer& player_;
 

@@ -6,7 +6,7 @@
 #include "playlistfilter.h"
 #include "ui/ui_mainwindow.h"
 #include "librarypreferencesdialog.h"
-
+#include "consolewindow.h"
 #include <Qt>
 #include <QTableView>
 #include <QSettings>
@@ -66,6 +66,7 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
 
     instance = this;
 
+    console_ = new ConsoleWindow(this);
     on_newLibraryViewAction_triggered();
 
     readSettings();
@@ -101,6 +102,7 @@ void MainWindow::setShortcuts()
     // App shortcuts
     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), SLOT(focusFilter()));
 //     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), SLOT(removeActivePlaylist()));
+    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), SLOT(showConsole()));
 }
 
 MainWindow::~MainWindow()
@@ -419,6 +421,11 @@ PlaylistTab* MainWindow::getPlayingPlaylistTab()
 bool MainWindow::isEnqueued(PlaylistTab* playlistTab, PTrack track)
 {
     return player_.isEnqueued(playlistModels_.right.at(playlistTab), track);
+}
+
+void MainWindow::showConsole()
+{
+    console_->show();
 }
 
 #include "mainwindow.moc"
