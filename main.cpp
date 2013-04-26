@@ -1,5 +1,4 @@
 #include "util.h"
-#include "console.h"
 #include "player/audioplayer.h"
 #include "player/phononaudiooutput.h"
 #include "ui/mainwindow.h"
@@ -36,8 +35,6 @@ int main(int argc, char *argv[])
             }
         }
     }
-
-    qInstallMsgHandler([](QtMsgType type, const char *msg) { Console::instance()->update(type,  msg); });
 
     QApplication a(argc, argv);
 

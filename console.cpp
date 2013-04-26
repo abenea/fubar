@@ -10,8 +10,10 @@ Console::Console(): QObject()
 
 Console* Console::instance()
 {
-    if (!instance_)
+    if (!instance_) {
         instance_ = new Console();
+        qInstallMsgHandler([](QtMsgType type, const char *msg) { instance_->update(type,  msg); });
+    }
     return instance_;
 }
 

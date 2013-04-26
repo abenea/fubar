@@ -8,13 +8,13 @@ public:
     static Console* instance();
 
     QString text() { return text_; }
-    void update(QtMsgType type, const char* message);
 
 signals:
     void updated();
 
 private:
     Console();
+    void update(QtMsgType type, const char* message);
 
     static Console* instance_;
     QString text_;
