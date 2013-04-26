@@ -81,7 +81,7 @@ private slots:
 
     void removeActivePlaylist();
 
-    void showConsole();
+    void showHideConsole();
 
 private:
     PlaylistTab* getPlayingPlaylistTab();
@@ -91,7 +91,7 @@ private:
 
     void setShortcuts();
     void addGlobalShortcut(QKeySequence shortcut, QObject* object, const char* slot, QString name);
-    void addShortcut(QKeySequence shortcut, const char* func);
+    void addShortcut(QKeySequence shortcut, const char* func, Qt::ShortcutContext context = Qt::WindowShortcut);
 
     void writeSettings();
     void readSettings();

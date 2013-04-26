@@ -82,9 +82,9 @@ void MainWindow::addGlobalShortcut(QKeySequence shortcut, QObject* object, const
 
 }
 
-void MainWindow::addShortcut(QKeySequence shortcut, const char* func)
+void MainWindow::addShortcut(QKeySequence shortcut, const char* func, Qt::ShortcutContext context)
 {
-    QShortcut* q = new QShortcut(shortcut, this);
+    QShortcut* q = new QShortcut(shortcut, this, 0, 0, context);
     QObject::connect(q, SIGNAL(activated()), this, func);
 }
 
@@ -102,7 +102,7 @@ void MainWindow::setShortcuts()
     // App shortcuts
     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), SLOT(focusFilter()));
 //     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), SLOT(removeActivePlaylist()));
-    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), SLOT(showConsole()));
+    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_D), SLOT(showHideConsole()), Qt::ApplicationShortcut);
 }
 
 MainWindow::~MainWindow()
@@ -423,9 +423,12 @@ bool MainWindow::isEnqueued(PlaylistTab* playlistTab, PTrack track)
     return player_.isEnqueued(playlistModels_.right.at(playlistTab), track);
 }
 
-void MainWindow::showConsole()
+void MainWindow::showHideConsole()
 {
-    console_->show();
+    if (console_->isHidden())
+        console_->show();
+    else
+        console_->hide();
 }
 
 #include "mainwindow.moc"
