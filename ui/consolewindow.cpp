@@ -15,4 +15,11 @@ void ConsoleWindow::updated()
     text->moveCursor(QTextCursor::StartOfLine);
 }
 
+void ConsoleWindow::show()
+{
+    text->moveCursor(QTextCursor::End);
+    text->moveCursor(QTextCursor::StartOfLine);
+    QDialog::show();
+}
+
 #include "consolewindow.moc"

@@ -9,6 +9,9 @@ class ConsoleWindow : public QDialog, private Ui::Console
 public:
     ConsoleWindow(QWidget *parent = 0);
 
+public slots:
+    void show();
+
 private slots:
     void updated();
 };
