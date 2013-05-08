@@ -7,6 +7,7 @@
 #include <QObject>
 #include <memory>
 #include <set>
+#include <boost/concept_check.hpp>
 
 class Library;
 class MainWindow;
@@ -71,6 +72,7 @@ private slots:
     void aboutToFinish();
     void currentSourceChanged();
     void slotTick(qint64 pos);
+    void configChanged(QString key, QVariant value);
 
 private:
     void setBuffering(PModel playlistModel, QModelIndex index, bool clearTrack = false);
@@ -89,6 +91,7 @@ private:
 
     // legal values in [0..1]
     qreal volume_;
+    bool replaygain_;
 
     std::set<PModel> playlists_;
 

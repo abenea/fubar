@@ -38,6 +38,16 @@ AudioPlayer::~AudioPlayer()
 void AudioPlayer::setMainWindow(MainWindow* mainWindow)
 {
     mainWindow_ = mainWindow;
+    Config& config = mainWindow_->getConfig();
+    config.set("playback.replaygain", QVariant(replaygain_));
+    QObject::connect(&config, SIGNAL(keySet(QString,QVariant)), this, SLOT(configChanged(QString,QVariant)));
+}
+
+void AudioPlayer::configChanged(QString key, QVariant value)
+{
+    if (key == "playback.replaygain") {
+        replaygain_ = value.toBool();
+    }
 }
 
 void AudioPlayer::readSettings()
@@ -292,9 +302,11 @@ void AudioPlayer::seek(qint64 pos)
 
 void AudioPlayer::setVolume(qreal value)
 {
-    volume_ = value;
-    audioOutput_->setVolume(volume_);
-    return;
+    if (!replaygain_) {
+        volume_ = value;
+        audioOutput_->setVolume(volume_);
+        return;
+    }
 
     // TODO fix album formula and write a config UI
     PTrack track = getCurrentTrack();

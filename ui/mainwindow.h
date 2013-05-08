@@ -3,6 +3,7 @@
 #include "player/audioplayer.h"
 #include "player/playlistmodel_forward.h"
 #include "ui/ui_mainwindow.h"
+#include "config.h"
 #include "statusbar.h"
 #include "seekslider.h"
 #include "pluginspreferences.h"
@@ -28,6 +29,8 @@ public:
 
     bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
 
+    Config& getConfig() { return config_; }
+    
     // Returns the playlist that is the active tab
     PlaylistTab* getActivePlaylist();
     PModel getActivePlaylistModel();
@@ -82,6 +85,7 @@ private slots:
     void removeActivePlaylist();
 
     void showHideConsole();
+    void showConfig();
 
 private:
     PlaylistTab* getPlayingPlaylistTab();
@@ -103,6 +107,7 @@ private:
     QSystemTrayIcon *trayIcon_;
 
     ConsoleWindow* console_;
+    Config config_;
 
     AudioPlayer& player_;
 
