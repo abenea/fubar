@@ -1,26 +1,21 @@
 #include "configwindow.h"
 #include "config.h"
 #include <QDebug>
+#include <boost/type_traits/detail/is_mem_fun_pointer_impl.hpp>
 
 ConfigWindow::ConfigWindow(Config& config, QWidget* parent)
     : QDialog(parent),
     config_(config)
 {
     setupUi(this);
-	tableWidget->setColumnWidth(0, 300);
-	tableWidget->setColumnWidth(1, 100);
-	tableWidget->setColumnWidth(2, 300);
-    tableWidget->setRowCount(config_.config_.size());
-    int i = 0;
+    tableView->verticalHeader()->hide();
+    tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    model_.setHorizontalHeaderLabels({"Preference name", "Type", "Value"});
     for (auto& kv : config_.config_) {
         // name
-        auto item = new QTableWidgetItem(kv.first);
-        item->setFlags(Qt::NoItemFlags);
-        tableWidget->setItem(i, 0, item);
-
+        auto name_item = new QStandardItem(kv.first);
+        name_item->setFlags(Qt::NoItemFlags);
         // type
-        item = new QTableWidgetItem(QTableWidgetItem::UserType);
-        item->setFlags(Qt::NoItemFlags);
         QString type;
         switch (kv.second.type()) {
             case QVariant::Bool:
@@ -35,22 +30,51 @@ ConfigWindow::ConfigWindow(Config& config, QWidget* parent)
             default:
                 type = "Unknown";
         }
-        item->setData(Qt::DisplayRole, type);
-        tableWidget->setItem(i, 1, item);
-
+        auto type_item = new QStandardItem(type);
+        type_item->setFlags(Qt::NoItemFlags);
         // value
-        item = new QTableWidgetItem(QTableWidgetItem::UserType);
-        item->setData(Qt::DisplayRole, kv.second);
-        tableWidget->setItem(i, 2, item);
+        auto value_item = new QStandardItem();
+        value_item->setData(kv.second, Qt::EditRole);
+        value_item->setWhatsThis(kv.first);
+        model_.appendRow({name_item, type_item, value_item});
     }
-    QObject::connect(tableWidget, SIGNAL(cellChanged(int, int)), this, SLOT(cellChanged(int,int)));
+    configFilter_.setSourceModel(&model_);
+    tableView->setModel(&configFilter_);
+    connect(&model_, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)));
+    connect(filter, SIGNAL(textChanged(QString)), this, SLOT(changedFilter(QString)));
 }
 
-void ConfigWindow::cellChanged(int row, int column)
+void ConfigWindow::changedFilter(QString filter)
 {
-    if (column != 2)
-        return;
-    config_.set(tableWidget->item(row, 0)->text(), tableWidget->item(row, 2)->data(Qt::DisplayRole));
+    configFilter_.setFilter(filter);
+}
+
+void ConfigWindow::itemChanged(QStandardItem* item)
+{
+    config_.set(item->whatsThis(), item->data(Qt::EditRole));
+}
+
+bool ConfigFilter::filterAcceptsRow(int source_row, const QModelIndex& /*source_parent*/) const
+{
+    if (filter_.empty())
+        return true;
+    QStandardItemModel* model = qobject_cast<QStandardItemModel*>(sourceModel());
+    if (!model)
+        return true;
+    QStandardItem* item = model->item(source_row, 2);
+    if (!item)
+        return true;
+    for (const auto& keyword : filter_) {
+        if (item->whatsThis().contains(keyword))
+            return true;
+    }
+    return false;
+}
+
+void ConfigFilter::setFilter(QString filter)
+{
+    filter_ = filter.split(" ", QString::SkipEmptyParts);
+    invalidateFilter();
 }
 
 #include "configwindow.moc"
