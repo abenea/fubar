@@ -96,6 +96,7 @@ private:
     QString replayGainToString(ReplayGainMode mode);
     ReplayGainMode replayGainFromString(QString str);
     ReplayGainMode replaygain_;
+    qreal preamp_with_rg_;
 
     std::set<PModel> playlists_;
 

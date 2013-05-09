@@ -16,6 +16,7 @@ AudioPlayer::AudioPlayer(Library* library, AudioOutput* audioOutput, bool testin
     , audioOutput_(audioOutput)
     , mainWindow_(nullptr)
     , replaygain_(ReplayGainMode::None)
+    , preamp_with_rg_(10)
     , random_(false)
     , testing_(testing)
 {
@@ -41,6 +42,7 @@ void AudioPlayer::setMainWindow(MainWindow* mainWindow)
     mainWindow_ = mainWindow;
     Config& config = mainWindow_->getConfig();
     config.set("playback.replaygain", QVariant(replayGainToString(replaygain_)));
+    config.set("playback.replaygain.preamp_with_rg", QVariant(preamp_with_rg_));
     QObject::connect(&config, SIGNAL(keySet(QString,QVariant)), this, SLOT(configChanged(QString,QVariant)));
 }
 
@@ -48,6 +50,8 @@ void AudioPlayer::configChanged(QString key, QVariant value)
 {
     if (key == "playback.replaygain")
         replaygain_ = replayGainFromString(value.toString());
+    if (key == "playback.replaygain.preamp_with_rg")
+        preamp_with_rg_ = value.toReal();
 }
 
 void AudioPlayer::readSettings()
@@ -56,6 +60,7 @@ void AudioPlayer::readSettings()
         return;
     QSettings settings;
     replaygain_ = replayGainFromString(settings.value("playback/replaygain").toString());
+    preamp_with_rg_ = settings.value("playback/replaygain.preamp_with_rg", preamp_with_rg_).toReal();
     random_ = settings.value("mainwindow/random", random_).toBool();
     emit randomChanged(random_);
     volume_ = settings.value("mainwindow/volume", 0).toReal();
@@ -72,6 +77,7 @@ void AudioPlayer::writeSettings()
     settings.setValue("mainwindow/random", random_);
     settings.setValue("mainwindow/volume", volume_);
     settings.setValue("playback/replaygain", replayGainToString(replaygain_));
+    settings.setValue("playback/replaygain.preamp_with_rg", preamp_with_rg_);
 }
 
 void AudioPlayer::aboutToFinish()
@@ -317,8 +323,7 @@ void AudioPlayer::setVolume(qreal value)
                 QString track_rg = it.value();
                 track_rg.chop(3);
                 rg = track_rg.toDouble();
-                qreal preamp = 10;
-                rg = qPow(10, (preamp + rg) / 20);
+                rg = qPow(10, (preamp_with_rg_ + rg) / 20);
                 qDebug() << "Got" << replaygain_ <<  "replaygain " << track_rg << "resulting in gain =" << rg;
             }
             modified_volume *= rg;
