@@ -91,7 +91,11 @@ private:
 
     // legal values in [0..1]
     qreal volume_;
-    bool replaygain_;
+
+    enum ReplayGainMode {None, Album, Track};
+    QString replayGainToString(ReplayGainMode mode);
+    ReplayGainMode replayGainFromString(QString str);
+    ReplayGainMode replaygain_;
 
     std::set<PModel> playlists_;
 

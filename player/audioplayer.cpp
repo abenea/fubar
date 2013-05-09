@@ -15,6 +15,7 @@ AudioPlayer::AudioPlayer(Library* library, AudioOutput* audioOutput, bool testin
     , library_(library)
     , audioOutput_(audioOutput)
     , mainWindow_(nullptr)
+    , replaygain_(ReplayGainMode::None)
     , random_(false)
     , testing_(testing)
 {
@@ -39,15 +40,14 @@ void AudioPlayer::setMainWindow(MainWindow* mainWindow)
 {
     mainWindow_ = mainWindow;
     Config& config = mainWindow_->getConfig();
-    config.set("playback.replaygain", QVariant(replaygain_));
+    config.set("playback.replaygain", QVariant(replayGainToString(replaygain_)));
     QObject::connect(&config, SIGNAL(keySet(QString,QVariant)), this, SLOT(configChanged(QString,QVariant)));
 }
 
 void AudioPlayer::configChanged(QString key, QVariant value)
 {
-    if (key == "playback.replaygain") {
-        replaygain_ = value.toBool();
-    }
+    if (key == "playback.replaygain")
+        replaygain_ = replayGainFromString(value.toString());
 }
 
 void AudioPlayer::readSettings()
@@ -55,6 +55,7 @@ void AudioPlayer::readSettings()
     if (testing_)
         return;
     QSettings settings;
+    replaygain_ = replayGainFromString(settings.value("playback/replaygain").toString());
     random_ = settings.value("mainwindow/random", random_).toBool();
     emit randomChanged(random_);
     volume_ = settings.value("mainwindow/volume", 0).toReal();
@@ -70,6 +71,7 @@ void AudioPlayer::writeSettings()
     QSettings settings;
     settings.setValue("mainwindow/random", random_);
     settings.setValue("mainwindow/volume", volume_);
+    settings.setValue("playback/replaygain", replayGainToString(replaygain_));
 }
 
 void AudioPlayer::aboutToFinish()
@@ -302,33 +304,27 @@ void AudioPlayer::seek(qint64 pos)
 
 void AudioPlayer::setVolume(qreal value)
 {
-    if (!replaygain_) {
-        volume_ = value;
-        audioOutput_->setVolume(volume_);
-        return;
-    }
-
-    // TODO fix album formula and write a config UI
-    PTrack track = getCurrentTrack();
-    qreal volume = value;
-    if (track) {
-        // gain = 10 ^ ((rg + pream) / 20)
-        QMap<QString, QString>::const_iterator it = track->metadata.find("REPLAYGAIN_TRACK_GAIN");
-        qreal rg;
-        if (it != track->metadata.end()) {
-            QString track_rg = it.value();
-            track_rg.chop(3);
-            rg = track_rg.toDouble();
-            qreal preamp = 10;
-            rg = qPow(10, (preamp + rg) / 20);
-            qDebug() << "Got track replaygain " << track_rg << " resulting in gain = " << rg;
-        } else {
-            rg = 1;
+    volume_ = value;
+    qreal modified_volume = value;
+    if (replaygain_ != ReplayGainMode::None) {
+        PTrack track = getCurrentTrack();
+        if (track) {
+            // gain = 10 ^ ((rg + pream) / 20)
+            auto id_tag = replaygain_ == ReplayGainMode::Album ? "REPLAYGAIN_ALBUM_GAIN" : "REPLAYGAIN_TRACK_GAIN";
+            QMap<QString, QString>::const_iterator it = track->metadata.find(id_tag);
+            qreal rg = 1;
+            if (it != track->metadata.end()) {
+                QString track_rg = it.value();
+                track_rg.chop(3);
+                rg = track_rg.toDouble();
+                qreal preamp = 10;
+                rg = qPow(10, (preamp + rg) / 20);
+                qDebug() << "Got" << replaygain_ <<  "replaygain " << track_rg << "resulting in gain =" << rg;
+            }
+            modified_volume *= rg;
         }
-        volume *= rg;
     }
-//     qDebug() << "Setting volume to " << volume;
-    audioOutput_->setVolume(volume);
+    audioOutput_->setVolume(modified_volume);
 }
 
 void AudioPlayer::slotAudioStateChanged(AudioState newState)
@@ -336,6 +332,29 @@ void AudioPlayer::slotAudioStateChanged(AudioState newState)
     emit audioStateChanged(newState);
     if (newState == StoppedState)
         emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
+}
+
+AudioPlayer::ReplayGainMode AudioPlayer::replayGainFromString(QString str)
+{
+    str = str.toLower();
+    if (str == "album")
+        return ReplayGainMode::Album;
+    if (str == "track")
+        return ReplayGainMode::Track;
+    return ReplayGainMode::None;
+}
+
+QString AudioPlayer::replayGainToString(AudioPlayer::ReplayGainMode mode)
+{
+    switch (mode) {
+        case ReplayGainMode::Track:
+            return "track";
+        case ReplayGainMode::Album:
+            return "album";
+        case ReplayGainMode::None:
+            ;
+    }
+    return "off";
 }
 
 #include "audioplayer.moc"
