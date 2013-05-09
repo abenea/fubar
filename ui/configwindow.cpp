@@ -16,20 +16,9 @@ ConfigWindow::ConfigWindow(Config& config, QWidget* parent)
         auto name_item = new QStandardItem(kv.first);
         name_item->setFlags(Qt::NoItemFlags);
         // type
-        QString type;
-        switch (kv.second.type()) {
-            case QVariant::Bool:
-                type = "Boolean";
-                break;
-            case QVariant::Int:
-                type = "Integer";
-                break;
-            case QVariant::String:
-                type = "String";
-                break;
-            default:
-                type = "Unknown";
-        }
+        QString type = QString(kv.second.typeName()).toLower();
+        if (type.startsWith("q"))
+            type.remove(0, 1);
         auto type_item = new QStandardItem(type);
         type_item->setFlags(Qt::NoItemFlags);
         // value
