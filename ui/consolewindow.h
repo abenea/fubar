@@ -2,6 +2,7 @@
 
 #include "ui/ui_console.h"
 #include <QDialog>
+#include <deque>
 
 class ConsoleWindow : public QDialog, private Ui::Console
 {
@@ -13,5 +14,10 @@ public slots:
     void show();
 
 private slots:
-    void updated();
+    void updated(QtMsgType type, QString message);
+
+private:
+    void setCursorToEnd();
+
+    std::deque<std::pair<QtMsgType, QString>> messages_;
 };

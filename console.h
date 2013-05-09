@@ -7,16 +7,12 @@ class Console : public QObject
 public:
     static Console* instance();
 
-    QString text() { return text_; }
-
 signals:
-    void updated();
+    void updated(QtMsgType type, QString message);
 
 private:
     Console();
     void update(QtMsgType type, const char* message);
 
     static Console* instance_;
-    QString text_;
-    int maxLength_;
 };

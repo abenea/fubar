@@ -1,15 +1,17 @@
 #include "console.h"
 #include <QtGlobal>
+#include <QMetaType>
+#include <iostream>
 
 Console* Console::instance_ = nullptr;
 
 Console::Console(): QObject()
 {
-    maxLength_ = 1024 * 1024;
 }
 
 Console* Console::instance()
 {
+    qRegisterMetaType<QtMsgType>("QtMsgType");
     if (!instance_) {
         instance_ = new Console();
         qInstallMsgHandler([](QtMsgType type, const char *msg) { instance_->update(type,  msg); });
@@ -17,13 +19,9 @@ Console* Console::instance()
     return instance_;
 }
 
-void Console::update(QtMsgType /*type*/, const char* message)
+void Console::update(QtMsgType type, const char* message)
 {
-    text_.append(QString("\n"));
-    text_.append(QString::fromUtf8(message));
-    if (text_.size() > maxLength_)
-        text_ = text_.right(maxLength_);
-    emit updated();
+    emit updated(type, QString::fromUtf8(message));
 }
 
 #include "console.moc"
