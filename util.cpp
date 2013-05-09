@@ -3,8 +3,8 @@
 #include <QFileInfo>
 #include <QDir>
 
-const char* settingsDirFilePath(const char* fileName)
+QString settingsDirFilePath(const char* fileName)
 {
     QSettings settings;
-    return QFileInfo(settings.fileName()).absoluteDir().absoluteFilePath(fileName).toStdString().c_str();
+    return QFileInfo(settings.fileName()).absoluteDir().absoluteFilePath(fileName);
 }

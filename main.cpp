@@ -6,6 +6,8 @@
 #include "plugins/pluginmanager.h"
 #include "unixsignalshandler.h"
 #include <QtGui/QApplication>
+#include <QFileInfo>
+#include <QDir>
 #include <QDebug>
 #include <sys/file.h>
 #include <fcntl.h>
@@ -18,9 +20,18 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("fubar");
 
     // Single instance
-    int fd = open(settingsDirFilePath("lock"), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+    QString settings_dir_path = settingsDirFilePath("");
+    QFileInfo settings_dir = QFileInfo();
+    if (!settings_dir.exists()) {
+        if (!QDir().mkpath(settings_dir_path))
+            qFatal("Cannot create settings directory %s", settings_dir_path.toStdString().c_str());
+    } else if (!settings_dir.isDir()) {
+        qFatal("%s exists, but it is not a directory ", settings_dir_path.toStdString().c_str());
+    }
+    QString lock_path = settingsDirFilePath("lock");
+    int fd = open(lock_path.toStdString().c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
     if (fd == -1) {
-        qDebug()  << "Cant open lock file " << settingsDirFilePath("lock") << ": " << strerror(errno);
+        qDebug() << "Cant open lock file " << lock_path << ": " << strerror(errno);
         return 1;
     }
     else {

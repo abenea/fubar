@@ -220,8 +220,8 @@ void Library::removeFile(QString path)
 
 void Library::loadFromDisk()
 {
-    const char* filename = settingsDirFilePath(library_filename);
-    FILE *f = std::fopen(filename, "rb");
+    QString filename = settingsDirFilePath(library_filename);
+    FILE *f = std::fopen(filename.toStdString().c_str(), "rb");
     if (f == NULL) {
         qDebug() << "Cannot open library file" << filename << strerror(errno);
         return;
@@ -262,8 +262,8 @@ void Library::saveToDisk()
         return;
 
     qDebug() << "Saving library file...";
-    const char* filename = settingsDirFilePath(library_filename);
-    FILE *f = std::fopen(filename, "wb");
+    QString filename = settingsDirFilePath(library_filename);
+    FILE *f = std::fopen(filename.toStdString().c_str(), "wb");
     if (f == NULL) {
         qDebug() << "Cannot open library file" << filename << strerror(errno);
         return;
