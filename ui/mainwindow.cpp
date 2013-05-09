@@ -266,8 +266,12 @@ void MainWindow::readSettings()
 {
     QSettings settings;
     restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
+    restoreState(settings.value("mainwindow/state").toByteArray());
+    console_->restoreGeometry(settings.value("console/geometry").toByteArray());
+
     cursorFollowsPlayback_ = settings.value("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_).toBool();
     cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
+
     int lastPlayingPosition = settings.value("mainwindow/lastPlayingPosition", -1).toInt();
     if (lastPlayingPosition != -1 && getActivePlaylist()) {
         QModelIndex index = getActivePlaylist()->getUnfilteredPosition(lastPlayingPosition);
@@ -279,8 +283,12 @@ void MainWindow::readSettings()
 void MainWindow::writeSettings()
 {
     QSettings settings;
+    settings.setValue("console/geometry", console_->saveGeometry());
     settings.setValue("mainwindow/geometry", saveGeometry());
+    settings.setValue("mainwindow/state", saveState());
+
     settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
+
     int position = -1;
     auto lastPlayed = player_.getLastPlayed();
     if (lastPlayed.first && lastPlayed.second.isValid()) {

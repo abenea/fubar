@@ -30,7 +30,7 @@ public:
     bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
 
     Config& getConfig() { return config_; }
-    
+
     // Returns the playlist that is the active tab
     PlaylistTab* getActivePlaylist();
     PModel getActivePlaylistModel();

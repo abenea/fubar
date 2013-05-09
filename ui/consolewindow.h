@@ -12,6 +12,7 @@ public:
 
 public slots:
     void show();
+    void hide();
 
 private slots:
     void updated(QtMsgType type, QString message);
@@ -20,4 +21,5 @@ private:
     void setCursorToEnd();
 
     std::deque<std::pair<QtMsgType, QString>> messages_;
+    QByteArray geometry_;
 };

@@ -26,7 +26,15 @@ void ConsoleWindow::show()
         text->append(p.second);
     }
     setCursorToEnd();
+    if (geometry_.size())
+        restoreGeometry(geometry_);
     QDialog::show();
+}
+
+void ConsoleWindow::hide()
+{
+    geometry_ = saveGeometry();
+    QDialog::hide();
 }
 
 void ConsoleWindow::setCursorToEnd()
