@@ -54,10 +54,10 @@ bool ConfigFilter::filterAcceptsRow(int source_row, const QModelIndex& /*source_
     if (!item)
         return true;
     for (const auto& keyword : filter_) {
-        if (item->whatsThis().contains(keyword))
-            return true;
+        if (!item->whatsThis().contains(keyword))
+            return false;
     }
-    return false;
+    return true;
 }
 
 void ConfigFilter::setFilter(QString filter)
