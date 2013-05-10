@@ -30,15 +30,19 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     , cursorFollowsPlayback_(false)
 {
     setupUi(this);
+    // Not saving a pointer to this
+    QActionGroup* playbackOrderGroup = new QActionGroup(this);
+    playbackOrderGroup->addAction(defaultAction);
+    playbackOrderGroup->addAction(randomAction);
+    playbackOrderGroup->addAction(repeatTrackAction);
+    installEventFilter(this);
 
     player.setMainWindow(this);
 
-    installEventFilter(this);
-
-    QObject::connect(&player_, SIGNAL(randomChanged(bool)), this, SLOT(randomChanged(bool)));
+    QObject::connect(&player_, SIGNAL(playbackOrderChanged(PlaybackOrder)), this, SLOT(playbackOrderChanged(PlaybackOrder)));
     QObject::connect(&player_, SIGNAL(audioStateChanged(AudioState)), this, SLOT(slotAudioStateChanged(AudioState)));
     QObject::connect(&player_, SIGNAL(trackPlaying(PTrack)), this, SLOT(updateUI(PTrack)));
-    randomChanged(player_.random());
+    playbackOrderChanged(player.playbackOrder());
 
     QObject::connect(&player_, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
     seekSlider_ = new SeekSlider(player_, this);
@@ -106,16 +110,25 @@ void MainWindow::setShortcuts()
     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), SLOT(focusFilter()));
 //     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), SLOT(removeActivePlaylist()));
     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_D), SLOT(showHideConsole()), Qt::ApplicationShortcut);
-    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_P), SLOT(on_configAction_triggered()), Qt::ApplicationShortcut);
 }
 
 MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::randomChanged(bool random)
+void MainWindow::playbackOrderChanged(PlaybackOrder newPlaybackOrder)
 {
-    randomAction->setChecked(random);
+    switch (newPlaybackOrder) {
+        case PlaybackOrder::Random:
+            randomAction->setChecked(true);
+            break;
+        case PlaybackOrder::RepeatTrack:
+            repeatTrackAction->setChecked(true);
+            break;
+        case PlaybackOrder::Default:
+        default:
+            defaultAction->setChecked(true);
+    }
 }
 
 void MainWindow::slotAudioStateChanged(AudioState newState)
@@ -267,7 +280,17 @@ void MainWindow::on_cursorFollowsPlaybackAction_triggered()
 
 void MainWindow::on_randomAction_triggered()
 {
-    player_.setRandom(!player_.random());
+    player_.setPlaybackOrder(PlaybackOrder::Random);
+}
+
+void MainWindow::on_defaultAction_triggered()
+{
+    player_.setPlaybackOrder(PlaybackOrder::Default);
+}
+
+void MainWindow::on_repeatTrackAction_triggered()
+{
+    player_.setPlaybackOrder(PlaybackOrder::RepeatTrack);
 }
 
 void MainWindow::readSettings()

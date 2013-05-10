@@ -60,6 +60,9 @@
     </property>
     <addaction name="clearQueueAction"/>
     <addaction name="cursorFollowsPlaybackAction"/>
+    <addaction name="separator"/>
+    <addaction name="defaultAction"/>
+    <addaction name="repeatTrackAction"/>
     <addaction name="randomAction"/>
    </widget>
    <widget class="QMenu" name="menuPreferences">
@@ -220,6 +223,25 @@
   <action name="configAction">
    <property name="text">
     <string>Config</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="defaultAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Default</string>
+   </property>
+  </action>
+  <action name="repeatTrackAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Repeat &amp;track</string>
    </property>
   </action>
  </widget>

@@ -17,7 +17,7 @@ AudioPlayer::AudioPlayer(Library* library, AudioOutput* audioOutput, bool testin
     , mainWindow_(nullptr)
     , replaygain_(ReplayGainMode::None)
     , preamp_with_rg_(10)
-    , random_(false)
+    , playbackOrder_(PlaybackOrder::Default)
     , testing_(testing)
 {
     audioOutput_->setTickInterval(1000);
@@ -61,8 +61,8 @@ void AudioPlayer::readSettings()
     QSettings settings;
     replaygain_ = replayGainFromString(settings.value("playback/replaygain").toString());
     preamp_with_rg_ = settings.value("playback/replaygain.preamp_with_rg", preamp_with_rg_).toReal();
-    random_ = settings.value("mainwindow/random", random_).toBool();
-    emit randomChanged(random_);
+    playbackOrder_ = PlaybackOrder(settings.value("playback/order", static_cast<int>(playbackOrder_)).toInt());
+    emit playbackOrderChanged(playbackOrder_);
     volume_ = settings.value("mainwindow/volume", 0).toReal();
     if (volume_ < 0 or volume_ > 1)
         volume_ = 0;
@@ -74,7 +74,7 @@ void AudioPlayer::writeSettings()
     if (testing_)
         return;
     QSettings settings;
-    settings.setValue("mainwindow/random", random_);
+    settings.setValue("playback/order", playbackOrder_);
     settings.setValue("mainwindow/volume", volume_);
     settings.setValue("playback/replaygain", replayGainToString(replaygain_));
     settings.setValue("playback/replaygain.preamp_with_rg", preamp_with_rg_);
@@ -90,7 +90,7 @@ void AudioPlayer::aboutToFinish()
         }
     }
     if (playingModel_) {
-        QModelIndex index = getNextModelIndex(playingModel_, 1);
+        QModelIndex index = getNextModelIndex(playingModel_, playbackOrder_ == PlaybackOrder::RepeatTrack ? 0 : 1);
         if (!index.isValid())
             return;
         bufferTrack(playingModel_, index);
@@ -276,8 +276,10 @@ void AudioPlayer::playNext(int offset)
 
 QModelIndex AudioPlayer::getNextModelIndex(PModel playlistModel, int offset)
 {
-    if (offset && random_)
+    if (offset && playbackOrder_ == PlaybackOrder::Random)
         return mainWindow_->getRandomFilteredIndex(playlistModel);
+    if (!offset && playbackOrder_ == PlaybackOrder::RepeatTrack && playingIndex_.isValid())
+        return playingIndex_;
     // First play current index in model
     if (playingModel_ == playlistModel && playingIndex_.isValid())
         return mainWindow_->getFilteredIndex(playingModel_, playingIndex_, offset);

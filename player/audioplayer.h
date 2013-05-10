@@ -13,6 +13,8 @@ class Library;
 class MainWindow;
 class AudioOutput;
 
+enum PlaybackOrder { Default, RepeatTrack, Random };
+
 class AudioPlayer : public QObject
 {
     Q_OBJECT
@@ -24,8 +26,8 @@ public:
 
     Library* getLibrary() { return library_; }
 
-    void setRandom(bool random) { random_ = random; }
-    bool random() { return random_; }
+    void setPlaybackOrder(PlaybackOrder playbackOrder) { playbackOrder_ = playbackOrder; }
+    PlaybackOrder playbackOrder() { return playbackOrder_; }
 
     PTrack getCurrentTrack();
     PModel getPlayingPlaylistModel();
@@ -52,7 +54,7 @@ public:
     bool isEnqueued(PModel playlistModel, PTrack track);
 
 signals:
-    void randomChanged(bool random);
+    void playbackOrderChanged(PlaybackOrder newPlaybackOrder);
 
     void audioStateChanged(AudioState newState);
     void tick(qint64 pos);
@@ -102,7 +104,7 @@ private:
 
     Queue queue_;
 
-    bool random_;
+    PlaybackOrder playbackOrder_;
 
     PModel playingModel_;
     QPersistentModelIndex playingIndex_;

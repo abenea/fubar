@@ -48,7 +48,7 @@ public:
     bool eventFilter(QObject* watched, QEvent* event);
 
 public slots:
-    void randomChanged(bool random);
+    void playbackOrderChanged(PlaybackOrder newPlaybackOrder);
     void volumeChanged(int value);
     void showHide();
     void removePlaylistTab(int index);
@@ -71,6 +71,8 @@ private slots:
 
     void on_cursorFollowsPlaybackAction_triggered();
     void on_randomAction_triggered();
+    void on_defaultAction_triggered();
+    void on_repeatTrackAction_triggered();
 
     void menuFileAboutToShow();
     void on_mainToolBar_actionTriggered(QAction* action);
