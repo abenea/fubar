@@ -63,7 +63,7 @@ void AudioPlayer::readSettings()
     preamp_with_rg_ = settings.value("playback/replaygain.preamp_with_rg", preamp_with_rg_).toReal();
     playbackOrder_ = PlaybackOrder(settings.value("playback/order", static_cast<int>(playbackOrder_)).toInt());
     emit playbackOrderChanged(playbackOrder_);
-    volume_ = settings.value("mainwindow/volume", 0).toReal();
+    volume_ = settings.value("playback/volume", 0).toReal();
     if (volume_ < 0 or volume_ > 1)
         volume_ = 0;
     setVolume(volume_);
@@ -75,7 +75,7 @@ void AudioPlayer::writeSettings()
         return;
     QSettings settings;
     settings.setValue("playback/order", playbackOrder_);
-    settings.setValue("mainwindow/volume", volume_);
+    settings.setValue("playback/volume", volume_);
     settings.setValue("playback/replaygain", replayGainToString(replaygain_));
     settings.setValue("playback/replaygain.preamp_with_rg", preamp_with_rg_);
 }
