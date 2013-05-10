@@ -45,6 +45,8 @@ public:
 
     bool isEnqueued(PlaylistTab* playlistTab, PTrack track);
 
+    bool eventFilter(QObject* watched, QEvent* event);
+
 public slots:
     void randomChanged(bool random);
     void volumeChanged(int value);

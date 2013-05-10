@@ -33,6 +33,8 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
 
     player.setMainWindow(this);
 
+    installEventFilter(this);
+
     QObject::connect(&player_, SIGNAL(randomChanged(bool)), this, SLOT(randomChanged(bool)));
     QObject::connect(&player_, SIGNAL(audioStateChanged(AudioState)), this, SLOT(slotAudioStateChanged(AudioState)));
     QObject::connect(&player_, SIGNAL(trackPlaying(PTrack)), this, SLOT(updateUI(PTrack)));
@@ -445,6 +447,11 @@ void MainWindow::showHideConsole()
         console_->show();
     else
         console_->hide();
+}
+
+bool MainWindow::eventFilter(QObject* watched, QEvent* event)
+{
+    return event->type() == QEvent::StatusTip;
 }
 
 #include "mainwindow.moc"
