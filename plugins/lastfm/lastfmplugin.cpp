@@ -33,8 +33,8 @@ void LastfmPlugin::login()
 {
     QSettings settings;
 
-    QString username = settings.value("plugins/lastfm/username").toString();
-    QString password = settings.value("plugins/lastfm/password").toString();
+    QString username = settings.value("lastfm/username").toString();
+    QString password = settings.value("lastfm/password").toString();
     if (username.isEmpty() || password.isEmpty()) {
         qDebug() << "[Lastfm] User/pass not present in settings";
         return;
@@ -46,7 +46,7 @@ void LastfmPlugin::login()
     lastfm::ws::Username = username.toLatin1().data();
     lastfm::ws::setScheme(lastfm::ws::Https);
 
-    m_sessionKey = settings.value("plugins/lastfm/sessionKey").toString();
+    m_sessionKey = settings.value("lastfm/sessionKey").toString();
 
     // now authenticate w/ last.fm and get our session key if we don't have one
     if (m_sessionKey.isEmpty()) {
