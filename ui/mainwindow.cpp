@@ -371,15 +371,19 @@ void MainWindow::updateUI(PTrack track)
 {
     int seekMax = 0;
     QString title = "fubar";
+    QString tray_tooltip;
     if (track) {
         if (cursorFollowsPlayback_) {
             auto playlistTab = getPlayingPlaylistTab();
             if (playlistTab)
                 playlistTab->updateCursor(player_.getPlayingIndex());
         }
-        title = track->metadata["artist"] + " - " + track->metadata["title"] + "  [fubar]";
+        QString track_info = track->metadata["artist"] + " - " + track->metadata["title"];
+        title =  track_info + "  [fubar]";
+        tray_tooltip = track_info;
         seekMax = track->audioproperties.length;
     }
+    trayIcon_->setToolTip(tray_tooltip);
     setWindowTitle(title);
     seekSlider_->setLimits(0, seekMax);
 }
