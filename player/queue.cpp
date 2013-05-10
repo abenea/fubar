@@ -3,7 +3,7 @@
 #include "player/playlistmodel.h"
 #include <QDebug>
 
-Queue::Queue() : peeked_(false)
+Queue::Queue() : peeked_(false), enqueueOnlyOnce_(false)
 {
 
 }
@@ -13,19 +13,29 @@ void Queue::pushTracks(PModel playlistModel, QModelIndexList tracks)
     for (const auto& index : tracks) {
         auto track = index.data(TrackRole).value<PTrack>();
         auto it = paths_.find(track->path());
+        auto queue_elem = std::make_tuple(playlistModel, QPersistentModelIndex(index), track->path());
         if (it == paths_.end()) {
             paths_.insert({track->path(), {{playlistModel, 1}}});
+            queue_.push_back(queue_elem);
         } else {
-            paths_[track->path()][playlistModel]++;
+            if (enqueueOnlyOnce_ && paths_[track->path()].find(playlistModel) != paths_[track->path()].end()) {
+                paths_[track->path()].erase(playlistModel);
+                for (auto it = queue_.begin(); it != queue_.end(); ++it)
+                    if (*it == queue_elem) {
+                        queue_.erase(it);
+                        break;
+                    }
+            } else {
+                paths_[track->path()][playlistModel]++;
+                queue_.push_back(queue_elem);
+            }
         }
-        queue_.push_back(std::make_tuple(playlistModel, QPersistentModelIndex(index), track->path()));
     }
     std::vector<QPersistentModelIndex> persistent;
     for (const auto& index : tracks)
         persistent.push_back(QPersistentModelIndex(index));
     playlistModel->notifyQueueStatusChanged(persistent);
 }
-
 
 std::pair<PModel, QPersistentModelIndex> Queue::getFirst(bool pop)
 {
@@ -63,7 +73,6 @@ std::pair<PModel, QPersistentModelIndex> Queue::peekTrack()
     return result;
 }
 
-
 std::pair<PModel, QPersistentModelIndex> Queue::popTrack()
 {
     peeked_ = false;
@@ -97,7 +106,6 @@ bool Queue::peeked()
 {
     return peeked_;
 }
-
 
 void Queue::clear()
 {

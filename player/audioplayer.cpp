@@ -43,6 +43,7 @@ void AudioPlayer::setMainWindow(MainWindow* mainWindow)
     Config& config = mainWindow_->getConfig();
     config.set("playback.replaygain", QVariant(replayGainToString(replaygain_)));
     config.set("playback.replaygain.preamp_with_rg", QVariant(preamp_with_rg_));
+    config.set("playback.enqueue.onlyOnce", QVariant(queue_.enqueueOnlyOnce()));
     QObject::connect(&config, SIGNAL(keySet(QString,QVariant)), this, SLOT(configChanged(QString,QVariant)));
 }
 
@@ -50,8 +51,10 @@ void AudioPlayer::configChanged(QString key, QVariant value)
 {
     if (key == "playback.replaygain")
         replaygain_ = replayGainFromString(value.toString());
-    if (key == "playback.replaygain.preamp_with_rg")
+    else if (key == "playback.replaygain.preamp_with_rg")
         preamp_with_rg_ = value.toReal();
+    else if (key == "playback.enqueue.onlyOnce")
+        queue_.setEnqueueOnlyOnce(value.toBool());
 }
 
 void AudioPlayer::readSettings()
@@ -67,6 +70,7 @@ void AudioPlayer::readSettings()
     if (volume_ < 0 or volume_ > 1)
         volume_ = 0;
     setVolume(volume_);
+    queue_.setEnqueueOnlyOnce(settings.value("playback/enqueue.onlyOnce", false).toBool());
 }
 
 void AudioPlayer::writeSettings()
@@ -78,6 +82,7 @@ void AudioPlayer::writeSettings()
     settings.setValue("playback/volume", volume_);
     settings.setValue("playback/replaygain", replayGainToString(replaygain_));
     settings.setValue("playback/replaygain.preamp_with_rg", preamp_with_rg_);
+    settings.setValue("playback/enqueue.onlyOnce", queue_.enqueueOnlyOnce());
 }
 
 void AudioPlayer::aboutToFinish()

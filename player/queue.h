@@ -16,6 +16,9 @@ class Queue
 public:
     Queue();
 
+    bool enqueueOnlyOnce() { return enqueueOnlyOnce_; }
+    void setEnqueueOnlyOnce(bool enabled) { enqueueOnlyOnce_ = enabled; }
+
     void pushTracks(PModel playlistModel, QModelIndexList tracks);
     std::pair<PModel, QPersistentModelIndex> peekTrack();
     std::pair<PModel, QPersistentModelIndex> popTrack();
@@ -39,4 +42,5 @@ private:
     // TODO this does not take into account that the same track could be multiple times in a playlist
     std::map<QString, std::map<PModel, int>> paths_;
     bool peeked_;
+    bool enqueueOnlyOnce_;
 };

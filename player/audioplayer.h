@@ -7,7 +7,6 @@
 #include <QObject>
 #include <memory>
 #include <set>
-#include <boost/concept_check.hpp>
 
 class Library;
 class MainWindow;

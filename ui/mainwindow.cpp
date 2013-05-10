@@ -476,7 +476,7 @@ void MainWindow::showHideConsole()
         console_->hide();
 }
 
-bool MainWindow::eventFilter(QObject* watched, QEvent* event)
+bool MainWindow::eventFilter(QObject* /*watched*/, QEvent* event)
 {
     return event->type() == QEvent::StatusTip;
 }
