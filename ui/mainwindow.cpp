@@ -104,7 +104,7 @@ void MainWindow::setShortcuts()
     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), SLOT(focusFilter()));
 //     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), SLOT(removeActivePlaylist()));
     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_D), SLOT(showHideConsole()), Qt::ApplicationShortcut);
-    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_P), SLOT(showConfig()), Qt::ApplicationShortcut);
+    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_P), SLOT(on_configAction_triggered()), Qt::ApplicationShortcut);
 }
 
 MainWindow::~MainWindow()
@@ -245,6 +245,12 @@ void MainWindow::on_pluginsAction_triggered()
 {
     PluginsPreferences* widget = new PluginsPreferences(this);
     widget->show();
+}
+
+void MainWindow::on_configAction_triggered()
+{
+    ConfigWindow* cfg = new ConfigWindow(config_, this);
+    cfg->show();
 }
 
 void MainWindow::on_clearQueueAction_triggered()
@@ -439,12 +445,6 @@ void MainWindow::showHideConsole()
         console_->show();
     else
         console_->hide();
-}
-
-void MainWindow::showConfig()
-{
-    ConfigWindow* cfg = new ConfigWindow(config_, this);
-    cfg->show();
 }
 
 #include "mainwindow.moc"

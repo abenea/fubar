@@ -68,6 +68,7 @@
     </property>
     <addaction name="pluginsAction"/>
     <addaction name="libraryPreferencesAction"/>
+    <addaction name="configAction"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlayback"/>
@@ -214,6 +215,11 @@
   <action name="clearQueueAction">
    <property name="text">
     <string>Clear &amp;queue</string>
+   </property>
+  </action>
+  <action name="configAction">
+   <property name="text">
+    <string>Config</string>
    </property>
   </action>
  </widget>

@@ -65,6 +65,7 @@ private slots:
 
     void on_libraryPreferencesAction_triggered();
     void on_pluginsAction_triggered();
+    void on_configAction_triggered();
 
     void on_cursorFollowsPlaybackAction_triggered();
     void on_randomAction_triggered();
@@ -85,7 +86,6 @@ private slots:
     void removeActivePlaylist();
 
     void showHideConsole();
-    void showConfig();
 
 private:
     PlaylistTab* getPlayingPlaylistTab();
