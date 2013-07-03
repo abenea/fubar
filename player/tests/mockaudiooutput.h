@@ -24,7 +24,7 @@ public:
     void setCurrentSource(const QString& source);
     void enqueue(const QString& source);
     void clearQueue();
-    bool paused() const;
+    AudioState state() const;
     QString currentSource() const;
 
     void triggerAboutToFinish();

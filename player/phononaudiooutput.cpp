@@ -58,9 +58,9 @@ void PhononAudioOutput::setVolume(qreal newVolume)
     audioOutput_->setVolume(newVolume);
 }
 
-bool PhononAudioOutput::paused() const
+AudioState PhononAudioOutput::state() const
 {
-    return mediaObject_->state() == Phonon::PausedState;
+    return audioState(mediaObject_->state());
 }
 
 qint64 PhononAudioOutput::currentTime() const
@@ -94,21 +94,26 @@ void PhononAudioOutput::tickHandler(qint64 time)
 
 void PhononAudioOutput::slotStateChanged(Phonon::State newstate)
 {
-    switch (newstate) {
+    emit stateChanged(audioState(newstate));
+}
+
+AudioState PhononAudioOutput::audioState(Phonon::State state)
+{
+    switch (state) {
         case Phonon::PlayingState:
-            emit stateChanged(PlayingState);
+            return PlayingState;
             break;
         case Phonon::StoppedState:
-            emit stateChanged(StoppedState);
+            return StoppedState;
             break;
         case Phonon::PausedState:
-            emit stateChanged(PausedState);
+            return PausedState;
             break;
         case Phonon::BufferingState:
         case Phonon::LoadingState:
         case Phonon::ErrorState:
-            emit stateChanged(UnknownState);
-            break;
+        default:
+            return UnknownState;
     }
 }
 

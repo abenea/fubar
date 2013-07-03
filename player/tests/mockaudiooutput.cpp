@@ -51,9 +51,9 @@ void MockAudioOutput::pause()
 {
 }
 
-bool MockAudioOutput::paused() const
+AudioState MockAudioOutput::state() const
 {
-    return false;
+    return AudioState::UnknownState;
 }
 
 void MockAudioOutput::seek(qint64 /*time*/)

@@ -178,10 +178,14 @@ void AudioPlayer::play()
 
 void AudioPlayer::playPause()
 {
-    if (audioOutput_->paused())
+    if (audioOutput_->state() == AudioState::PausedState) {
         audioOutput_->play();
-    else
+    }
+    else if (audioOutput_->state() == AudioState::PlayingState) {
         audioOutput_->pause();
+    } else {
+        play();
+    }
 }
 
 void AudioPlayer::next()

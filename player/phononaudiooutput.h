@@ -21,12 +21,12 @@ public slots:
     void stop();
 
 public:
+    AudioState state() const;
     qint64 currentTime() const;
     qint64 totalTime() const;
     void setCurrentSource(const QString& source);
     void enqueue(const QString& source);
     void clearQueue();
-    bool paused() const;
 
 private slots:
     void slotStateChanged(Phonon::State newstate);
@@ -35,6 +35,8 @@ private slots:
     void tickHandler(qint64 time);
 
 private:
+    static AudioState audioState(Phonon::State state);
+
     Phonon::MediaObject* mediaObject_;
     Phonon::AudioOutput* audioOutput_;
 };

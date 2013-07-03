@@ -26,7 +26,7 @@ public slots:
     virtual void stop() = 0;
 
 public:
-    virtual bool paused() const = 0;
+    virtual AudioState state() const = 0;
     virtual qint64 currentTime() const = 0;
     virtual qint64 totalTime() const = 0;
     virtual void setCurrentSource(const QString& source) = 0;
