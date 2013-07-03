@@ -57,7 +57,7 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     mainToolBar->addWidget(volumeSlider_);
 
     trayIcon_ = new QSystemTrayIcon(this);
-    setTrayIcon(true);
+    setTrayIcon(false);
     connect(trayIcon_, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
     trayIcon_->show();
 
