@@ -101,19 +101,19 @@ AudioState PhononAudioOutput::audioState(Phonon::State state)
 {
     switch (state) {
         case Phonon::PlayingState:
-            return PlayingState;
+            return AudioState::Playing;
             break;
         case Phonon::StoppedState:
-            return StoppedState;
+            return AudioState::Stopped;
             break;
         case Phonon::PausedState:
-            return PausedState;
+            return AudioState::Paused;
             break;
         case Phonon::BufferingState:
         case Phonon::LoadingState:
         case Phonon::ErrorState:
         default:
-            return UnknownState;
+            return AudioState::Unknown;
     }
 }
 

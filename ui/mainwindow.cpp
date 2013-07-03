@@ -133,8 +133,8 @@ void MainWindow::playbackOrderChanged(PlaybackOrder newPlaybackOrder)
 
 void MainWindow::slotAudioStateChanged(AudioState newState)
 {
-    setTrayIcon(newState == PlayingState);
-    if (newState == StoppedState)  {
+    setTrayIcon(newState == AudioState::Playing);
+    if (newState == AudioState::Stopped)  {
         updateUI(nullptr);
         statusBar_.clearMessage();
     }

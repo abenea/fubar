@@ -1,8 +1,8 @@
 #pragma once
 
-enum AudioState {
-    UnknownState,
-    PlayingState,
-    PausedState,
-    StoppedState
+enum class AudioState {
+    Unknown,
+    Playing,
+    Paused,
+    Stopped
 };

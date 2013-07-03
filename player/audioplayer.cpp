@@ -178,10 +178,10 @@ void AudioPlayer::play()
 
 void AudioPlayer::playPause()
 {
-    if (audioOutput_->state() == AudioState::PausedState) {
+    if (audioOutput_->state() == AudioState::Paused) {
         audioOutput_->play();
     }
-    else if (audioOutput_->state() == AudioState::PlayingState) {
+    else if (audioOutput_->state() == AudioState::Playing) {
         audioOutput_->pause();
     } else {
         play();
@@ -346,7 +346,7 @@ void AudioPlayer::setVolume(qreal value)
 void AudioPlayer::slotAudioStateChanged(AudioState newState)
 {
     emit audioStateChanged(newState);
-    if (newState == StoppedState)
+    if (newState == AudioState::Stopped)
         emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
 }
 

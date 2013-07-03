@@ -53,7 +53,7 @@ void MockAudioOutput::pause()
 
 AudioState MockAudioOutput::state() const
 {
-    return AudioState::UnknownState;
+    return AudioState::Unknown;
 }
 
 void MockAudioOutput::seek(qint64 /*time*/)
