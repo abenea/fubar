@@ -364,13 +364,19 @@ void MainWindow::setTrayIcon(bool playing)
 
 void MainWindow::showHide()
 {
+    static bool consoleIsVisible = false;
     int currentDesktop = KWindowSystem::currentDesktop();
-    if (!isVisible() || isMinimized() || KWindowSystem::activeWindow() != winId()) {
+    WId activeWindow = KWindowSystem::activeWindow();
+    if (!isVisible() || isMinimized() || (activeWindow != winId() && activeWindow != console_->winId())) {
         setWindowState(windowState() & ~Qt::WindowMinimized);
         KWindowSystem::setOnDesktop(winId(), currentDesktop);
+        if (consoleIsVisible)
+            console_->show();
         setVisible(true);
         KWindowSystem::forceActiveWindow(winId());
     } else {
+        consoleIsVisible = console_->isVisible();
+        console_->hide();
         setVisible(false);
     }
 }
