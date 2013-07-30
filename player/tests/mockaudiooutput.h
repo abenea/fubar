@@ -15,6 +15,7 @@ public slots:
 
     void pause();
     void play();
+    void play(qint64 /*offset*/) {}
     void seek(qint64 time);
     void stop();
 
@@ -29,7 +30,6 @@ public:
 
     void triggerAboutToFinish();
     void triggerCurrentSourceChanged();
-
 private:
     QString source_;
     QString nextSource_;

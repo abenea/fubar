@@ -15,6 +15,7 @@ signals:
     void currentSourceChanged();
     void tick(qint64 time);
     void stateChanged(AudioState state);
+    void finished();
 
 public slots:
     virtual void setVolume(qreal newVolume) = 0;
@@ -22,6 +23,7 @@ public slots:
 
     virtual void pause() = 0;
     virtual void play() = 0;
+    virtual void play(qint64 offset) = 0;
     virtual void seek(qint64 time) = 0;
     virtual void stop() = 0;
 

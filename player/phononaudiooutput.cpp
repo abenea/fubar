@@ -3,7 +3,8 @@
 #include <phonon/Phonon/MediaObject>
 #include <phonon/Phonon/AudioOutput>
 
-PhononAudioOutput::PhononAudioOutput()
+PhononAudioOutput::PhononAudioOutput() :
+    offset_(0)
 {
     audioOutput_ = new Phonon::AudioOutput(Phonon::MusicCategory, this);
     mediaObject_ = new Phonon::MediaObject(this);
@@ -12,6 +13,8 @@ PhononAudioOutput::PhononAudioOutput()
     QObject::connect(mediaObject_, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)), this, SLOT(currentSourceChangedHandler()));
     QObject::connect(mediaObject_, SIGNAL(tick(qint64)), this, SLOT(tickHandler(qint64)));
     QObject::connect(mediaObject_, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(slotStateChanged(Phonon::State)));
+    QObject::connect(mediaObject_, SIGNAL(seekableChanged(bool)), this, SLOT(slotSeekableChanged(bool)));
+    QObject::connect(mediaObject_, SIGNAL(finished()), this, SLOT(slotFinished()));
 }
 
 PhononAudioOutput::~PhononAudioOutput()
@@ -94,6 +97,8 @@ void PhononAudioOutput::tickHandler(qint64 time)
 
 void PhononAudioOutput::slotStateChanged(Phonon::State newstate)
 {
+    if (newstate == Phonon::ErrorState)
+        qDebug() << "Phonon error:" << mediaObject_->errorType() << mediaObject_->errorString();
     emit stateChanged(audioState(newstate));
 }
 
@@ -110,11 +115,35 @@ AudioState PhononAudioOutput::audioState(Phonon::State state)
             return AudioState::Paused;
             break;
         case Phonon::BufferingState:
+            return AudioState::Buffering;
+            break;
         case Phonon::LoadingState:
         case Phonon::ErrorState:
         default:
             return AudioState::Unknown;
     }
+}
+
+void PhononAudioOutput::play(qint64 offset)
+{
+    offset_ = offset;
+    play();
+}
+
+void PhononAudioOutput::slotSeekableChanged(bool isSeekable)
+{
+    if (offset_ > 0) {
+        if (isSeekable) {
+            qDebug() << "CUE Seeking to" << offset_;
+            seek(offset_);
+            offset_ = 0;
+        }
+    }
+}
+
+void PhononAudioOutput::slotFinished()
+{
+    emit finished();
 }
 
 #include "phononaudiooutput.moc"

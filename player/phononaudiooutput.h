@@ -17,6 +17,7 @@ public slots:
 
     void pause();
     void play();
+    void play(qint64 offset);
     void seek(qint64 time);
     void stop();
 
@@ -30,13 +31,16 @@ public:
 
 private slots:
     void slotStateChanged(Phonon::State newstate);
+    void slotSeekableChanged(bool isSeekable);
     void aboutToFinishHandler();
     void currentSourceChangedHandler();
     void tickHandler(qint64 time);
+    void slotFinished();
 
 private:
     static AudioState audioState(Phonon::State state);
 
     Phonon::MediaObject* mediaObject_;
     Phonon::AudioOutput* audioOutput_;
+    int offset_;
 };

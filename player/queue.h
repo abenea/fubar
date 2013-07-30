@@ -26,11 +26,12 @@ public:
 
     // A track was handed out but not deleted from the queue
     bool peeked();
+    void unpeek() { peeked_ = false; }
 
     void clear();
 
     bool isEmpty();
-    bool isQueued(PModel playlistModel, PTrack track);
+    bool isQueued(PModel playlistModel, QModelIndex index);
 
     void removePlaylistModel(PModel playlistModel);
 
@@ -38,9 +39,9 @@ private:
     std::pair<PModel, QPersistentModelIndex> getFirst(bool pop);
     std::pair<PModel, QPersistentModelIndex> getNextTrack(bool pop);
 
+    // TODO get rid of PModel
     std::deque<std::tuple<PModel, QPersistentModelIndex, QString>> queue_;
-    // TODO this does not take into account that the same track could be multiple times in a playlist
-    std::map<QString, std::map<PModel, int>> paths_;
+    std::map<QString, std::map<QPersistentModelIndex, int>> paths_;
     bool peeked_;
     bool enqueueOnlyOnce_;
 };

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "track_forward.h"
-#include "directorywatcher.h"
 #include "libraryeventtype.h"
 
 #include <QString>
@@ -13,6 +12,7 @@
 #include <QMap>
 
 class Directory;
+class DirectoryWatcher;
 
 struct LibraryEvent {
     PTrack track;
@@ -37,7 +37,7 @@ public:
     void stopWatch();
 
     QStringList getMusicFolders();
-    QList<PTrack > getTracks();
+    QList<PTrack> getTracks();
 
 public slots:
     void setMusicFolders(QStringList folders);
@@ -75,6 +75,7 @@ private:
     bool stopRescan() { return quit_ || !should_be_working_; }
     void scanDirectory(const QString& path);
     PTrack scanFile(const QString& path);
+    PTrack scanCue(const QString& path);
 
     void addDirectory(std::shared_ptr<Directory> directory);
     void addFile(PTrack track);
@@ -83,10 +84,15 @@ private:
 
     void fileCallback(QString path, LibraryEventType event);
     void directoryCallback(QString path, LibraryEventType event);
+
+    // CUE hax
+    void emitLibraryChanged(PTrack track, LibraryEventType type);
+    QList<PTrack> getDirectoryTracks(std::shared_ptr<Directory> directory);
+
 private:
     QStringList music_folders_;
 
-    typedef QMap<QString, std::shared_ptr<Directory> > DirectoryMap;
+    typedef QMap<QString, std::shared_ptr<Directory>> DirectoryMap;
     DirectoryMap directories_;
 
     std::shared_ptr<DirectoryWatcher> watcher_;

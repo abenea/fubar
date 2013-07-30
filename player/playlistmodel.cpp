@@ -3,6 +3,7 @@
 #include "library/track.h"
 #include <string>
 #include <QDebug>
+#include <cassert>
 
 using namespace std;
 

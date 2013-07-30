@@ -126,6 +126,11 @@ QModelIndexList PlaylistTab::mapToSource(QModelIndexList indexes) const
     return result;
 }
 
+QModelIndex PlaylistTab::mapToSource(QModelIndex index) const
+{
+    return filterModel_.mapToSource(index);
+}
+
 QModelIndex PlaylistTab::getCurrentIndex()
 {
     return filterModel_.mapToSource(ui_.playlist->currentIndex());

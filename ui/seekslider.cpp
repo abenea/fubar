@@ -17,8 +17,8 @@ SeekSlider::SeekSlider(AudioPlayer& player, QWidget* parent)
 
 void SeekSlider::setLimits(int min, int max)
 {
-    setValue(0);
-    setMinimum(min);
+    setValue(min);
+    setMinimum(min * 1000);
     setMaximum(max * 1000);
 }
 

@@ -140,7 +140,7 @@ void MainWindow::slotAudioStateChanged(AudioState newState)
     }
 }
 
-QString msToHumanTime(qint64 pos)
+QString msToPrettyTime(qint64 pos)
 {
     pos /= 1000;
     QString status_message;
@@ -152,7 +152,7 @@ void MainWindow::tick(qint64 /*pos*/)
 {
     PTrack track = player_.getCurrentTrack();
     if (track) {
-        QString progress = msToHumanTime(player_.currentTime()) + " / " + msToHumanTime(track->audioproperties.length * 1000);
+        QString progress = msToPrettyTime(player_.currentTime()) + " / " + msToPrettyTime(track->audioproperties.length * 1000);
         QString format = QFileInfo(track->location).suffix().toUpper();
         statusBar_.showMessage(QString("%1 %2kbps %3Hz  %4  %5").arg(format).arg(track->audioproperties.bitrate).arg(track->audioproperties.samplerate).arg(QChar(164)).arg(progress));
     }
@@ -469,9 +469,10 @@ PlaylistTab* MainWindow::getPlayingPlaylistTab()
     return getPlaylistTab(player_.getPlayingPlaylistModel());
 }
 
-bool MainWindow::isEnqueued(PlaylistTab* playlistTab, PTrack track)
+bool MainWindow::isEnqueued(PlaylistTab* playlistTab, QModelIndex index)
 {
-    return player_.isEnqueued(playlistModels_.right.at(playlistTab), track);
+    // The index is from the sortproxyfiltermodel
+    return player_.isEnqueued(playlistModels_.right.at(playlistTab), playlistTab->mapToSource(index));
 }
 
 void MainWindow::showHideConsole()

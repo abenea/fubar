@@ -3,7 +3,9 @@
 #include "util.h"
 #include "track.h"
 #include "directory.h"
+#include "directorywatcher.h"
 #include "track.pb.h"
+#include "cuefile.h"
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
 #include <taglib/mpegfile.h>
@@ -12,7 +14,6 @@
 #include <taglib/id3v1tag.h>
 #include <taglib/id3v2tag.h>
 #include <taglib/tpropertymap.h>
-#include <boost/foreach.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/bind.hpp>
 #include <QDir>
@@ -22,6 +23,7 @@
 #include <QTimer>
 #include <QDateTime>
 #include <set>
+#include <cstdio>
 
 using namespace std;
 
@@ -168,12 +170,12 @@ void Library::removeDirectory(QString path)
         watcher_->removeWatch(path);
 
     // Delete tracks from views
-    QList<PTrack> tracks = it.value()->getTracks();
+    QList<PTrack> tracks = getDirectoryTracks(it.value());
     if (!tracks.empty()) {
         dirty_ = true;
     }
     foreach (PTrack track, tracks) {
-        emit libraryChanged(LibraryEvent(track, DELETE));
+        emitLibraryChanged(track, DELETE);
     }
     it.value()->clearFiles();
 
@@ -196,7 +198,7 @@ void Library::addFile(PTrack track)
     if (it != directories_.end()) {
         dirty_ = true;
         it.value()->addFile(track);
-        emit libraryChanged(LibraryEvent(track, CREATE));
+        emitLibraryChanged(track, CREATE);
     } else {
         qDebug() << "Library::addFile tried to add a file for an unadded directory!!111";
     }
@@ -211,7 +213,7 @@ void Library::removeFile(QString path)
         PTrack track = it.value()->removeFile(file_info.fileName());
         if (track) {
             dirty_ = true;
-            emit libraryChanged(LibraryEvent(track, DELETE));
+            emitLibraryChanged(track, DELETE);
         }
     } else {
         qDebug() << "Library::addFile tried to delete a file for an unadded directory!!111" << path;
@@ -337,7 +339,7 @@ void Library::scanDirectory(const QString& path)
                         if (file) {
                             if (file->mtime != info.lastModified().toTime_t()) {
                                 file = scanFile(info.filePath());
-                                emit libraryChanged(LibraryEvent(file, MODIFY));
+                                emitLibraryChanged(file, MODIFY);
                             }
                             new_directory->addFile(file);
                             old_files.erase(old_files.find(file->location));
@@ -364,7 +366,7 @@ void Library::scanDirectory(const QString& path)
                     }
                 }
                 foreach (QString deleted_file, old_files) {
-                    emit libraryChanged(LibraryEvent(directory->getFile(QFileInfo(deleted_file).fileName()), DELETE));
+                    emitLibraryChanged(directory->getFile(QFileInfo(deleted_file).fileName()), DELETE);
                 }
                 foreach (QString deleted_dir, deleted_subdirs) {
                     // Here removing child from father wont work
@@ -425,6 +427,10 @@ void set_tag_and_properties(T tag, TagLib::Tag **tag_ptr, TagLib::PropertyMap& p
 
 PTrack Library::scanFile(const QString& path)
 {
+    if (path.toLower().endsWith(".cue")) {
+        return scanCue(path);
+    }
+
     qDebug() << "Scanning file" << path;
     QByteArray encodedName = QFile::encodeName(path);
 
@@ -503,6 +509,31 @@ PTrack Library::scanFile(const QString& path)
     track->mtime = QFileInfo(path).lastModified().toTime_t();
 /*        qDebug() << "LIBRARY: " << track->metadata["artist"] << " " << track->metadata["title"] <<
             " " << track->audioproperties.length;*/
+    return track;
+}
+
+PTrack Library::scanCue(const QString& path)
+{
+    shared_ptr<Track> track;
+    try {
+        CueFile cue(path);
+        track.reset(new Track());
+        track->location = path;
+        track->mtime = QFileInfo(path).lastModified().toTime_t();
+        track->metadata = cue.getMetadata();
+        QList<PTrack> tracks;
+        for (int i = 1; i <= cue.tracks(); ++i) {
+            PTrack subtrack(new Track);
+            subtrack->location = cue.getLocation(i);
+            subtrack->audioproperties.length = cue.getLength(i);
+            subtrack->metadata = cue.getMetadata(i);
+            // TODO search if cue.getLocation(i) exists and copy audioproperties and compute length if 0
+            tracks.push_back(subtrack);
+        }
+        track->setCueTracks(tracks);
+    } catch (...) {
+        qDebug() << "Failed to scan cue" << path;
+    }
     return track;
 }
 
@@ -609,7 +640,7 @@ void Library::fileCallback(QString path, LibraryEventType event)
                     PTrack track = scanFile(path);
                     it.value()->addFile(track);
                     dirty_ = true;
-                    emit libraryChanged(LibraryEvent(track, MODIFY));
+                    emitLibraryChanged(track, MODIFY);
                 }
             } else {
                 // We tried taglib-reading this but it failed
@@ -631,12 +662,12 @@ QStringList Library::getMusicFolders()
     return QStringList(music_folders_);
 }
 
-QList< shared_ptr< Track > > Library::getTracks()
+QList<shared_ptr<Track>> Library::getTracks()
 {
     QMutexLocker locker(&mutex_);
-    QList<shared_ptr<Track> > result;
+    QList<shared_ptr<Track>> result;
     for (DirectoryMap::iterator it = directories_.begin(); it != directories_.end(); ++it) {
-        result.append(it.value()->getTracks());
+        result.append(getDirectoryTracks(it.value()));
     }
     return result;
 }
@@ -652,6 +683,23 @@ void Library::setFoldersInSettings()
 {
     QSettings settings;
     settings.setValue("library/folders", music_folders_);
+}
+
+void Library::emitLibraryChanged(PTrack track, LibraryEventType type)
+{
+    emit libraryChanged(LibraryEvent(track, type));
+}
+
+QList<PTrack> Library::getDirectoryTracks(shared_ptr<Directory> directory)
+{
+    QList<PTrack> tracks;
+    for (PTrack track : directory->getTracks()) {
+        if (track->isCue()) {
+            tracks.append(track->getCueTracks());
+        } else
+            tracks.append(track);
+    }
+    return tracks;
 }
 
 #include "library.moc"

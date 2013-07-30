@@ -7,6 +7,7 @@
 #include <QtCore/qmath.h>
 #include <QSettings>
 #include <QDebug>
+#include <cstdlib>
 
 AudioPlayer *AudioPlayer::instance = nullptr;
 
@@ -25,6 +26,7 @@ AudioPlayer::AudioPlayer(Library* library, AudioOutput* audioOutput, bool testin
     QObject::connect(audioOutput_, SIGNAL(currentSourceChanged()), this, SLOT(currentSourceChanged()));
     QObject::connect(audioOutput_, SIGNAL(tick(qint64)), this, SLOT(slotTick(qint64)));
     QObject::connect(audioOutput_, SIGNAL(stateChanged(AudioState)), this, SLOT(slotAudioStateChanged(AudioState)));
+    QObject::connect(audioOutput_, SIGNAL(finished()), this, SLOT(slotFinished()));
     // Not using Phono totalTimeChanged() signal because it returns 0 when used with enqueue()
     // TODO: report bug to phonon
 //    QObject::connect(audioOutput_, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
@@ -127,9 +129,11 @@ void AudioPlayer::bufferTrack(PModel playlistModel, QModelIndex index)
     setBuffering(playlistModel, index);
     if (!bufferingTrack_)
         return;
-    audioOutput_->clearQueue();
-    audioOutput_->enqueue(bufferingTrack_->location);
-    qDebug() << "Enqueue " << bufferingTrack_->location;
+    if (!bufferingTrack_->isCueTrack()) {
+        audioOutput_->clearQueue();
+        audioOutput_->enqueue(bufferingTrack_->location);
+        qDebug() << "Enqueue " << bufferingTrack_->location;
+    }
 }
 
 void AudioPlayer::currentSourceChanged()
@@ -152,8 +156,17 @@ void AudioPlayer::currentSourceChanged()
 
 void AudioPlayer::slotTick(qint64 pos)
 {
-    emit trackPositionChanged(pos, false);
-    emit tick(pos);
+    // TODO
+    // currentTrackPos() => playingTrack_->isCueTrack() ? pos - playingTrack_->cueOffset() * 1000 : pos;
+    qint64 trackpos = playingTrack_->isCueTrack() ? pos - playingTrack_->cueOffset() * 1000 : pos;
+    emit trackPositionChanged(trackpos, false);
+    emit tick(trackpos);
+    // Cue hack: if we're past the cue track position, go to next track
+    if (playingTrack_ && playingTrack_->isCueTrack() && playingTrack_->audioproperties.length
+        && playingTrack_->audioproperties.length * 1000 + 1000 <= trackpos) {
+        aboutToFinish();
+        slotFinished();
+    }
 }
 
 PTrack AudioPlayer::getCurrentTrack()
@@ -264,15 +277,28 @@ void AudioPlayer::play(PModel playlistModel, const QModelIndex& index)
 {
     if (!index.isValid())
         return;
+    PTrack currentlyPlayingTrack = playingTrack_;
     setPlaying(playlistModel, index);
     setBuffering(PModel(), QModelIndex());
     if (!playingTrack_)
         return;
 
-    audioOutput_->clearQueue();
-    audioOutput_->setCurrentSource(playingTrack_->location);
-    setVolume(volume_);
-    audioOutput_->play();
+    if (audioOutput_->state() == AudioState::Playing && currentlyPlayingTrack->isCueTrack() && playingTrack_->isCueTrack()
+        && currentlyPlayingTrack->location == playingTrack_->location) {
+        // Playing in the same cue file
+        audioOutput_->seek(playingTrack_->cueOffset() * 1000);
+        emit trackPlaying(playingTrack_);
+        emit trackPositionChanged(0, true);
+    } else {
+        audioOutput_->clearQueue();
+        audioOutput_->setCurrentSource(playingTrack_->location);
+        setVolume(volume_);
+        if (playingTrack_->isCueTrack()) {
+            audioOutput_->play(playingTrack_->cueOffset() * 1000);
+        }
+        else
+            audioOutput_->play();
+    }
 }
 
 void AudioPlayer::playNext(int offset)
@@ -303,19 +329,19 @@ QModelIndex AudioPlayer::getNextModelIndex(PModel playlistModel, int offset)
     return mainWindow_->getFilteredIndex(playlistModel, QModelIndex(), 0);
 }
 
-bool AudioPlayer::isEnqueued(PModel playlistModel, PTrack track)
+bool AudioPlayer::isEnqueued(PModel playlistModel, QModelIndex index)
 {
-    return queue_.isQueued(playlistModel, track);
+    return queue_.isQueued(playlistModel, index);
 }
 
 qint64 AudioPlayer::currentTime()
 {
-    return audioOutput_->currentTime();
+    return audioOutput_->currentTime() - playingTrack_->cueOffset() * 1000;
 }
 
 void AudioPlayer::seek(qint64 pos)
 {
-    audioOutput_->seek(pos);
+    audioOutput_->seek(pos + playingTrack_->cueOffset() * 1000);
     emit trackPositionChanged(pos, true);
 }
 
@@ -348,6 +374,22 @@ void AudioPlayer::slotAudioStateChanged(AudioState newState)
     emit audioStateChanged(newState);
     if (newState == AudioState::Stopped)
         emit stopped(audioOutput_->totalTime(), audioOutput_->currentTime());
+}
+
+void AudioPlayer::slotFinished()
+{
+    if (!bufferingTrack_)
+        return;
+    if (bufferingTrack_->isCueTrack() && bufferingTrack_->location == playingTrack_->location &&
+        bufferingTrack_->metadata["track"].toInt() == playingTrack_->metadata["track"].toInt() + 1) {
+        currentSourceChanged();
+        return;
+    }
+    // TODO hack new gstreamer bug
+    // TODO this looks wrong :)
+    if (queue_.peeked())
+        queue_.unpeek();
+    next();
 }
 
 AudioPlayer::ReplayGainMode AudioPlayer::replayGainFromString(QString str)

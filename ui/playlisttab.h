@@ -36,6 +36,10 @@ public:
     int getUnfilteredPosition(QModelIndex index);
     QModelIndex getUnfilteredPosition(int pos);
 
+    // Back from the grave. Oh, the horrors...
+    QModelIndex mapToSource(QModelIndex index) const;
+    QModelIndexList mapToSource(QModelIndexList indexes) const;
+
 protected slots:
     void changedFilter(const QString &filter);
     void doubleClicked(const QModelIndex &filterIndex);
@@ -43,8 +47,6 @@ protected slots:
     void repaintTracks(std::vector<QPersistentModelIndex> indexes);
 
 private:
-    QModelIndexList mapToSource(QModelIndexList indexes) const;
-
     Ui::PlaylistFrame ui_;
     PModel model_;
     PlaylistFilter filterModel_;

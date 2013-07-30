@@ -3,6 +3,7 @@ project(fubar)
 enable_testing()
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
+find_package(Cue REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Taglib 1.8.0 REQUIRED)
 find_package(ProtocolBuffers REQUIRED)

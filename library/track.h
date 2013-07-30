@@ -3,6 +3,7 @@
 #include <QString>
 #include <QMap>
 #include <memory>
+#include <QList>
 
 namespace proto {
     class Track;
@@ -27,4 +28,14 @@ public:
     QString path() { return location; }
 
     void fillProtoTrack(proto::Track& ptrack);
+
+    void dump();
+
+    // CUE TRAX HAX
+    bool isCueTrack();
+
+    bool isCue();
+    QList<std::shared_ptr<Track>> getCueTracks();
+    void setCueTracks(QList<std::shared_ptr<Track>> tracks);
+    int cueOffset(); // in seconds
 };

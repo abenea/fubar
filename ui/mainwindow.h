@@ -43,7 +43,7 @@ public:
     QModelIndex getFilteredIndex(PModel playlistModel, QModelIndex current, int offset);
     QModelIndex getCurrentIndex(PModel playlistModel);
 
-    bool isEnqueued(PlaylistTab* playlistTab, PTrack track);
+    bool isEnqueued(PlaylistTab* playlistTab, QModelIndex index);
 
     bool eventFilter(QObject* watched, QEvent* event);
 

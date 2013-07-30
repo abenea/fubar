@@ -33,7 +33,7 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 {
     painter->save();
 
-    PTrack track = index.data(TrackRole).value<PTrack >();
+    PTrack track = index.data(TrackRole).value<PTrack>();
     if (!track) {
         painter->restore();
         return;
@@ -103,7 +103,7 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     QRect queueRect = trackOption.rect;
     queueRect.setLeft(trackOption.rect.left() + 45);
     queueRect.setRight(trackOption.rect.left() + 55);
-    painter->drawText(queueRect, Qt::AlignHCenter, MainWindow::instance->isEnqueued(MainWindow::instance->getActivePlaylist(), track) ? QString(QChar(1342)) : QString());
+    painter->drawText(queueRect, Qt::AlignHCenter, MainWindow::instance->isEnqueued(MainWindow::instance->getActivePlaylist(), index) ? QString(QChar(1342)) : QString());
 
     painter->restore();
 }

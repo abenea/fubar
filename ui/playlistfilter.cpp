@@ -71,9 +71,9 @@ Grouping::Mode PlaylistFilter::groupingMode(const QModelIndex& index) const
     QModelIndex prevIndex(index.sibling(index.row() - 1, index.column()));
     QModelIndex nextIndex(index.sibling(index.row() + 1, index.column()));
 
-    PTrack prevTrack = prevIndex.data(TrackRole).value<shared_ptr<Track> >();
-    PTrack currentTrack = index.data(TrackRole).value<shared_ptr<Track> >();
-    PTrack nextTrack = nextIndex.data(TrackRole).value<shared_ptr<Track> >();
+    PTrack prevTrack = prevIndex.data(TrackRole).value<shared_ptr<Track>>();
+    PTrack currentTrack = index.data(TrackRole).value<shared_ptr<Track>>();
+    PTrack nextTrack = nextIndex.data(TrackRole).value<shared_ptr<Track>>();
 
     bool prevMatch = sameGroup(prevTrack, currentTrack);
     bool nextMatch = sameGroup(currentTrack, nextTrack);
@@ -114,8 +114,8 @@ QVariant PlaylistFilter::data(const QModelIndex& index, int role) const
 
 bool PlaylistFilter::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
-    PTrack leftTrack = left.data(TrackRole).value<shared_ptr<Track> >();
-    PTrack rightTrack = right.data(TrackRole).value<shared_ptr<Track> >();
+    PTrack leftTrack = left.data(TrackRole).value<shared_ptr<Track>>();
+    PTrack rightTrack = right.data(TrackRole).value<shared_ptr<Track>>();
     return leftTrack->location < rightTrack->location;
 }
 

@@ -106,9 +106,9 @@ shared_ptr<Directory> Directory::getSubdirectory(QString name)
     return result;
 }
 
-QList<PTrack > Directory::getTracks()
+QList<PTrack> Directory::getTracks()
 {
-    QList<PTrack > tracks;
+    QList<PTrack> tracks;
     foreach (PTrack track, files_) {
         tracks.append(track);
     }

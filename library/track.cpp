@@ -1,6 +1,9 @@
 #include "track.h"
 #include "track.pb.h"
+#include "track_forward.h"
 #include <QDebug>
+#include <QFileInfo>
+#include <QDir>
 
 Track::Track(proto::Track ptrack)
 {
@@ -42,4 +45,72 @@ void Track::fillProtoTrack(proto::Track& ptrack)
         item->set_name(it.key().toUtf8());
         item->set_value(it.value().toUtf8());
     }
+}
+
+bool Track::isCue()
+{
+    return location.toLower().endsWith(".cue");
+}
+
+bool Track::isCueTrack()
+{
+    return !location.toLower().endsWith(".cue") && metadata.find("_cue_offset") != metadata.end();
+}
+
+int Track::cueOffset()
+{
+    if (!isCueTrack())
+        return 0;
+    return metadata["_cue_offset"].toInt();
+}
+
+QString cueMetadataKey(int track, QString key)
+{
+    return QString("_cue_") + QString::number(track) + "_" + key;
+}
+
+QList<PTrack> Track::getCueTracks()
+{
+    QList<PTrack> tracks;
+    if (!isCue())
+        return tracks;
+    QDir dir = QFileInfo(location).absoluteDir();
+    int tracksno = metadata["_cue_tracks"].toInt();
+    for (int i = 1; i <= tracksno; ++i) {
+        PTrack track(new Track);
+        auto set = [&](QString k, QString v) { track->metadata[k] = v; };
+        for (QString& k : std::vector<QString>{"artist", "title", "_cue_offset"})
+            set(k, metadata[cueMetadataKey(i, k)]);
+        for (QString& k : std::vector<QString>{"album artist", "year", "album"})
+            set(k, metadata[k]);
+        set("track", QString::number(i));
+        track->audioproperties = audioproperties;
+        track->audioproperties.length = metadata[cueMetadataKey(i, "_cue_length")].toInt();
+        track->location = dir.absoluteFilePath(metadata[cueMetadataKey(i, "_cue_location")]);
+        tracks.append(track);
+    }
+    return tracks;
+}
+
+void Track::setCueTracks(QList<PTrack> tracks)
+{
+    if (!isCue())
+        return;
+    metadata["_cue_tracks"] = QString::number(tracks.size());
+    for (int i = 0; i < tracks.size(); ++i) {
+        PTrack track = tracks[i];
+        auto set = [&](QString k, QString v) { metadata[cueMetadataKey(i + 1, k)] = v; };
+        for (QString& k : std::vector<QString>{"artist", "title", "_cue_offset"})
+            set(k, track->metadata[k]);
+        set("_cue_location", track->location);
+        set("_cue_length", QString::number(track->audioproperties.length));
+        //TODO save other audioproperties
+    }
+}
+
+void Track::dump()
+{
+    qDebug() << "Path:" << location;
+    for (QMap<QString, QString>::const_iterator it = metadata.begin(); it != metadata.end(); ++it)
+        qDebug() << "    " << it.key().toUtf8() << "=" << it.value().toUtf8();
 }

@@ -50,7 +50,7 @@ public:
 
     void setMainWindow(MainWindow* mainWindow);
 
-    bool isEnqueued(PModel playlistModel, PTrack track);
+    bool isEnqueued(PModel playlistModel, QModelIndex index);
 
 signals:
     void playbackOrderChanged(PlaybackOrder newPlaybackOrder);
@@ -73,6 +73,7 @@ private slots:
     void aboutToFinish();
     void currentSourceChanged();
     void slotTick(qint64 pos);
+    void slotFinished();
     void configChanged(QString key, QVariant value);
 
 private:
