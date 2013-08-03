@@ -687,7 +687,17 @@ void Library::setFoldersInSettings()
 
 void Library::emitLibraryChanged(PTrack track, LibraryEventType type)
 {
-    emit libraryChanged(LibraryEvent(track, type));
+    if (track->isCue()) {
+        if (type == LibraryEventType::DELETE || type == LibraryEventType::MODIFY) {
+            for (PTrack cuetrack : track->getCueTracks())
+                emit libraryChanged(LibraryEvent(cuetrack, LibraryEventType::DELETE));
+        }
+        if (type == LibraryEventType::MODIFY || type == LibraryEventType::CREATE) {
+            for (PTrack cuetrack : track->getCueTracks())
+                emit libraryChanged(LibraryEvent(cuetrack, LibraryEventType::CREATE));
+        }
+    } else
+        emit libraryChanged(LibraryEvent(track, type));
 }
 
 QList<PTrack> Library::getDirectoryTracks(shared_ptr<Directory> directory)

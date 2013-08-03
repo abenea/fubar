@@ -116,6 +116,8 @@ bool PlaylistFilter::lessThan(const QModelIndex& left, const QModelIndex& right)
 {
     PTrack leftTrack = left.data(TrackRole).value<shared_ptr<Track>>();
     PTrack rightTrack = right.data(TrackRole).value<shared_ptr<Track>>();
+    if (leftTrack->location == rightTrack->location && leftTrack->isCueTrack() && rightTrack->isCueTrack())
+        return leftTrack->metadata["track"].toInt() < rightTrack->metadata["track"].toInt();
     return leftTrack->location < rightTrack->location;
 }
 

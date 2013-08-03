@@ -221,6 +221,7 @@ void AudioPlayer::prev()
 
 void AudioPlayer::stop()
 {
+    setBuffering(PModel(), QModelIndex(), true);
     audioOutput_->stop();
 }
 
