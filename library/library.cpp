@@ -196,8 +196,20 @@ void Library::addFile(PTrack track)
     QFileInfo file_info(track->location);
     DirectoryMap::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
+        std::shared_ptr<Directory> directory = it.value();
+        // Update audio info for cue
+        if (track->isCue()) {
+            track->updateAudioInfo(directory->getFile(track->cueTrackLocation()));
+        } else {
+            for (PTrack other : directory->getTracks()) {
+                if (other->isCue() && other->cueTrackLocation() == file_info.fileName()) {
+                    other->updateAudioInfo(track);
+                    emitLibraryChanged(other, MODIFY);
+                }
+            }
+        }
         dirty_ = true;
-        it.value()->addFile(track);
+        directory->addFile(track);
         emitLibraryChanged(track, CREATE);
     } else {
         qDebug() << "Library::addFile tried to add a file for an unadded directory!!111";
@@ -514,6 +526,7 @@ PTrack Library::scanFile(const QString& path)
 
 PTrack Library::scanCue(const QString& path)
 {
+    qDebug() << "Scanning cue" << path;
     shared_ptr<Track> track;
     try {
         CueFile cue(path);
@@ -531,6 +544,7 @@ PTrack Library::scanCue(const QString& path)
             tracks.push_back(subtrack);
         }
         track->setCueTracks(tracks);
+        track->dump();
     } catch (...) {
         qDebug() << "Failed to scan cue" << path;
     }

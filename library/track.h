@@ -33,6 +33,8 @@ public:
 
     // CUE TRAX HAX
     bool isCueTrack();
+    QString cueTrackLocation();
+    void updateAudioInfo(std::shared_ptr<Track> track);
 
     bool isCue();
     QList<std::shared_ptr<Track>> getCueTracks();

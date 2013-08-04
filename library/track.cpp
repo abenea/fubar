@@ -114,3 +114,17 @@ void Track::dump()
     for (QMap<QString, QString>::const_iterator it = metadata.begin(); it != metadata.end(); ++it)
         qDebug() << "    " << it.key().toUtf8() << "=" << it.value().toUtf8();
 }
+
+void Track::updateAudioInfo(PTrack track)
+{
+    if (!track)
+        return;
+    qDebug() << "Updating cue" << track->path() << "with data from" << track->location;
+    audioproperties = track->audioproperties;
+    metadata[cueMetadataKey(metadata["_cue_tracks"].toInt(), "_cue_length")] = QString::number(audioproperties.length - metadata[cueMetadataKey(metadata["_cue_tracks"].toInt(), "_cue_offset")].toInt());
+}
+
+QString Track::cueTrackLocation()
+{
+    return metadata[cueMetadataKey(1, "_cue_location")];
+}
