@@ -85,7 +85,7 @@ QList<PTrack> Track::getCueTracks()
             set(k, metadata[k]);
         set("track", QString::number(i));
         track->audioproperties = audioproperties;
-        track->audioproperties.length = metadata[cueMetadataKey(i, "_cue_length")].toInt();
+        track->audioproperties.length = metadata[cueMetadataKey(i, "_cue_length")].toInt() / 1000;
         track->location = dir.absoluteFilePath(metadata[cueMetadataKey(i, "_cue_location")]);
         tracks.append(track);
     }
@@ -121,7 +121,8 @@ void Track::updateAudioInfo(PTrack track)
         return;
     qDebug() << "Updating cue" << track->path() << "with data from" << track->location;
     audioproperties = track->audioproperties;
-    metadata[cueMetadataKey(metadata["_cue_tracks"].toInt(), "_cue_length")] = QString::number(audioproperties.length - metadata[cueMetadataKey(metadata["_cue_tracks"].toInt(), "_cue_offset")].toInt());
+    int offset = metadata[cueMetadataKey(metadata["_cue_tracks"].toInt(), "_cue_offset")].toInt();
+    metadata[cueMetadataKey(metadata["_cue_tracks"].toInt(), "_cue_length")] = QString::number(audioproperties.length * 1000 - offset);
 }
 
 QString Track::cueTrackLocation()

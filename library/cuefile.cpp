@@ -31,17 +31,17 @@ int CueFile::tracks()
     return cd_get_ntrack(cd_);
 }
 
-int cueLengthToS(long length)
+int cueLengthToMs(long length)
 {
     // Cue track length is expressed in units of 1/75 seconds
     const int CUE_FPS = 75;
-    return length / CUE_FPS;
+    return length * 1000 / CUE_FPS;
 }
 
 int CueFile::getLength(int trackno)
 {
     Track* track = cd_get_track(cd_, trackno);
-    return cueLengthToS(track_get_length(track));
+    return cueLengthToMs(track_get_length(track));
 }
 
 QString CueFile::getLocation(int trackno)
@@ -78,7 +78,7 @@ QMap<QString, QString> CueFile::getMetadata(int trackno)
     Track* track = cd_get_track(cd_, trackno);
     if (track) {
 //         metadata["track"] = QString::number(trackno);
-        metadata["_cue_offset"] = QString::number(cueLengthToS(track_get_start(track)));
+        metadata["_cue_offset"] = QString::number(cueLengthToMs(track_get_start(track)));
         Cdtext* cdtext = track_get_cdtext(track);
         if (cdtext) {
             set("artist", cdtext_get(PTI_PERFORMER, cdtext));

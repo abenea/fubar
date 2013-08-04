@@ -15,8 +15,7 @@ public:
 
     int tracks();
     QString getLocation(int trackno);
-    // TODO work with ms
-    int getLength(int trackno); // in seconds
+    int getLength(int trackno); // in ms
     QMap<QString, QString> getMetadata(int trackno);
 
 private:

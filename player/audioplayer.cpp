@@ -158,7 +158,7 @@ void AudioPlayer::slotTick(qint64 pos)
 {
     // TODO
     // currentTrackPos() => playingTrack_->isCueTrack() ? pos - playingTrack_->cueOffset() * 1000 : pos;
-    qint64 trackpos = playingTrack_->isCueTrack() ? pos - playingTrack_->cueOffset() * 1000 : pos;
+    qint64 trackpos = playingTrack_->isCueTrack() ? pos - playingTrack_->cueOffset() : pos;
     emit trackPositionChanged(trackpos, false);
     emit tick(trackpos);
     // Cue hack: if we're past the cue track position, go to next track
@@ -287,7 +287,7 @@ void AudioPlayer::play(PModel playlistModel, const QModelIndex& index)
     if (audioOutput_->state() == AudioState::Playing && currentlyPlayingTrack->isCueTrack() && playingTrack_->isCueTrack()
         && currentlyPlayingTrack->location == playingTrack_->location) {
         // Playing in the same cue file
-        audioOutput_->seek(playingTrack_->cueOffset() * 1000);
+        audioOutput_->seek(playingTrack_->cueOffset());
         emit trackPlaying(playingTrack_);
         emit trackPositionChanged(0, true);
     } else {
@@ -295,7 +295,7 @@ void AudioPlayer::play(PModel playlistModel, const QModelIndex& index)
         audioOutput_->setCurrentSource(playingTrack_->location);
         setVolume(volume_);
         if (playingTrack_->isCueTrack()) {
-            audioOutput_->play(playingTrack_->cueOffset() * 1000);
+            audioOutput_->play(playingTrack_->cueOffset());
         }
         else
             audioOutput_->play();
@@ -337,12 +337,12 @@ bool AudioPlayer::isEnqueued(PModel playlistModel, QModelIndex index)
 
 qint64 AudioPlayer::currentTime()
 {
-    return audioOutput_->currentTime() - playingTrack_->cueOffset() * 1000;
+    return audioOutput_->currentTime() - playingTrack_->cueOffset();
 }
 
 void AudioPlayer::seek(qint64 pos)
 {
-    audioOutput_->seek(pos + playingTrack_->cueOffset() * 1000);
+    audioOutput_->seek(pos + playingTrack_->cueOffset());
     emit trackPositionChanged(pos, true);
 }
 

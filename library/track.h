@@ -39,5 +39,5 @@ public:
     bool isCue();
     QList<std::shared_ptr<Track>> getCueTracks();
     void setCueTracks(QList<std::shared_ptr<Track>> tracks);
-    int cueOffset(); // in seconds
+    int cueOffset(); // in ms
 };

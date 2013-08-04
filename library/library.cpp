@@ -540,11 +540,9 @@ PTrack Library::scanCue(const QString& path)
             subtrack->location = cue.getLocation(i);
             subtrack->audioproperties.length = cue.getLength(i);
             subtrack->metadata = cue.getMetadata(i);
-            // TODO search if cue.getLocation(i) exists and copy audioproperties and compute length if 0
             tracks.push_back(subtrack);
         }
         track->setCueTracks(tracks);
-        track->dump();
     } catch (...) {
         qDebug() << "Failed to scan cue" << path;
     }
