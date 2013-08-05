@@ -19,6 +19,7 @@ AudioPlayer::AudioPlayer(Library* library, AudioOutput* audioOutput, bool testin
     , replaygain_(ReplayGainMode::None)
     , preamp_with_rg_(10)
     , playbackOrder_(PlaybackOrder::Default)
+    , lengthHack_(false)
     , testing_(testing)
 {
     audioOutput_->setTickInterval(1000);
@@ -46,6 +47,7 @@ void AudioPlayer::setMainWindow(MainWindow* mainWindow)
     config.set("playback.replaygain", QVariant(replayGainToString(replaygain_)));
     config.set("playback.replaygain.preamp_with_rg", QVariant(preamp_with_rg_));
     config.set("playback.enqueue.onlyOnce", QVariant(queue_.enqueueOnlyOnce()));
+    config.set("library.length_hack", QVariant(lengthHack_));
     QObject::connect(&config, SIGNAL(keySet(QString,QVariant)), this, SLOT(configChanged(QString,QVariant)));
 }
 
@@ -57,6 +59,8 @@ void AudioPlayer::configChanged(QString key, QVariant value)
         preamp_with_rg_ = value.toReal();
     else if (key == "playback.enqueue.onlyOnce")
         queue_.setEnqueueOnlyOnce(value.toBool());
+    else if (key == "library.length_hack")
+        lengthHack_ = value.toBool();
 }
 
 void AudioPlayer::readSettings()
@@ -73,6 +77,7 @@ void AudioPlayer::readSettings()
         volume_ = 0;
     setVolume(volume_);
     queue_.setEnqueueOnlyOnce(settings.value("playback/enqueue.onlyOnce", false).toBool());
+    lengthHack_ = settings.value("library/length_hack", lengthHack_).toBool();
 }
 
 void AudioPlayer::writeSettings()
@@ -85,6 +90,7 @@ void AudioPlayer::writeSettings()
     settings.setValue("playback/replaygain", replayGainToString(replaygain_));
     settings.setValue("playback/replaygain.preamp_with_rg", preamp_with_rg_);
     settings.setValue("playback/enqueue.onlyOnce", queue_.enqueueOnlyOnce());
+    settings.setValue("library/length_hack", lengthHack_);
 }
 
 void AudioPlayer::aboutToFinish()
@@ -156,11 +162,18 @@ void AudioPlayer::currentSourceChanged()
 
 void AudioPlayer::slotTick(qint64 pos)
 {
-    // TODO
-    // currentTrackPos() => playingTrack_->isCueTrack() ? pos - playingTrack_->cueOffset() * 1000 : pos;
     qint64 trackpos = playingTrack_->isCueTrack() ? pos - playingTrack_->cueOffset() : pos;
     emit trackPositionChanged(trackpos, false);
     emit tick(trackpos);
+    // Length hack
+    // If the pos > length, set length = position
+    // This ugly uber lame hack exists because I'm too lazy to fix taglib
+    // (taglib reports 0 length sometimes)
+    if (lengthHack_ && !playingTrack_->isCueTrack() && playingTrack_->audioproperties.length + 1 < pos / 1000) {
+        qDebug() << "Setting" << playingTrack_->path() << "length to " << pos / 1000 << "(was" << playingTrack_->audioproperties.length << ")";
+        playingTrack_->audioproperties.length = pos / 1000;
+        library_->dirtyHack(playingTrack_);
+    }
     // Cue hack: if we're past the cue track position, go to next track
     if (playingTrack_ && playingTrack_->isCueTrack() && playingTrack_->audioproperties.length
         && playingTrack_->audioproperties.length * 1000 + 1000 <= trackpos) {
@@ -386,8 +399,6 @@ void AudioPlayer::slotFinished()
         currentSourceChanged();
         return;
     }
-    // TODO hack new gstreamer bug
-    // TODO this looks wrong :)
     if (queue_.peeked())
         queue_.unpeek();
     next();

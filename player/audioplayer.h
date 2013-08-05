@@ -117,6 +117,8 @@ private:
     QPersistentModelIndex bufferingIndex_;
     PTrack bufferingTrack_;
 
+    bool lengthHack_;
+
     // If true, settings won't be read/written and shortcuts will be disabled.
     // useful for unit testing
     bool testing_;

@@ -55,6 +55,10 @@ signals:
     // Completely replace the contents of synced playlists with these tracks
     void libraryChanged(QList<PTrack> tracks);
 
+public:
+    // length hack: called when audioplayer sets a track's length
+    void dirtyHack(PTrack track);
+
 protected:
     void run();
 

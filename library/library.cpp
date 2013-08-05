@@ -724,4 +724,10 @@ QList<PTrack> Library::getDirectoryTracks(shared_ptr<Directory> directory)
     return tracks;
 }
 
+void Library::dirtyHack(PTrack track)
+{
+    dirty_ = true;
+    emitLibraryChanged(track, MODIFY);
+}
+
 #include "library.moc"
