@@ -189,7 +189,7 @@ void Library::removeDirectory(QString path)
     qDebug() << "Done deleting dir" << path;
 }
 
-void Library::addFile(PTrack track)
+void Library::addFile(PTrack track, bool loading)
 {
     QMutexLocker locker(&mutex_);
     // Add to directory
@@ -197,20 +197,22 @@ void Library::addFile(PTrack track)
     DirectoryMap::iterator it = directories_.find(file_info.absolutePath());
     if (it != directories_.end()) {
         std::shared_ptr<Directory> directory = it.value();
-        // Update audio info for cue
-        if (track->isCue()) {
-            track->updateAudioInfo(directory->getFile(track->cueTrackLocation()));
-        } else {
-            for (PTrack other : directory->getTracks()) {
-                if (other->isCue() && other->cueTrackLocation() == file_info.fileName()) {
-                    other->updateAudioInfo(track);
-                    emitLibraryChanged(other, MODIFY);
+        if (!loading) {
+            // Update audio info for cue
+            if (track->isCue()) {
+                track->updateAudioInfo(directory->getFile(track->cueTrackLocation()));
+            } else {
+                for (PTrack other : directory->getTracks()) {
+                    if (other->isCue() && other->cueTrackLocation() == file_info.fileName()) {
+                        other->updateAudioInfo(track);
+                        emitLibraryChanged(other, MODIFY);
+                    }
                 }
             }
+            dirty_ = true;
+            emitLibraryChanged(track, CREATE);
         }
-        dirty_ = true;
         directory->addFile(track);
-        emitLibraryChanged(track, CREATE);
     } else {
         qDebug() << "Library::addFile tried to add a file for an unadded directory!!111";
     }
@@ -264,10 +266,9 @@ void Library::loadFromDisk()
     }
     for (int i = 0; i < plibrary.tracks_size(); ++i) {
         shared_ptr<Track> track(new Track(plibrary.tracks(i)));
-        addFile(track);
+        addFile(track, true);
     }
     qDebug() << "Read metadata for" << plibrary.tracks_size() << "tracks in" << plibrary.directories_size() << "directories from disk";
-    dirty_ = false;
 }
 
 void Library::saveToDisk()

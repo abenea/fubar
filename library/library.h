@@ -82,7 +82,7 @@ private:
     PTrack scanCue(const QString& path);
 
     void addDirectory(std::shared_ptr<Directory> directory);
-    void addFile(PTrack track);
+    void addFile(PTrack track, bool loading=false);
     void removeFile(QString path);
     void removeDirectory(QString path);
 
