@@ -8,6 +8,7 @@ class PluginInterface
 public:
     virtual ~PluginInterface() {}
     virtual void init(QObject& fubarApp) = 0;
+    virtual void deinit() = 0;
     virtual void configure() {}
 };
 

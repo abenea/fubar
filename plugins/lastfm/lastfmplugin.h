@@ -29,6 +29,7 @@ public:
     ~LastfmPlugin();
 
     void init(QObject& fubarApp);
+    void deinit();
     void configure();
 
 private slots:

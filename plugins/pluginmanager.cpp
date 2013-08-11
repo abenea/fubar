@@ -19,9 +19,8 @@ PluginManager::PluginManager(AudioPlayer& player)
             PluginInterface *fubarPlugin = qobject_cast<PluginInterface*>(plugin);
             if (fubarPlugin) {
                 qDebug() << "Found plugin " << fileName;
-                fubarPlugin->init(player_);
                 plugins_.insert(std::make_pair(fileName, loader));
-//                disablePlugin(fileName);
+                enablePlugin(fileName);
             } else {
                 qDebug() << "Can't load plugin " << loader->errorString();
             }
@@ -33,38 +32,38 @@ PluginManager::PluginManager(AudioPlayer& player)
 
 void PluginManager::disablePlugin(QString name)
 {
+    if (!isEnabled(name))
+        return;
     PluginMap::iterator it = plugins_.find(name);
     if (it != plugins_.end()) {
-        if (!it->second->isLoaded())
-            return;
-        qDebug() << "Unloading plugin " << it->second->fileName();
-        if (!it->second->unload())
-            qDebug() << "Error unloading plugin " << it->second->fileName() << ". "<< it->second->errorString();
+        qDebug() << "Disable plugin" << it->second->fileName();
+        PluginInterface *fubarPlugin = qobject_cast<PluginInterface*>(it->second->instance());
+        if (fubarPlugin) {
+            fubarPlugin->deinit();
+            enabled_.erase(name);
+        }
     } else {
-        qDebug() << "Cannot unload " << name << ". No such plugin.";
+        qDebug() << "Cannot disable" << name << "No such plugin.";
     }
 }
 
 void PluginManager::enablePlugin(QString name)
 {
+    if (isEnabled(name))
+        return;
     PluginMap::iterator it = plugins_.find(name);
     if (it != plugins_.end()) {
-        qDebug() << "Loading plugin " << it->second->fileName();
-        if (it->second->isLoaded())
-            return;
+        qDebug() << "Enable plugin" << it->second->fileName();
         QObject *plugin = it->second->instance();
         if (plugin) {
             PluginInterface *fubarPlugin = qobject_cast<PluginInterface*>(plugin);
             if (fubarPlugin) {
                 fubarPlugin->init(player_);
-            } else {
-                qDebug() << "Can't load plugin " << it->second->fileName() << ". " << it->second->errorString();
+                enabled_.insert(name);
             }
-        } else {
-            qDebug() << "Instance is 0 for Plugin " << it->second->fileName();
         }
     } else {
-        qDebug() << "Cannot load " << name << ". No such plugin.";
+        qDebug() << "Cannot enable" << name << "No such plugin.";
     }
 }
 
@@ -99,4 +98,9 @@ std::vector<QString> PluginManager::getPlugins()
         plugins.push_back(it->first);
     }
     return plugins;
+}
+
+bool PluginManager::isEnabled(QString name)
+{
+    return enabled_.find(name) != enabled_.end();
 }

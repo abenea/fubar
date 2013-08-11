@@ -19,7 +19,7 @@ LastfmPlugin::LastfmPlugin(QObject* parent)
 
 LastfmPlugin::~LastfmPlugin()
 {
-    qDebug() << "[Lastfm] LastfmPlugin::~LastfmPlugin()";
+    deinit();
 }
 
 void LastfmPlugin::init(QObject& fubar)
@@ -27,6 +27,12 @@ void LastfmPlugin::init(QObject& fubar)
     qDebug() << "[Lastfm] LastfmPlugin::init()";
     fubar_ = &fubar;
     login();
+}
+
+void LastfmPlugin::deinit()
+{
+    logout();
+    fubar_ = 0;
 }
 
 void LastfmPlugin::login()
@@ -68,6 +74,10 @@ void LastfmPlugin::logout()
     m_scrobbler.reset();
     resetVariables();
     disconnect(fubar_, 0, this, 0);
+    if (m_jobs.contains("auth")) {
+        m_jobs["auth"]->abort();
+        m_jobs["auth"]->close();
+    }
 }
 
 void LastfmPlugin::onAuthenticated()
