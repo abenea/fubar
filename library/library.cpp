@@ -497,7 +497,7 @@ PTrack Library::scanFile(const QString& path)
 //         for (auto item : properties) {
 //             qDebug() << TStringToQString(item.first) << " " << TStringToQString(item.second.front());
 //         }
-        std::map<QString, QString> tags{{"ALBUM ARTIST", "album artist"}, {"ALBUMARTIST", "album artist"}};
+        std::map<QString, QString> tags{{"ALBUM ARTIST", "album artist"}, {"ALBUMARTIST", "album artist"}, {"UNSYNCED LYRICS", "lyrics"}, {"LYRICS", "lyrics"}};
         std::set<QString> replayGainTags = {"REPLAYGAIN_ALBUM_GAIN", "REPLAYGAIN_ALBUM_PEAK", "REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_TRACK_PEAK"};
         for (const auto& rgtag : replayGainTags) {
             tags.insert(std::make_pair(rgtag, rgtag));

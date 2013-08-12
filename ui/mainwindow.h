@@ -17,6 +17,8 @@
 class PlaylistTab;
 class Library;
 class ConsoleWindow;
+class QDockWidget;
+class QPlainTextEdit;
 
 class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {
@@ -77,6 +79,8 @@ private slots:
     void menuFileAboutToShow();
     void on_mainToolBar_actionTriggered(QAction* action);
 
+    void on_showLyricsAction_triggered();
+
     void tick(qint64 pos);
 
     void statusBarDoubleClicked();
@@ -112,6 +116,9 @@ private:
 
     ConsoleWindow* console_;
     Config config_;
+
+    QDockWidget* lyricsDock_;
+    QPlainTextEdit* lyricsWidget_;
 
     AudioPlayer& player_;
 

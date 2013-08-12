@@ -72,6 +72,7 @@
     <addaction name="pluginsAction"/>
     <addaction name="libraryPreferencesAction"/>
     <addaction name="configAction"/>
+    <addaction name="showLyricsAction"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPlayback"/>
@@ -242,6 +243,11 @@
    </property>
    <property name="text">
     <string>Repeat &amp;track</string>
+   </property>
+  </action>
+  <action name="showLyricsAction">
+   <property name="text">
+    <string>Show lyrics</string>
    </property>
   </action>
  </widget>

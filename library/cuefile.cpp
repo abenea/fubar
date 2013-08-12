@@ -84,7 +84,7 @@ QMap<QString, QString> CueFile::getMetadata(int trackno)
             set("artist", cdtext_get(PTI_PERFORMER, cdtext));
             set("title", cdtext_get(PTI_TITLE, cdtext));
             if (metadata["artist"].isEmpty())
-                metadata["artist"] = getMetadata().take("album artist");
+                metadata["artist"] = getMetadata().value("album artist");
         }
     }
     return metadata;

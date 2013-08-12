@@ -17,6 +17,8 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QDebug>
+#include <QDockWidget>
+#include <QPlainTextEdit>
 #include <QtCore/qmath.h>
 #include <kwindowsystem.h>
 #include <kaction.h>
@@ -63,6 +65,12 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
 
     setStatusBar(&statusBar_);
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
+
+    lyricsDock_ = new QDockWidget("Lyrics", this);
+    lyricsDock_->setObjectName("LyricsDock");
+    lyricsWidget_ = new QPlainTextEdit(lyricsDock_);
+    lyricsWidget_->setReadOnly(true);
+    lyricsDock_->setWidget(lyricsWidget_);
 
 //     playlistTabs->setTabsClosable(true);
     QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(removePlaylistTab(int)));
@@ -293,6 +301,11 @@ void MainWindow::on_repeatTrackAction_triggered()
     player_.setPlaybackOrder(PlaybackOrder::RepeatTrack);
 }
 
+void MainWindow::on_showLyricsAction_triggered()
+{
+    lyricsDock_->setVisible(true);
+}
+
 void MainWindow::readSettings()
 {
     QSettings settings;
@@ -411,6 +424,7 @@ void MainWindow::updateUI(PTrack track)
         title =  track_info + "  [fubar]";
         tray_tooltip = track_info;
         seekMax = track->audioproperties.length;
+        lyricsWidget_->setPlainText(track->metadata.value("lyrics"));
     }
     trayIcon_->setToolTip(tray_tooltip);
     setWindowTitle(title);
