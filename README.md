@@ -21,7 +21,7 @@ We need the libtag1-dev and liblastfm-dev from experimental, so add to /etc/apt/
 
 Run:
 
-    sudo apt-get install cmake g++ libboost-all-dev protobuf-compiler libprotobuf-dev libqt4-dev libphonon-dev kdelibs5-dev phonon-backend-gstreamer gstreamer0.10-plugins-ugly
+    sudo apt-get install cmake g++ libboost-all-dev protobuf-compiler libprotobuf-dev libqt4-dev libphonon-dev kdelibs5-dev libcue-dev phonon-backend-gstreamer gstreamer0.10-plugins-ugly
     sudo apt-get install -t experimental libtag1-dev liblastfm-dev
 
 ## Other Distributions
