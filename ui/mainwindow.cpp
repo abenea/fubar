@@ -20,8 +20,10 @@
 #include <QDockWidget>
 #include <QPlainTextEdit>
 #include <QtCore/qmath.h>
+#include <QTimer>
 #include <kwindowsystem.h>
 #include <kaction.h>
+#include <netwm_def.h>
 
 MainWindow *MainWindow::instance = 0;
 
@@ -67,8 +69,11 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this, SLOT(statusBarDoubleClicked()));
 
     lyricsDock_ = new QDockWidget("Lyrics", this);
-    lyricsDock_->setObjectName("LyricsDock");
+    // Not setting an object name because we don't want save its state
+    // since Qt doesn't restore it correctly
+//     lyricsDock_->setObjectName("LyricsDock");
     lyricsWidget_ = new QPlainTextEdit(lyricsDock_);
+//     lyricsWidget_->setObjectName("LyricsWidget");
     lyricsWidget_->setReadOnly(true);
     lyricsDock_->setWidget(lyricsWidget_);
 
@@ -309,6 +314,11 @@ void MainWindow::on_showLyricsAction_triggered()
 void MainWindow::readSettings()
 {
     QSettings settings;
+    addDockWidget((Qt::DockWidgetArea)settings.value("lyrics/dockarea", Qt::LeftDockWidgetArea).toInt(), lyricsDock_);
+    lyricsDock_->setFloating(settings.value("lyrics/docked").toBool());
+    setDockSize(lyricsDock_, settings.value("lyrics/size", QSize(1, 1)).toSize());
+    lyricsDock_->move(settings.value("lyrics/pos", QPoint(200, 200)).toPoint());
+
     restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
     restoreState(settings.value("mainwindow/state").toByteArray());
     console_->restoreGeometry(settings.value("console/geometry").toByteArray());
@@ -328,8 +338,13 @@ void MainWindow::writeSettings()
 {
     QSettings settings;
     settings.setValue("console/geometry", console_->saveGeometry());
+    settings.setValue("mainwindow/maximized", isMaximized());
     settings.setValue("mainwindow/geometry", saveGeometry());
     settings.setValue("mainwindow/state", saveState());
+    settings.setValue("lyrics/dockarea", dockWidgetArea(lyricsDock_));
+    settings.setValue("lyrics/docked", lyricsDock_->isFloating());
+    settings.setValue("lyrics/size", lyricsDock_->size());
+    settings.setValue("lyrics/pos", lyricsDock_->pos());
 
     settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
 
@@ -500,6 +515,39 @@ void MainWindow::showHideConsole()
 bool MainWindow::eventFilter(QObject* /*watched*/, QEvent* event)
 {
     return event->type() == QEvent::StatusTip;
+}
+
+void MainWindow::setDockSize(QDockWidget* dock, QSize size)
+{
+    oldMaxSize = dock->maximumSize();
+    oldMinSize = dock->minimumSize();
+
+    if (size.width() >= 0) {
+        if (dock->width() < size.width())
+            dock->setMinimumWidth(size.width());
+        else dock->setMaximumWidth(size.width());
+    }
+    if (size.height() >= 0) {
+        if (dock->height() < size.height())
+            dock->setMinimumHeight(size.height());
+        else dock->setMaximumHeight(size.height());
+    }
+    QTimer::singleShot(1, this, SLOT(returnToOldMaxMinSizes()));
+}
+
+void MainWindow::returnToOldMaxMinSizes()
+{
+    lyricsDock_->setMinimumSize(oldMinSize);
+    lyricsDock_->setMaximumSize(oldMaxSize);
+    QTimer::singleShot(1, this, SLOT(restoreMaximizedState()));
+}
+
+
+void MainWindow::restoreMaximizedState()
+{
+    QSettings qsettings;
+    if (qsettings.value("mainwindow/maximized", true).toBool())
+        KWindowSystem::setState(winId(), NET::Max);
 }
 
 #include "mainwindow.moc"

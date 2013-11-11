@@ -95,7 +95,13 @@ private slots:
 
     void showHideConsole();
 
+    void returnToOldMaxMinSizes();
+    void restoreMaximizedState();
+
 private:
+    void setDockSize(QDockWidget *dock, QSize size);
+    QSize oldMaxSize, oldMinSize;
+
     PlaylistTab* getPlayingPlaylistTab();
     PlaylistTab* getPlaylistTab(PModel playlistModel);
 
