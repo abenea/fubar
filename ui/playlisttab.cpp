@@ -24,7 +24,7 @@ PlaylistTab::PlaylistTab(PModel model, QWidget* parent)
     connect(ui_.playlist, SIGNAL(returnPressed(QModelIndex)), this, SLOT(doubleClicked(const QModelIndex &)));
 }
 
-bool PlaylistTab::isEditable()
+bool PlaylistTab::isEditable() const
 {
     return !model_->playlist().synced;
 }
@@ -173,6 +173,16 @@ int PlaylistTab::getUnfilteredPosition(QModelIndex index)
 QModelIndex PlaylistTab::getUnfilteredPosition(int pos)
 {
     return filterModel_.mapToSource(filterModel_.index(pos, 0));
+}
+
+void PlaylistTab::serialize(QByteArray& data) const
+{
+    model_->playlist().serialize(data);
+}
+
+void PlaylistTab::deserialize(const QByteArray& data)
+{
+    model_->deserialize(data);
 }
 
 #include "playlisttab.moc"

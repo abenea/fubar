@@ -37,7 +37,7 @@ public:
     PlaylistTab* getActivePlaylist();
     PModel getActivePlaylistModel();
 
-    void addPlaylist(PModel playlistTab, QString name = "Unnamed playlist", bool makeCurrent = true);
+    PlaylistTab* addPlaylist(PModel playlistTab, QString name = "Unnamed playlist", bool makeCurrent = true);
 
     void enqueueTracks(PModel playlistModel, QModelIndexList tracks);
 
@@ -98,6 +98,8 @@ private slots:
     void returnToOldMaxMinSizes();
     void restoreMaximizedState();
 
+    void configChanged(QString key, QVariant value);
+
 private:
     void setDockSize(QDockWidget *dock, QSize size);
     QSize oldMaxSize, oldMinSize;
@@ -135,6 +137,8 @@ private:
     bool testing_;
 
     bool cursorFollowsPlayback_;
+
+    bool saveTabs_;
 
     friend class PluginsPreferences;
 };

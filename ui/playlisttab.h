@@ -17,7 +17,7 @@ public:
     PlaylistTab(PModel model, QWidget* parent = 0);
 
     // Can the user edit it?
-    bool isEditable();
+    bool isEditable() const;
 
     void updateCursor(QModelIndex index);
     void updateCursorAndScroll(QModelIndex index);
@@ -27,6 +27,8 @@ public:
     void addFiles(const QStringList &files);
     void addTracks(const QList<PTrack> &tracks);
     void removeTracks(QModelIndexList trackList);
+    void serialize(QByteArray& data) const;
+    void deserialize(const QByteArray& data);
 
     QModelIndex getRandomFilteredIndex();
     QModelIndex getFilteredIndex(QModelIndex current, int offset);

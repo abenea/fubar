@@ -1,5 +1,5 @@
 #include "playlist.h"
-// #include "track.pb.h"
+#include "library/track.pb.h"
 #include "library/track.h"
 #include <QDebug>
 #include <QDir>
@@ -11,29 +11,6 @@
 #include <taglib/tag.h>
 
 using namespace std;
-
-void Playlist::load(const char */*fileName*/)
-{
-/*    FILE *f = fopen(fileName, "rb");
-    if (f == NULL) {
-        throw runtime_error("Couldn't open " + string(fileName));
-    }
-
-    proto::Track ptrack;
-    while (!feof(f))
-    {
-        if (Track::readProtoTrack(f, ptrack)) {
-            tracks.append(shared_ptr<Track>(new Track(ptrack)));
-        } else {
-            if (!feof(f)) {
-                ptrack.PrintDebugString();
-                qDebug() << "bad parse";
-            }
-            break;
-        }
-    }
-    fclose(f);*/
-}
 
 void Playlist::addDirectory(const QString &path)
 {
@@ -82,4 +59,28 @@ void Playlist::addFile(const QFileInfo& file)
         }
         tracks.append(track);
     }
+}
+
+void Playlist::deserialize(const QByteArray& bytes)
+{
+    proto::Library plibrary;
+    if (!plibrary.ParseFromArray(bytes.constData(), bytes.size())) {
+        qDebug() << "Cannot parse proto::library for playlist";
+        return;
+    }
+    qDebug() << "tracks in playlist" << plibrary.tracks_size();
+    for (int i = 0; i < plibrary.tracks_size(); ++i)
+        tracks.append(shared_ptr<Track>(new Track(plibrary.tracks(i))));
+}
+
+void Playlist::serialize(QByteArray& bytes) const
+{
+    proto::Library plibrary;
+    for (PTrack track : tracks) {
+        proto::Track* ptrack = plibrary.add_tracks();
+        track->fillProtoTrack(*ptrack);
+    }
+    int len = plibrary.ByteSize();
+    bytes.resize(len);
+    plibrary.SerializeToArray(bytes.data(), len);
 }

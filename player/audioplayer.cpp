@@ -282,7 +282,7 @@ void AudioPlayer::setLastPlayed(PModel playlistModel, const QModelIndex &index)
 std::pair<PModel, QModelIndex> AudioPlayer::getLastPlayed()
 {
     QModelIndex index = playingIndex_.isValid() ? playingIndex_ : lastPlayedIndex_;
-    if (playingModel_ && playingModel_->playlist().synced && index.isValid())
+    if (playingModel_ && index.isValid())
         return {playingModel_, index};
     return {PModel(), QModelIndex()};
 }

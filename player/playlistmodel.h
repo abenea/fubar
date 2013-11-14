@@ -29,6 +29,7 @@ public:
     void addTracks(QList<PTrack> tracks);
     void removeIndexes(QModelIndexList indexes);
     void clear();
+    void deserialize(const QByteArray& data);
 
     void notifyQueueStatusChanged(std::vector<QPersistentModelIndex> indexes);
 

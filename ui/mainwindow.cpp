@@ -19,6 +19,7 @@
 #include <QDebug>
 #include <QDockWidget>
 #include <QPlainTextEdit>
+#include <QVariant>
 #include <QtCore/qmath.h>
 #include <QTimer>
 #include <kwindowsystem.h>
@@ -32,6 +33,7 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     , statusBar_(this)
     , player_(player)
     , cursorFollowsPlayback_(false)
+    , saveTabs_(false)
 {
     setupUi(this);
     // Not saving a pointer to this
@@ -87,10 +89,19 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     instance = this;
 
     console_ = new ConsoleWindow(this);
-    on_newLibraryViewAction_triggered();
 
     readSettings();
+
+    config_.set("mainwindow.save_tabs", QVariant(saveTabs_));
+    QObject::connect(&config_, SIGNAL(keySet(QString,QVariant)), this, SLOT(configChanged(QString,QVariant)));
+
     setShortcuts();
+}
+
+void MainWindow::configChanged(QString key, QVariant value)
+{
+    if (key == "mainwindow.save_tabs")
+        saveTabs_ = value.toBool();
 }
 
 void MainWindow::addGlobalShortcut(QKeySequence shortcut, QObject* object, const char* slot, QString name)
@@ -218,16 +229,16 @@ void MainWindow::on_addFilesAction_triggered()
     }
 }
 
-void MainWindow::addPlaylist(PModel playlistModel, QString name, bool makeCurrent)
+PlaylistTab* MainWindow::addPlaylist(PModel playlistModel, QString name, bool makeCurrent)
 {
     if (!playlistModel)
-        return;
+        return nullptr;
     PlaylistTab* tab = new PlaylistTab(playlistModel);
-    playlistModel->playlist().name = name;
     playlistModels_.insert({playlistModel, tab});
-    playlistTabs->addTab(tab, playlistModel->playlist().name);
+    playlistTabs->addTab(tab, name);
     if (makeCurrent)
         playlistTabs->setCurrentWidget(tab);
+    return tab;
 }
 
 void MainWindow::removePlaylistTab(int index)
@@ -326,6 +337,31 @@ void MainWindow::readSettings()
     cursorFollowsPlayback_ = settings.value("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_).toBool();
     cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
 
+    saveTabs_ = settings.value("mainwindow/saveTabs", saveTabs_).toBool();
+    if (!saveTabs_)
+        on_newLibraryViewAction_triggered();
+    else {
+        QList<QVariant> names = settings.value("mainwindow/tabsNames").toList();
+        QList<QVariant> data = settings.value("mainwindow/tabsData").toList();
+        if (names.size() != data.size())
+            qDebug() << "Tabs names and data have different sizes!";
+        else {
+            for (int i = 0; i < data.size(); ++i) {
+                QString tabName = names.at(i).toString();
+                if (!data.at(i).isValid()) {
+                    addPlaylist(player_.createPlaylist(true), tabName, false);
+                } else {
+                    QByteArray tabData = data.at(i).toByteArray();
+                    auto tab = addPlaylist(player_.createPlaylist(false), tabName, false);
+                    tab->deserialize(tabData);
+                }
+            }
+            int lastTab = settings.value("mainwindow/lastPlayingTab", 0).toInt();
+            if (lastTab != -1)
+                playlistTabs->setCurrentIndex(lastTab);
+        }
+    }
+
     int lastPlayingPosition = settings.value("mainwindow/lastPlayingPosition", -1).toInt();
     if (lastPlayingPosition != -1 && getActivePlaylist()) {
         QModelIndex index = getActivePlaylist()->getUnfilteredPosition(lastPlayingPosition);
@@ -348,12 +384,33 @@ void MainWindow::writeSettings()
 
     settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
 
+    settings.setValue("mainwindow/saveTabs", saveTabs_);
+    if (saveTabs_) {
+        QList<QVariant> names;
+        QList<QVariant> data;
+        for (int i = 0; i < playlistTabs->count(); ++i) {
+            names.append(playlistTabs->tabText(i));
+            PlaylistTab* tab = dynamic_cast<PlaylistTab*>(playlistTabs->widget(i));
+            if (tab->isEditable()) {
+                QByteArray tabData;
+                tab->serialize(tabData);
+                data.append(tabData);
+            } else
+                data.append(QVariant::Invalid);
+        }
+        settings.setValue("mainwindow/tabsNames", QVariant(names));
+        settings.setValue("mainwindow/tabsData", QVariant(data));
+    }
+
     int position = -1;
+    int lastTab = -1;
     auto lastPlayed = player_.getLastPlayed();
     if (lastPlayed.first && lastPlayed.second.isValid()) {
         auto playlistTab = playlistModels_.left.at(lastPlayed.first);
         position = playlistTab->getUnfilteredPosition(lastPlayed.second);
+        lastTab = playlistTabs->indexOf(playlistTab);
     }
+    settings.setValue("mainwindow/lastPlayingTab", lastTab);
     settings.setValue("mainwindow/lastPlayingPosition", position);
 }
 

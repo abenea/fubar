@@ -86,6 +86,14 @@ void PlaylistModel::addFiles(const QStringList& files)
     }
 }
 
+void PlaylistModel::deserialize(const QByteArray& data)
+{
+    playlist_.deserialize(data);
+    int newSize = playlist_.tracks.size();
+    beginInsertRows(QModelIndex(), 0, newSize - 1);
+    endInsertRows();
+}
+
 void PlaylistModel::libraryChanged(LibraryEvent event)
 {
     if (!playlist_.synced)
