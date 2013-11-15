@@ -68,7 +68,6 @@ void Playlist::deserialize(const QByteArray& bytes)
         qDebug() << "Cannot parse proto::library for playlist";
         return;
     }
-    qDebug() << "tracks in playlist" << plibrary.tracks_size();
     for (int i = 0; i < plibrary.tracks_size(); ++i)
         tracks.append(shared_ptr<Track>(new Track(plibrary.tracks(i))));
 }

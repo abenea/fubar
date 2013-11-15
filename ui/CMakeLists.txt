@@ -9,6 +9,8 @@ set(ui_SOURCES
     consolewindow.cpp
     config.cpp
     configwindow.cpp
+    tabwidget.cpp
+    tabbar.cpp
     playlisttab.cpp
     playlistitemdelegate.cpp
     playlistview.cpp

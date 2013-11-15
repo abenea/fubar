@@ -91,11 +91,17 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     console_ = new ConsoleWindow(this);
 
     readSettings();
+    QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(tabCloseRequested(int)));
 
     config_.set("mainwindow.save_tabs", QVariant(saveTabs_));
     QObject::connect(&config_, SIGNAL(keySet(QString,QVariant)), this, SLOT(configChanged(QString,QVariant)));
 
     setShortcuts();
+}
+
+void MainWindow::tabCloseRequested(int index)
+{
+    qDebug() << "tabCloseRequested" << index;
 }
 
 void MainWindow::configChanged(QString key, QVariant value)
