@@ -3,6 +3,7 @@
 #include <QLineEdit>
 
 class QMouseEvent;
+class QDragMoveEvent;
 
 class TabBar : public QTabBar
 {
@@ -19,6 +20,8 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void triggerRename(int index);
     void editFinished();
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dragMoveEvent(QDragMoveEvent* event);
 
 private:
     QLineEdit* lineEdit_;

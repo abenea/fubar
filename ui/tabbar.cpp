@@ -5,6 +5,7 @@
 TabBar::TabBar(QWidget *parent): QTabBar(parent), lineEdit_(nullptr), renamingIndex_(-1)
 {
     installEventFilter(this);
+    setAcceptDrops(true);
 }
 
 bool TabBar::eventFilter(QObject *obj, QEvent *event)
@@ -85,6 +86,20 @@ void TabBar::mousePressEvent(QMouseEvent *event)
             emit newTabRequested();
     } else
         QTabBar::mousePressEvent(event);
+}
+
+void TabBar::dragEnterEvent(QDragEnterEvent *event)
+{
+    event->acceptProposedAction();
+}
+
+void TabBar::dragMoveEvent(QDragMoveEvent *event)
+{
+    int index = tabAt(event->pos());
+    if (index == -1)
+        emit newTabRequested();
+    else
+        setCurrentIndex(index);
 }
 
 #include "tabbar.moc"

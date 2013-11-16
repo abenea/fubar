@@ -9,6 +9,7 @@
 #include <memory>
 
 class PlaylistView;
+class QDragEnterEvent;
 
 class PlaylistTab : public QWidget
 {
@@ -47,6 +48,9 @@ protected slots:
     void doubleClicked(const QModelIndex &filterIndex);
     void clearFilterAndPlay();
     void repaintTracks(std::vector<QPersistentModelIndex> indexes);
+
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dropEvent(QDropEvent *event);
 
 private:
     Ui::PlaylistFrame ui_;
