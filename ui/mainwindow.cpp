@@ -101,7 +101,6 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
 
 void MainWindow::newTabRequested()
 {
-    qDebug() << "MainWindow::newTabRequested()";
     on_newPlaylistAction_triggered();
 }
 

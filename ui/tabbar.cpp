@@ -23,6 +23,8 @@ bool TabBar::eventFilter(QObject *obj, QEvent *event)
         if (event->type() == QEvent::MouseButtonDblClick) {
             //perhaps we need to start a new name editing action...
             QMouseEvent* me = static_cast<QMouseEvent*>(event);
+            if (me->button() != Qt::LeftButton)
+                return result;
             int clickedTabId = tabAt(me->pos());
             if (clickedTabId == -1)
                 return result;
