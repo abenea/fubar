@@ -99,7 +99,7 @@ private slots:
     void restoreMaximizedState();
 
     void configChanged(QString key, QVariant value);
-    void tabCloseRequested(int index);
+    void newTabRequested();
 
 private:
     void setDockSize(QDockWidget *dock, QSize size);

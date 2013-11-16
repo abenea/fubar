@@ -81,6 +81,7 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
 
 //     playlistTabs->setTabsClosable(true);
     QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(removePlaylistTab(int)));
+    QObject::connect(playlistTabs, SIGNAL(newTabRequested()), this, SLOT(newTabRequested()));
 
     QObject::connect(menu_File, SIGNAL(aboutToShow()), this, SLOT(menuFileAboutToShow()));
 
@@ -91,7 +92,6 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     console_ = new ConsoleWindow(this);
 
     readSettings();
-    QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(tabCloseRequested(int)));
 
     config_.set("mainwindow.save_tabs", QVariant(saveTabs_));
     QObject::connect(&config_, SIGNAL(keySet(QString,QVariant)), this, SLOT(configChanged(QString,QVariant)));
@@ -99,9 +99,10 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     setShortcuts();
 }
 
-void MainWindow::tabCloseRequested(int index)
+void MainWindow::newTabRequested()
 {
-    qDebug() << "tabCloseRequested" << index;
+    qDebug() << "MainWindow::newTabRequested()";
+    on_newPlaylistAction_triggered();
 }
 
 void MainWindow::configChanged(QString key, QVariant value)

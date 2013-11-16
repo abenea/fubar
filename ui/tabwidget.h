@@ -11,9 +11,11 @@ public:
 
 signals:
     void tabCloseRequested(int index);
+    void newTabRequested();
 
 protected slots:
     void slotTabCloseRequested(int index);
+    void slotNewTabRequested();
 
 private:
     TabBar* tabBar_;
