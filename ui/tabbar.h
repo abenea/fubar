@@ -14,6 +14,7 @@ public:
 signals:
     void tabCloseRequested(int index);
     void newTabRequested();
+    void setCurrentRequested(int index);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

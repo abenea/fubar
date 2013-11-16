@@ -99,7 +99,7 @@ void TabBar::dragMoveEvent(QDragMoveEvent *event)
     if (index == -1)
         emit newTabRequested();
     else
-        setCurrentIndex(index);
+        emit setCurrentRequested(index);
 }
 
 #include "tabbar.moc"

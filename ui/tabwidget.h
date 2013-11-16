@@ -16,6 +16,7 @@ signals:
 protected slots:
     void slotTabCloseRequested(int index);
     void slotNewTabRequested();
+    void slotSetCurrentRequested(int index);
 
 private:
     TabBar* tabBar_;
