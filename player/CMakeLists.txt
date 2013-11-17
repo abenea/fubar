@@ -6,6 +6,7 @@ set(player_SOURCES
     phononaudiooutput.cpp
     playlistmodel.cpp
     playlist.cpp
+    playlistmimedata.cpp
     queue.cpp)
 
 qt4_automoc(${player_SOURCES})

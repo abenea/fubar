@@ -24,7 +24,9 @@ PlaylistTab::PlaylistTab(PModel model, QWidget* parent)
     connect(ui_.playlist, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(doubleClicked(const QModelIndex &)));
     connect(ui_.playlist, SIGNAL(returnPressed(QModelIndex)), this, SLOT(doubleClicked(const QModelIndex &)));
 
-    setAcceptDrops(isEditable());
+    ui_.playlist->setDragEnabled(true);
+    ui_.playlist->setDropIndicatorShown(isEditable());
+    ui_.playlist->setAcceptDrops(isEditable());
 }
 
 bool PlaylistTab::isEditable() const
@@ -186,27 +188,6 @@ void PlaylistTab::serialize(QByteArray& data) const
 void PlaylistTab::deserialize(const QByteArray& data)
 {
     model_->deserialize(data);
-}
-
-void PlaylistTab::dragEnterEvent(QDragEnterEvent *event)
-{
-     if (event->mimeData()->hasUrls())
-         event->acceptProposedAction();
-}
-
-void PlaylistTab::dropEvent(QDropEvent *event)
-{
-    QStringList files;
-    if (event->mimeData()->hasUrls()) {
-        foreach (QUrl url, event->mimeData()->urls()) {
-            QFileInfo f(url.toLocalFile());
-            if (f.isDir())
-                addDirectory(f.absoluteFilePath());
-            else
-                files.append(url.toLocalFile());
-        }
-    }
-    addFiles(files);
 }
 
 #include "playlisttab.moc"

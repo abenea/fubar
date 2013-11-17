@@ -1,13 +1,16 @@
 #include "playlistmodel.h"
 #include "library/library.h"
 #include "library/track.h"
-#include <string>
+#include "playlistmimedata.h"
 #include <QDebug>
+#include <QUrl>
+#include <QMimeData>
 #include <cassert>
+#include <string>
 
 using namespace std;
 
-PlaylistModel::PlaylistModel(Library* library, QObject *parent)
+PlaylistModel::PlaylistModel(Library* library, QObject* parent)
     : QAbstractItemModel(parent)
 {
     if (library) {
@@ -15,21 +18,22 @@ PlaylistModel::PlaylistModel(Library* library, QObject *parent)
         addTracks(library->getTracks());
         QObject::connect(library, SIGNAL(libraryChanged(LibraryEvent)), this, SLOT(libraryChanged(LibraryEvent)));
         QObject::connect(library, SIGNAL(libraryChanged(QList<PTrack>)), this, SLOT(libraryChanged(QList<PTrack>)));
-    } else
+    } else {
         playlist_.synced = false;
+    }
 }
 
-int PlaylistModel::rowCount(const QModelIndex &) const
+int PlaylistModel::rowCount(const QModelIndex&) const
 {
     return playlist_.tracks.size();
 }
 
-int PlaylistModel::columnCount(const QModelIndex &) const
+int PlaylistModel::columnCount(const QModelIndex&) const
 {
     return 1;
 }
 
-QVariant PlaylistModel::data(const QModelIndex &index, int role) const
+QVariant PlaylistModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
         return QVariant();
@@ -41,6 +45,61 @@ QVariant PlaylistModel::data(const QModelIndex &index, int role) const
     } else {
         return QVariant();
     }
+}
+
+QStringList PlaylistModel::mimeTypes() const
+{
+    QStringList types;
+    types << "text/uri-list";
+    types << "binary/playlist";
+    return types;
+}
+
+Qt::DropActions PlaylistModel::supportedDropActions() const
+{
+    return playlist_.synced ? Qt::CopyAction : Qt::CopyAction | Qt::MoveAction;
+}
+
+Qt::ItemFlags PlaylistModel::flags(const QModelIndex& index) const
+{
+    Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+
+    if (index.isValid()) {
+        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+    } else {
+        return Qt::ItemIsDropEnabled | defaultFlags;
+    }
+}
+
+QMimeData* PlaylistModel::mimeData(const QModelIndexList& indexes) const
+{
+    return new PlaylistMimeData(getTracks(indexes));
+}
+
+bool PlaylistModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+{
+    if (action == Qt::IgnoreAction) {
+        return true;
+    }
+    if (!data->hasUrls() && !data->formats().contains("binary/playlist")) {
+        return false;
+    }
+
+    const PlaylistMimeData* myData = qobject_cast<const PlaylistMimeData*>(data);
+    if (myData) {
+        addTracks(myData->getTracks());
+        return true;
+    } else if (data->hasUrls()) {
+        for (QUrl url : data->urls()) {
+            QFileInfo f(url.toLocalFile());
+            if (f.isDir()) {
+                addDirectory(f.absoluteFilePath());
+            } else
+                addFiles(QStringList( {url.toLocalFile()}));
+        }
+        return true;
+    }
+    return false;
 }
 
 bool PlaylistModel::hasChildren(const QModelIndex& parent) const
@@ -56,7 +115,7 @@ QModelIndex PlaylistModel::parent(const QModelIndex& /*index*/) const
     return QModelIndex();
 }
 
-QModelIndex PlaylistModel::index(int row, int column, const QModelIndex &parent) const
+QModelIndex PlaylistModel::index(int row, int column, const QModelIndex& parent) const
 {
     assert(!parent.isValid());
     if (!hasIndex(row, column, parent))
@@ -94,6 +153,14 @@ void PlaylistModel::deserialize(const QByteArray& data)
     endInsertRows();
 }
 
+QList<PTrack> PlaylistModel::getTracks(QModelIndexList trackList) const
+{
+    QList<PTrack> tracks;
+    for (auto& index : trackList)
+        tracks.append(playlist_.tracks.at(index.row()));
+    return tracks;
+}
+
 void PlaylistModel::libraryChanged(LibraryEvent event)
 {
     if (!playlist_.synced)
@@ -103,7 +170,7 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
         beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size());
         playlist_.tracks.append(event.track);
         qDebug() << "UPDATING MODEL: " << event.track->metadata["artist"] << " " << event.track->metadata["title"] <<
-        " " << event.track->audioproperties.length;
+                 " " << event.track->audioproperties.length;
         endInsertRows();
     } else if (event.op == MODIFY) {
         int i = 0;
