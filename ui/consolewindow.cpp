@@ -1,12 +1,15 @@
 #include "consolewindow.h"
 #include "console.h"
+#include <QPlainTextEdit>
 
 std::size_t MAX_MESSAGES = 500;
 
-ConsoleWindow::ConsoleWindow(QWidget* parent): QDialog(parent)
+ConsoleWindow::ConsoleWindow(QWidget* parent): QDockWidget("Console", parent)
 {
-    setupUi(this);
     QObject::connect(::Console::instance(), SIGNAL(updated(QtMsgType,QString)), this, SLOT(updated(QtMsgType,QString)));
+    text_ = new QPlainTextEdit(this);
+    text_->setReadOnly(true);
+    setWidget(text_);
 }
 
 void ConsoleWindow::updated(QtMsgType type, QString message)
@@ -15,34 +18,26 @@ void ConsoleWindow::updated(QtMsgType type, QString message)
     if (messages_.size() > MAX_MESSAGES)
         messages_.pop_front();
     if (isVisible())
-        text->append(message);
+        text_->appendPlainText(message);
     setCursorToEnd();
 }
 
 void ConsoleWindow::show()
 {
-    text->setPlainText("");
+    text_->setPlainText("");
     for (const auto& p : messages_) {
-        text->append(p.second);
+        text_->appendPlainText(p.second);
     }
     setCursorToEnd();
-    if (geometry_.size())
-        restoreGeometry(geometry_);
-    QDialog::show();
-}
-
-void ConsoleWindow::hide()
-{
-    geometry_ = saveGeometry();
-    QDialog::hide();
+    QDockWidget::show();
 }
 
 void ConsoleWindow::setCursorToEnd()
 {
     if (!isVisible())
         return;
-    text->moveCursor(QTextCursor::End);
-    text->moveCursor(QTextCursor::StartOfLine);
+    text_->moveCursor(QTextCursor::End);
+    text_->moveCursor(QTextCursor::StartOfLine);
 }
 
 #include "consolewindow.moc"

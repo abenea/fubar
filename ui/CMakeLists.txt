@@ -15,7 +15,7 @@ set(ui_SOURCES
     playlistitemdelegate.cpp
     playlistview.cpp
     playlistfilter.cpp)
-qt4_wrap_ui(ui_UI mainwindow.ui playlist.ui librarypreferences.ui plugins.ui console.ui configwindow.ui)
+qt4_wrap_ui(ui_UI mainwindow.ui playlist.ui librarypreferences.ui plugins.ui configwindow.ui)
 qt4_automoc(${ui_SOURCES})
 
 add_library(ui ${ui_UI} ${ui_SOURCES})

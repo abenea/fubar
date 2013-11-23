@@ -13,6 +13,7 @@
 #include <QSystemTrayIcon>
 #include <boost/bimap.hpp>
 #include <memory>
+#include <deque>
 
 class PlaylistTab;
 class Library;
@@ -102,8 +103,10 @@ private slots:
     void newTabRequested();
 
 private:
+    void readDockSettings(QDockWidget* dock, QString name);
+    void writeDockSettings(QDockWidget* dock, QString name);
     void setDockSize(QDockWidget *dock, QSize size);
-    QSize oldMaxSize, oldMinSize;
+    std::deque<std::function<void()>> dockHackFunctions_;
 
     PlaylistTab* getPlayingPlaylistTab();
     PlaylistTab* getPlaylistTab(PModel playlistModel);

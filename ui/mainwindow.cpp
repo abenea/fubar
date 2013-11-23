@@ -328,17 +328,41 @@ void MainWindow::on_showLyricsAction_triggered()
     lyricsDock_->setVisible(true);
 }
 
+std::function<QString (const QString&)> dockSetting(QString name)
+{
+    return [&name](const QString& s) -> QString {return name + "/" + s;};
+}
+
+void MainWindow::writeDockSettings(QDockWidget* dock, QString name)
+{
+    QSettings settings;
+    auto setting = dockSetting(name);
+    settings.setValue(setting("dockarea"), dockWidgetArea(dock));
+    settings.setValue(setting("floating"), dock->isFloating());
+    settings.setValue(setting("visible"), dock->isVisible());
+    settings.setValue(setting("size"), dock->size());
+    settings.setValue(setting("pos"), dock->pos());
+}
+
+void MainWindow::readDockSettings(QDockWidget* dock, QString name)
+{
+    QSettings settings;
+    auto setting = dockSetting(name);
+    dock->setVisible(settings.value(setting("visible")).toBool());
+    dock->setFloating(settings.value(setting("floating")).toBool());
+    setDockSize(dock, settings.value(setting("size"), QSize(300, 300)).toSize());
+    dock->move(settings.value(setting("pos"), QPoint(200, 200)).toPoint());
+    addDockWidget((Qt::DockWidgetArea)settings.value(setting("dockarea"), Qt::LeftDockWidgetArea).toInt(), dock);
+}
+
 void MainWindow::readSettings()
 {
     QSettings settings;
-    addDockWidget((Qt::DockWidgetArea)settings.value("lyrics/dockarea", Qt::LeftDockWidgetArea).toInt(), lyricsDock_);
-    lyricsDock_->setFloating(settings.value("lyrics/docked").toBool());
-    setDockSize(lyricsDock_, settings.value("lyrics/size", QSize(1, 1)).toSize());
-    lyricsDock_->move(settings.value("lyrics/pos", QPoint(200, 200)).toPoint());
+    readDockSettings(lyricsDock_, "lyrics");
+    readDockSettings(console_, "console");
 
     restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
     restoreState(settings.value("mainwindow/state").toByteArray());
-    console_->restoreGeometry(settings.value("console/geometry").toByteArray());
 
     cursorFollowsPlayback_ = settings.value("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_).toBool();
     cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
@@ -379,14 +403,11 @@ void MainWindow::readSettings()
 void MainWindow::writeSettings()
 {
     QSettings settings;
-    settings.setValue("console/geometry", console_->saveGeometry());
     settings.setValue("mainwindow/maximized", isMaximized());
     settings.setValue("mainwindow/geometry", saveGeometry());
     settings.setValue("mainwindow/state", saveState());
-    settings.setValue("lyrics/dockarea", dockWidgetArea(lyricsDock_));
-    settings.setValue("lyrics/docked", lyricsDock_->isFloating());
-    settings.setValue("lyrics/size", lyricsDock_->size());
-    settings.setValue("lyrics/pos", lyricsDock_->pos());
+    writeDockSettings(lyricsDock_, "lyrics");
+    writeDockSettings(console_, "console");
 
     settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
 
@@ -582,8 +603,8 @@ bool MainWindow::eventFilter(QObject* /*watched*/, QEvent* event)
 
 void MainWindow::setDockSize(QDockWidget* dock, QSize size)
 {
-    oldMaxSize = dock->maximumSize();
-    oldMinSize = dock->minimumSize();
+    QSize oldMaxSize = dock->maximumSize();
+    QSize oldMinSize = dock->minimumSize();
 
     if (size.width() >= 0) {
         if (dock->width() < size.width())
@@ -595,16 +616,20 @@ void MainWindow::setDockSize(QDockWidget* dock, QSize size)
             dock->setMinimumHeight(size.height());
         else dock->setMaximumHeight(size.height());
     }
+    auto func = [this, dock, oldMinSize, oldMaxSize] () -> void {
+        dock->setMinimumSize(oldMinSize);
+        dock->setMaximumSize(oldMaxSize);
+        QTimer::singleShot(1, this, SLOT(restoreMaximizedState()));
+    };
+    dockHackFunctions_.push_back(func);
     QTimer::singleShot(1, this, SLOT(returnToOldMaxMinSizes()));
 }
 
 void MainWindow::returnToOldMaxMinSizes()
 {
-    lyricsDock_->setMinimumSize(oldMinSize);
-    lyricsDock_->setMaximumSize(oldMaxSize);
-    QTimer::singleShot(1, this, SLOT(restoreMaximizedState()));
+    dockHackFunctions_.front()();
+    dockHackFunctions_.pop_front();
 }
-
 
 void MainWindow::restoreMaximizedState()
 {
