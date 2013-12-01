@@ -2,6 +2,7 @@
 #include <QTabWidget>
 
 class TabBar;
+class QMimeData;
 
 class TabWidget : public QTabWidget
 {
@@ -17,6 +18,7 @@ protected slots:
     void slotTabCloseRequested(int index);
     void slotNewTabRequested();
     void slotSetCurrentRequested(int index);
+    void slotDropRequested(int index, const QMimeData *mimeData);
 
 private:
     TabBar* tabBar_;

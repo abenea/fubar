@@ -102,4 +102,11 @@ void TabBar::dragMoveEvent(QDragMoveEvent *event)
         emit setCurrentRequested(index);
 }
 
+void TabBar::dropEvent(QDropEvent* event)
+{
+    int index = tabAt(event->pos());
+    if (index != -1)
+        emit dropRequested(index, event->mimeData());
+}
+
 #include "tabbar.moc"

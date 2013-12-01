@@ -30,6 +30,7 @@ public:
     void removeTracks(QModelIndexList trackList);
     void serialize(QByteArray& data) const;
     void deserialize(const QByteArray& data);
+    bool dropMimeData(const QMimeData* data);
 
     QModelIndex getRandomFilteredIndex();
     QModelIndex getFilteredIndex(QModelIndex current, int offset);

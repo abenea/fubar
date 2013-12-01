@@ -4,6 +4,7 @@
 
 class QMouseEvent;
 class QDragMoveEvent;
+class QMimeData;
 
 class TabBar : public QTabBar
 {
@@ -15,6 +16,7 @@ signals:
     void tabCloseRequested(int index);
     void newTabRequested();
     void setCurrentRequested(int index);
+    void dropRequested(int index, const QMimeData* event);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -23,6 +25,7 @@ protected:
     void editFinished();
     void dragEnterEvent(QDragEnterEvent* event);
     void dragMoveEvent(QDragMoveEvent* event);
+    void dropEvent(QDropEvent* event);
 
 private:
     QLineEdit* lineEdit_;
