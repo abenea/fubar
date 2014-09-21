@@ -328,7 +328,7 @@ void MainWindow::on_showLyricsAction_triggered()
     lyricsDock_->setVisible(true);
 }
 
-std::function<QString (const QString&)> dockSetting(QString name)
+std::function<QString (const QString&)> dockSetting(QString &name)
 {
     return [&name](const QString& s) -> QString {return name + "/" + s;};
 }
