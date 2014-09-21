@@ -1,5 +1,5 @@
 #include "playlistfilter.h"
-#include "player/playlistmodel.h"
+#include "playlistmodel.h"
 #include "library/track.h"
 
 #include <boost/cast.hpp>

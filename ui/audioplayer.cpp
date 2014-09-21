@@ -1,5 +1,5 @@
 #include "audioplayer.h"
-#include "phononaudiooutput.h"
+#include "player/phononaudiooutput.h"
 #include "ui/mainwindow.h"
 #include "library/library.h"
 #include "library/track.h"

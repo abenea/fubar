@@ -1,7 +1,7 @@
 #include "playlisttab.h"
 #include "mainwindow.h"
+#include "playlistmodel.h"
 #include "library/library.h"
-#include "player/playlistmodel.h"
 #include <QDebug>
 #include <QUrl>
 #include <memory>

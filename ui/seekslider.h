@@ -1,6 +1,6 @@
 #pragma once
 
-#include "player/audioplayer.h"
+#include "audioplayer.h"
 #include <QMouseEvent>
 #include <QSlider>
 

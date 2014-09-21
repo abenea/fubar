@@ -3,6 +3,7 @@
 #include <QDir>
 #include <QPluginLoader>
 #include <QDebug>
+#include <QCoreApplication>
 
 PluginManager *PluginManager::instance = 0;
 

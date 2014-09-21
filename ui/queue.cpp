@@ -1,6 +1,6 @@
 #include "queue.h"
 #include "library/track.h"
-#include "player/playlistmodel.h"
+#include "playlistmodel.h"
 #include <QDebug>
 
 Queue::Queue() : peeked_(false), enqueueOnlyOnce_(false)

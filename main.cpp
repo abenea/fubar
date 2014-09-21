@@ -1,10 +1,10 @@
 #include "util.h"
-#include "player/audioplayer.h"
-#include "player/phononaudiooutput.h"
-#include "ui/mainwindow.h"
 #include "library/library.h"
-#include "plugins/pluginmanager.h"
-#include "unixsignalshandler.h"
+#include "player/phononaudiooutput.h"
+#include "ui/audioplayer.h"
+#include "ui/pluginmanager.h"
+#include "ui/mainwindow.h"
+#include "ui/unixsignalshandler.h"
 #include <QtGui/QApplication>
 #include <QFileInfo>
 #include <QDir>

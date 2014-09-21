@@ -1,7 +1,7 @@
 #include "playlistmodel.h"
 #include "library/library.h"
 #include "library/track.h"
-#include "playlistmimedata.h"
+#include "player/playlistmimedata.h"
 #include <QDebug>
 #include <QUrl>
 #include <QMimeData>

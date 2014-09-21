@@ -1,7 +1,7 @@
 #pragma once
 
 #include "library/track_forward.h"
-#include "playlistmodel_forward.h"
+#include "ui/playlistmodel_forward.h"
 #include <QString>
 #include <QModelIndex>
 #include <tuple>

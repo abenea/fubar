@@ -1,7 +1,6 @@
 #pragma once
 
-#include "ui/mainwindow.h"
-#include "player/audioplayer.h"
+#include "audioplayer.h"
 #include <map>
 #include <set>
 #include <vector>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "player/playlistmodel_forward.h"
+#include "playlistmodel_forward.h"
 #include "playlistfilter.h"
-#include "ui/ui_playlist.h"
+#include "ui_playlist.h"
 #include <QWidget>
 #include <QStringList>
 #include <QList>

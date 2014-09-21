@@ -1,7 +1,7 @@
 #pragma once
 
-#include "player/audioplayer.h"
-#include "player/playlistmodel_forward.h"
+#include "audioplayer.h"
+#include "playlistmodel_forward.h"
 #include "ui/ui_mainwindow.h"
 #include "config.h"
 #include "statusbar.h"
