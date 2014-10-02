@@ -135,6 +135,8 @@ void MainWindow::setShortcuts()
     addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_A), &player_, SLOT(prev()), "Prev");
     addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Z), &player_, SLOT(next()), "Next");
     addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_V), &player_, SLOT(stop()), "Stop");
+    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_PageUp), this, SLOT(increaseVolume()), "Increase volume");
+    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_PageDown), this, SLOT(decreaseVolume()), "Decrease volume");
 
     // App shortcuts
     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), SLOT(focusFilter()));
@@ -144,6 +146,18 @@ void MainWindow::setShortcuts()
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::increaseVolume()
+{
+    QKeyEvent event(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier);
+    volumeSlider_->event(&event);
+}
+
+void MainWindow::decreaseVolume()
+{
+    QKeyEvent event(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier);
+    volumeSlider_->event(&event);
 }
 
 void MainWindow::playbackOrderChanged(PlaybackOrder newPlaybackOrder)

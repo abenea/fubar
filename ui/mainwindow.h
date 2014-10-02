@@ -102,6 +102,9 @@ private slots:
     void configChanged(QString key, QVariant value);
     void newTabRequested();
 
+    void increaseVolume();
+    void decreaseVolume();
+
 private:
     void readDockSettings(QDockWidget* dock, QString name);
     void writeDockSettings(QDockWidget* dock, QString name);
