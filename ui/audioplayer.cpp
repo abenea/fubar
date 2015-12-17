@@ -330,8 +330,13 @@ QModelIndex AudioPlayer::getNextModelIndex(PModel playlistModel, int offset)
     if (!offset && playbackOrder_ == PlaybackOrder::RepeatTrack && playingIndex_.isValid())
         return playingIndex_;
     // First play current index in model
-    if (playingModel_ == playlistModel && playingIndex_.isValid())
-        return mainWindow_->getFilteredIndex(playingModel_, playingIndex_, offset);
+    if (playingModel_ == playlistModel && playingIndex_.isValid()) {
+        auto next = mainWindow_->getFilteredIndex(playingModel_, playingIndex_, offset);
+        // If falling off the playlist end, play first track
+        if (!next.isValid() && playbackOrder_ == PlaybackOrder::RepeatPlaylist)
+            return mainWindow_->getFilteredIndex(playlistModel, QModelIndex(), 0);
+        return next;
+    }
     // Try playing next track from lastplayed
     if (playingModel_ == playlistModel && lastPlayedIndex_.isValid())
         return mainWindow_->getFilteredIndex(playingModel_, lastPlayedIndex_, offset == -1 ? 0 : offset);

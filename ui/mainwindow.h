@@ -76,6 +76,7 @@ private slots:
     void on_randomAction_triggered();
     void on_defaultAction_triggered();
     void on_repeatTrackAction_triggered();
+    void on_repeatPlaylistAction_triggered();
 
     void menuFileAboutToShow();
     void on_mainToolBar_actionTriggered(QAction* action);

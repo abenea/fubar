@@ -39,7 +39,7 @@
      <x>0</x>
      <y>0</y>
      <width>409</width>
-     <height>21</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -63,6 +63,7 @@
     <addaction name="separator"/>
     <addaction name="defaultAction"/>
     <addaction name="repeatTrackAction"/>
+    <addaction name="repeatPlaylistAction"/>
     <addaction name="randomAction"/>
    </widget>
    <widget class="QMenu" name="menuPreferences">
@@ -248,6 +249,14 @@
   <action name="showLyricsAction">
    <property name="text">
     <string>Show lyrics</string>
+   </property>
+  </action>
+  <action name="repeatPlaylistAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Repeat &amp;playlist</string>
    </property>
   </action>
  </widget>

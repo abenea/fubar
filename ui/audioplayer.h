@@ -11,7 +11,7 @@ class Library;
 class MainWindow;
 class AudioOutput;
 
-enum PlaybackOrder { Default, RepeatTrack, Random };
+enum PlaybackOrder { Default, RepeatTrack, RepeatPlaylist, Random };
 
 class AudioPlayer : public QObject
 {

@@ -41,6 +41,7 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     playbackOrderGroup->addAction(defaultAction);
     playbackOrderGroup->addAction(randomAction);
     playbackOrderGroup->addAction(repeatTrackAction);
+    playbackOrderGroup->addAction(repeatPlaylistAction);
     installEventFilter(this);
 
     player.setMainWindow(this);
@@ -168,6 +169,9 @@ void MainWindow::playbackOrderChanged(PlaybackOrder newPlaybackOrder)
             break;
         case PlaybackOrder::RepeatTrack:
             repeatTrackAction->setChecked(true);
+            break;
+        case PlaybackOrder::RepeatPlaylist:
+            repeatPlaylistAction->setChecked(true);
             break;
         case PlaybackOrder::Default:
         default:
@@ -335,6 +339,11 @@ void MainWindow::on_defaultAction_triggered()
 void MainWindow::on_repeatTrackAction_triggered()
 {
     player_.setPlaybackOrder(PlaybackOrder::RepeatTrack);
+}
+
+void MainWindow::on_repeatPlaylistAction_triggered()
+{
+    player_.setPlaybackOrder(PlaybackOrder::RepeatPlaylist);
 }
 
 void MainWindow::on_showLyricsAction_triggered()
