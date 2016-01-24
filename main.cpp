@@ -1,6 +1,7 @@
 #include "util.h"
 #include "library/library.h"
 #include "player/phononaudiooutput.h"
+#include "player/mpvaudiooutput.h"
 #include "ui/audioplayer.h"
 #include "ui/pluginmanager.h"
 #include "ui/mainwindow.h"
@@ -50,9 +51,10 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     qRegisterMetaType<LibraryEvent>("LibraryEvent");
-    PhononAudioOutput audioOutput;
+    //PhononAudioOutput audioOutput;
+    MpvAudioOutput mpvaudiooutput;
     Library library;
-    AudioPlayer player(&library, &audioOutput);
+    AudioPlayer player(&library, &mpvaudiooutput);
     MainWindow w(player);
     w.show();
 

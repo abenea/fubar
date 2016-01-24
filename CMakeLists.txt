@@ -10,6 +10,7 @@ find_package(ProtocolBuffers REQUIRED)
 find_package(Qt4 4.5 REQUIRED QtCore QtGui QtTest Phonon)
 include(${QT_USE_FILE})
 find_package(KDE4 REQUIRED)
+find_package(MPV REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x -fexceptions -lpthread")
 
@@ -31,4 +32,4 @@ add_subdirectory(plugins)
 
 qt4_add_resources(ui_RC ui/icons/icons.qrc)
 add_executable(fubar main.cpp ${ui_RC})
-target_link_libraries(fubar util ui player library ${QT_LIBRARIES} ${TAGLIB_LIBRARY} ${KDE4_KDEUI_LIBS})
+target_link_libraries(fubar util ui player library ${QT_LIBRARIES} ${TAGLIB_LIBRARY} ${KDE4_KDEUI_LIBS} ${MPV_LIBRARY})
