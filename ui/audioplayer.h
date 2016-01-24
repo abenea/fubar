@@ -12,12 +12,13 @@ class MainWindow;
 class AudioOutput;
 
 enum PlaybackOrder { Default, RepeatTrack, RepeatPlaylist, Random };
+enum class Backend { mpv, phonon };
 
 class AudioPlayer : public QObject
 {
     Q_OBJECT
 public:
-    AudioPlayer(Library* library, AudioOutput* audioOutput, bool testing = false, QObject* parent = 0);
+    AudioPlayer(Library* library, Backend backend = Backend::mpv, bool testing = false, QObject* parent = 0);
     virtual ~AudioPlayer();
 
     static AudioPlayer *instance;
@@ -87,7 +88,7 @@ private:
     void readSettings();
 
     Library* library_;
-    AudioOutput* audioOutput_;
+    std::unique_ptr<AudioOutput> audioOutput_;
     MainWindow* mainWindow_;
 
     // legal values in [0..1]

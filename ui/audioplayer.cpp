@@ -1,5 +1,6 @@
 #include "audioplayer.h"
 #include "player/phononaudiooutput.h"
+#include "player/mpvaudiooutput.h"
 #include "ui/mainwindow.h"
 #include "library/library.h"
 #include "library/track.h"
@@ -11,10 +12,9 @@
 
 AudioPlayer *AudioPlayer::instance = nullptr;
 
-AudioPlayer::AudioPlayer(Library* library, AudioOutput* audioOutput, bool testing, QObject* parent)
+AudioPlayer::AudioPlayer(Library* library, Backend backend, bool testing, QObject* parent)
     : QObject(parent)
     , library_(library)
-    , audioOutput_(audioOutput)
     , mainWindow_(nullptr)
     , replaygain_(ReplayGainMode::None)
     , preamp_with_rg_(10)
@@ -22,11 +22,15 @@ AudioPlayer::AudioPlayer(Library* library, AudioOutput* audioOutput, bool testin
     , lengthHack_(false)
     , testing_(testing)
 {
-    QObject::connect(audioOutput_, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
-    QObject::connect(audioOutput_, SIGNAL(currentSourceChanged()), this, SLOT(currentSourceChanged()));
-    QObject::connect(audioOutput_, SIGNAL(tick(qint64)), this, SLOT(slotTick(qint64)));
-    QObject::connect(audioOutput_, SIGNAL(stateChanged(AudioState)), this, SLOT(slotAudioStateChanged(AudioState)));
-    QObject::connect(audioOutput_, SIGNAL(finished()), this, SLOT(slotFinished()));
+    if (backend == Backend::mpv)
+        audioOutput_.reset(new MpvAudioOutput);
+    else
+        audioOutput_.reset(new PhononAudioOutput);
+    QObject::connect(audioOutput_.get(), SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
+    QObject::connect(audioOutput_.get(), SIGNAL(currentSourceChanged()), this, SLOT(currentSourceChanged()));
+    QObject::connect(audioOutput_.get(), SIGNAL(tick(qint64)), this, SLOT(slotTick(qint64)));
+    QObject::connect(audioOutput_.get(), SIGNAL(stateChanged(AudioState)), this, SLOT(slotAudioStateChanged(AudioState)));
+    QObject::connect(audioOutput_.get(), SIGNAL(finished()), this, SLOT(slotFinished()));
     // Not using Phono totalTimeChanged() signal because it returns 0 when used with enqueue()
     // TODO: report bug to phonon
 //    QObject::connect(audioOutput_, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));

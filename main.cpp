@@ -1,7 +1,5 @@
 #include "util.h"
 #include "library/library.h"
-#include "player/phononaudiooutput.h"
-#include "player/mpvaudiooutput.h"
 #include "ui/audioplayer.h"
 #include "ui/pluginmanager.h"
 #include "ui/mainwindow.h"
@@ -14,9 +12,7 @@
 #include <fcntl.h>
 #include <cstring>
 
-
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     QCoreApplication::setApplicationName("fubar");
     QCoreApplication::setOrganizationName("fubar");
 
@@ -34,14 +30,12 @@ int main(int argc, char *argv[])
     if (fd == -1) {
         qDebug() << "Cant open lock file " << lock_path << ": " << strerror(errno);
         return 1;
-    }
-    else {
+    } else {
         if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
             if (errno == EWOULDBLOCK) {
                 qDebug() << "fubar already running";
                 return 0;
-            }
-            else {
+            } else {
                 qDebug() << "flock() failed: " << strerror(errno);
                 return 1;
             }
@@ -51,10 +45,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     qRegisterMetaType<LibraryEvent>("LibraryEvent");
-    //PhononAudioOutput audioOutput;
-    MpvAudioOutput mpvaudiooutput;
     Library library;
-    AudioPlayer player(&library, &mpvaudiooutput);
+    AudioPlayer player(&library, argc > 1 ? Backend::phonon : Backend::mpv);
     MainWindow w(player);
     w.show();
 
