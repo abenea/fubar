@@ -73,7 +73,6 @@ void MpvAudioOutput::play(qint64 offset) {}
 void MpvAudioOutput::seek(qint64 time) {
     command(QVariantList({"seek", QString::number(time / 1000), "absolute"}));
 }
-void MpvAudioOutput::setTickInterval(qint32 newTickInterval) {}
 
 void MpvAudioOutput::setVolume(qreal newVolume) {
     set_property("volume", static_cast<int>(newVolume * 100));

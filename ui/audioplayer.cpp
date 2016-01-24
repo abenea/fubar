@@ -22,7 +22,6 @@ AudioPlayer::AudioPlayer(Library* library, AudioOutput* audioOutput, bool testin
     , lengthHack_(false)
     , testing_(testing)
 {
-    audioOutput_->setTickInterval(1000);
     QObject::connect(audioOutput_, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
     QObject::connect(audioOutput_, SIGNAL(currentSourceChanged()), this, SLOT(currentSourceChanged()));
     QObject::connect(audioOutput_, SIGNAL(tick(qint64)), this, SLOT(slotTick(qint64)));

@@ -13,7 +13,6 @@ public:
 
 public slots:
     void setVolume(qreal newVolume);
-    void setTickInterval(qint32 newTickInterval);
 
     void pause();
     void play();

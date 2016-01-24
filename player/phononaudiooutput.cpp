@@ -15,6 +15,7 @@ PhononAudioOutput::PhononAudioOutput() :
     QObject::connect(mediaObject_, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(slotStateChanged(Phonon::State)));
     QObject::connect(mediaObject_, SIGNAL(seekableChanged(bool)), this, SLOT(slotSeekableChanged(bool)));
     QObject::connect(mediaObject_, SIGNAL(finished()), this, SLOT(slotFinished()));
+    mediaObject_->setTickInterval(1000);
 }
 
 PhononAudioOutput::~PhononAudioOutput()
@@ -74,11 +75,6 @@ qint64 PhononAudioOutput::currentTime() const
 qint64 PhononAudioOutput::totalTime() const
 {
     return mediaObject_->totalTime();
-}
-
-void PhononAudioOutput::setTickInterval(qint32 newTickInterval)
-{
-    mediaObject_->setTickInterval(newTickInterval);
 }
 
 void PhononAudioOutput::aboutToFinishHandler()

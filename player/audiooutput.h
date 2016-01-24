@@ -20,8 +20,6 @@ signals:
 
 public slots:
     virtual void setVolume(qreal newVolume) = 0;
-    // TODO remove this
-    virtual void setTickInterval(qint32 newTickInterval) = 0;
 
     virtual void pause() = 0;
     virtual void play() = 0;
