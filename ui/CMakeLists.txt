@@ -25,4 +25,4 @@ qt4_wrap_ui(ui_UI mainwindow.ui playlist.ui librarypreferences.ui plugins.ui con
 qt4_automoc(${ui_SOURCES})
 
 add_library(ui ${ui_UI} ${ui_SOURCES})
-target_link_libraries(ui player ${QT_LIBRARIES})
+target_link_libraries(ui player Qt4::QtGui)

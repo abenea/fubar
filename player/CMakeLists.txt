@@ -10,6 +10,6 @@ set(player_SOURCES
 qt4_automoc(${player_SOURCES})
 
 add_library(player ${player_SOURCES})
-target_link_libraries(player library ${QT_LIBRARIES} ${MPV_LIBRARY})
+target_link_libraries(player library Qt4::QtCore Qt4::phonon ${MPV_LIBRARY})
 
 add_subdirectory(tests)
