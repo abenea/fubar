@@ -9,7 +9,6 @@ class PhononAudioOutput : public AudioOutput
     Q_OBJECT
 public:
     PhononAudioOutput();
-    ~PhononAudioOutput();
 
 public slots:
     void setVolume(qreal newVolume);

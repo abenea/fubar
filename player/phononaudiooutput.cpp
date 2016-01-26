@@ -1,5 +1,6 @@
 #include "phononaudiooutput.h"
 #include "audiostate.h"
+#include <QUrl>
 #include <phonon/Phonon/MediaObject>
 #include <phonon/Phonon/AudioOutput>
 
@@ -16,10 +17,6 @@ PhononAudioOutput::PhononAudioOutput() :
     QObject::connect(mediaObject_, SIGNAL(seekableChanged(bool)), this, SLOT(slotSeekableChanged(bool)));
     QObject::connect(mediaObject_, SIGNAL(finished()), this, SLOT(slotFinished()));
     mediaObject_->setTickInterval(1000);
-}
-
-PhononAudioOutput::~PhononAudioOutput()
-{
 }
 
 void PhononAudioOutput::play()
@@ -44,7 +41,7 @@ void PhononAudioOutput::seek(qint64 time)
 
 void PhononAudioOutput::enqueue(const QString& source)
 {
-    mediaObject_->enqueue(Phonon::MediaSource(source));
+    mediaObject_->enqueue(Phonon::MediaSource(QUrl::fromLocalFile(source)));
 }
 
 void PhononAudioOutput::clearQueue()
@@ -54,7 +51,7 @@ void PhononAudioOutput::clearQueue()
 
 void PhononAudioOutput::setCurrentSource(const QString& source)
 {
-    mediaObject_->setCurrentSource(Phonon::MediaSource(source));
+    mediaObject_->setCurrentSource(Phonon::MediaSource(QUrl::fromLocalFile(source)));
 }
 
 void PhononAudioOutput::setVolume(qreal newVolume)
