@@ -1,0 +1,8 @@
+#!/usr/bin/make -f
+%:
+	dh $@ --parallel --builddirectory=build
+
+override_dh_auto_configure:
+	dh_auto_configure --parallel --builddirectory=build -- -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+override_dh_auto_test:
