@@ -1,56 +1,43 @@
 # fubar
 
-fubar is a native Linux media player meant for foobar2000 fanatics.
-Currently, it doesn't implement too many of the features of its
-idol, but it looks awesome(only in KDE :) ).
+fubar is a Qt media player. It has the following features:
 
-# Dependencies/Installation
+* updating the playlist via inotify
+* cue sheets
+* global shortcuts
+* last.fm integration
+
+
+## Dependencies
 
 fubar requires:
 
 * Qt >= 4.8
+* kdelibs (for global shortcuts)
+* phonon
+* boost
 * liblastfm >= 1.0.7
 * [TagLib](http://taglib.github.com/) >= 1.8
-* cmake
+* cmake >= 2.6
+* libmpv >= 0.8.0
+* libcue
 
-## Debian Wheezy
 
-We need the libtag1-dev and liblastfm-dev from experimental, so add to /etc/apt/sources.list:
+## Compiling fubar
 
-    deb http://ftp.debian.org/debian/ experimental main non-free contrib
-
-Run:
-
-    sudo apt-get install cmake g++ libboost-all-dev protobuf-compiler libprotobuf-dev libqt4-dev libphonon-dev kdelibs5-dev libcue-dev phonon-backend-gstreamer gstreamer0.10-plugins-ugly
-    sudo apt-get install -t experimental libtag1-dev liblastfm-dev
-
-## Other Distributions
-
-### Compiling liblastfm
-
-Dependencies:
-
-* FFTW http://www.fftw.org/
-* libsamplerate http://www.mega-nerd.com/SRC/
-
-Run:
-
-    apt-get install libsamplerate0-dev libfftw3-dev
-    git clone git://github.com/bugdone/liblastfm.git; cd liblastfm ; mkdir build ; cd build ; cmake ..
-    make -j4 ; sudo make install ; cd ../..
-
-# Compiling fubar
-
-    git clone https://yoyosan@bitbucket.org/bugdone/fubar.git ; cd fubar; mkdir build ; cd build ; cmake ..
+    mkdir build
+    cd build
+    cmake ..
     make -j4
 
-At the moment, no installation is required. Just add a symlink to one of the directories in $PATH:
-
-    CURRENT="`pwd`"; sudo ln -s "$CURRENT/fubar" /usr/local/bin/fubar
+You can run `build/fubar` directly or install it using `make install`.
 
 
-# Using fubar
+## Using fubar
 
 To watch a directory with music, add it from Preferences->Library.
 
-Enjoy.
+
+## License
+
+fubar is released under the [MIT License](http://www.opensource.org/licenses/MIT).
