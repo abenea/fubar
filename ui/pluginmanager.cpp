@@ -10,25 +10,31 @@ PluginManager *PluginManager::instance = 0;
 PluginManager::PluginManager(AudioPlayer& player)
     : player_(player)
 {
-    auto pluginsDir = QDir(QCoreApplication::applicationDirPath());
-    pluginsDir.cd("lib");
-
-    foreach (QString fileName, pluginsDir.entryList(QDir::Files)) {
-        std::shared_ptr<QPluginLoader> loader(new QPluginLoader(pluginsDir.absoluteFilePath(fileName)));
-        QObject *plugin = loader->instance();
-        if (plugin) {
-            PluginInterface *fubarPlugin = qobject_cast<PluginInterface*>(plugin);
-            if (fubarPlugin) {
-                qDebug() << "Found plugin " << fileName;
-                plugins_.insert(std::make_pair(fileName, loader));
-                enablePlugin(fileName);
-            } else {
-                qDebug() << "Can't load plugin " << loader->errorString();
+    auto pluginDirs = QVector<QString>{
+        QCoreApplication::applicationDirPath() + "/../lib/fubar/",
+        QCoreApplication::applicationDirPath() + "/lib/",
+    };
+    for (QString dirName : pluginDirs) {
+        auto dir = QDir(dirName);
+        qDebug() << "Looking for plugins in " << dir.path();
+        for (QString fileName : dir.entryList(QDir::Files)) {
+            std::shared_ptr<QPluginLoader> loader(
+                new QPluginLoader(dir.absoluteFilePath(fileName)));
+            QObject *plugin = loader->instance();
+            if (plugin) {
+                PluginInterface *fubarPlugin = qobject_cast<PluginInterface *>(plugin);
+                if (fubarPlugin) {
+                    qDebug() << "Found plugin " << fileName;
+                    plugins_.insert(std::make_pair(fileName, loader));
+                    enablePlugin(fileName);
+                } else {
+                    qDebug() << "Can't load plugin " << loader->errorString();
+                }
             }
         }
-     }
+    }
 
-     instance = this;
+    instance = this;
 }
 
 void PluginManager::disablePlugin(QString name)

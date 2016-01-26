@@ -34,4 +34,4 @@ qt4_add_resources(ui_RC ui/icons/icons.qrc)
 add_executable(fubar main.cpp ${ui_RC})
 target_link_libraries(fubar util ui player library ${QT_LIBRARIES} ${TAGLIB_LIBRARY} ${KDE4_KDEUI_LIBS} ${MPV_LIBRARY})
 
-install(TARGETS fubar DESTINATION bin)
+install(TARGETS fubar DESTINATION bin/)
