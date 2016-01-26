@@ -92,6 +92,7 @@ void Queue::popPeekedTrack()
 
 bool Queue::isQueued(PModel playlistModel, QModelIndex index)
 {
+    Q_UNUSED(playlistModel);
     PTrack track = index.data(TrackRole).value<PTrack>();
     auto it = paths_.find(track->path());
     if (it == paths_.end())

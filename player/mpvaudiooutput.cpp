@@ -69,7 +69,8 @@ void MpvAudioOutput::play() {
     }
 }
 
-void MpvAudioOutput::play(qint64 offset) {}
+void MpvAudioOutput::play(qint64 offset) { Q_UNUSED(offset); }
+
 void MpvAudioOutput::seek(qint64 time) {
     command(QVariantList({"seek", QString::number(time / 1000), "absolute"}));
 }

@@ -76,8 +76,11 @@ QMimeData* PlaylistModel::mimeData(const QModelIndexList& indexes) const
     return new PlaylistMimeData(getTracks(indexes));
 }
 
-bool PlaylistModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
-{
+bool PlaylistModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
+								 const QModelIndex &parent) {
+    Q_UNUSED(row);
+    Q_UNUSED(column);
+    Q_UNUSED(parent);
     if (action == Qt::IgnoreAction) {
         return true;
     }
