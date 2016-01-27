@@ -44,7 +44,9 @@ int main(int argc, char *argv[]) {
 
     QApplication a(argc, argv);
 
+    qRegisterMetaType<AudioState>("AudioState");
     qRegisterMetaType<LibraryEvent>("LibraryEvent");
+
     Library library;
     AudioPlayer player(&library, argc > 1 ? Backend::phonon : Backend::mpv);
     MainWindow w(player);
