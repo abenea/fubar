@@ -63,7 +63,6 @@ void MpvAudioOutput::pause() {
 void MpvAudioOutput::play() {
     auto paused = get_property_variant(handle_, "pause");
     if (paused.isValid() and paused.toBool()) {
-        qDebug() << "set pause false";
         set_property("pause", false);
         setState(AudioState::Playing);
     }
@@ -82,7 +81,6 @@ void MpvAudioOutput::setVolume(qreal newVolume) {
 AudioState MpvAudioOutput::state() const { return state_; }
 
 void MpvAudioOutput::stop() {
-    qDebug() << totalTime();
     command(QVariantList({"stop"}));
     setState(AudioState::Stopped);
 }
