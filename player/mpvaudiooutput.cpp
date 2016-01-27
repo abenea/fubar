@@ -23,6 +23,7 @@ MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), emittedAboutToFi
     if (static_cast<mpv_handle *>(handle_) == nullptr)
         qDebug() << "Cannot mpv_create()";
     mpv::qt::set_option_variant(handle_, "vo", "null");
+    mpv::qt::set_option_variant(handle_, "softvol", "yes");
     int r = mpv_initialize(handle_);
     if (r < 0) {
         qDebug() << "Failed to initialize mpv backend: " << mpv_error_string(r);
