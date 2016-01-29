@@ -51,5 +51,3 @@ void UnixSignalsHandler::handleSigTerm()
 
     snTerm_->setEnabled(true);
 }
-
-#include "unixsignalshandler.moc"

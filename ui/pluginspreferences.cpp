@@ -44,5 +44,3 @@ void PluginsPreferences::on_okButton_clicked()
     }
     QDialog::accept();
 }
-
-#include "pluginspreferences.moc"

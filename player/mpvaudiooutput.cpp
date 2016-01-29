@@ -162,5 +162,3 @@ void MpvAudioOutput::setState(AudioState newState) {
     state_ = newState;
     emit stateChanged(newState);
 }
-
-#include "mpvaudiooutput.moc"

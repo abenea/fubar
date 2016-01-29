@@ -108,5 +108,3 @@ void TabBar::dropEvent(QDropEvent* event)
     if (index != -1)
         emit dropRequested(index, event->mimeData());
 }
-
-#include "tabbar.moc"

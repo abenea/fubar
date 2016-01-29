@@ -660,5 +660,3 @@ void MainWindow::restoreMaximizedState()
     if (qsettings.value("mainwindow/maximized", true).toBool())
         KWindowSystem::setState(winId(), NET::Max);
 }
-
-#include "mainwindow.moc"

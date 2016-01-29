@@ -65,5 +65,3 @@ void ConfigFilter::setFilter(QString filter)
     filter_ = filter.split(" ", QString::SkipEmptyParts);
     invalidateFilter();
 }
-
-#include "configwindow.moc"

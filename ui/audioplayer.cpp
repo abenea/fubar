@@ -434,5 +434,3 @@ QString AudioPlayer::replayGainToString(AudioPlayer::ReplayGainMode mode)
     }
     return "off";
 }
-
-#include "audioplayer.moc"

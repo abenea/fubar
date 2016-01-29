@@ -38,5 +38,3 @@ void TabWidget::slotDropRequested(int index, const QMimeData *mimeData)
     PlaylistTab* tab = dynamic_cast<PlaylistTab*>(widget(index));
     tab->dropMimeData(mimeData);
 }
-
-#include "tabwidget.moc"

@@ -251,5 +251,3 @@ void PlaylistModel::notifyQueueStatusChanged(vector<QPersistentModelIndex> index
 {
     emit queueStatusChanged(indexes);
 }
-
-#include "playlistmodel.moc"

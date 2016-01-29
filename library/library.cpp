@@ -730,5 +730,3 @@ void Library::dirtyHack(PTrack track)
     dirty_ = true;
     emitLibraryChanged(track, MODIFY);
 }
-
-#include "library.moc"

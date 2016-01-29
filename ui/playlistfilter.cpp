@@ -120,5 +120,3 @@ bool PlaylistFilter::lessThan(const QModelIndex& left, const QModelIndex& right)
         return leftTrack->metadata["track"].toInt() < rightTrack->metadata["track"].toInt();
     return leftTrack->location < rightTrack->location;
 }
-
-#include "playlistfilter.moc"

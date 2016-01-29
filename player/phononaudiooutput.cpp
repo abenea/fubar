@@ -138,5 +138,3 @@ void PhononAudioOutput::slotFinished()
 {
     emit finished();
 }
-
-#include "phononaudiooutput.moc"

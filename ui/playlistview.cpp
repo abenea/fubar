@@ -40,5 +40,3 @@ void PlaylistView::keyPressEvent(QKeyEvent* event)
         QAbstractItemView::keyPressEvent(event);
     }
 }
-
-#include "playlistview.moc"

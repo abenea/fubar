@@ -39,5 +39,3 @@ void ConsoleWindow::setCursorToEnd()
     text_->moveCursor(QTextCursor::End);
     text_->moveCursor(QTextCursor::StartOfLine);
 }
-
-#include "consolewindow.moc"

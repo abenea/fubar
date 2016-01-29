@@ -23,5 +23,3 @@ void Console::update(QtMsgType type, const char* message)
 {
     emit updated(type, QString::fromUtf8(message));
 }
-
-#include "console.moc"

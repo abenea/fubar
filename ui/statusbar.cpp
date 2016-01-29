@@ -11,5 +11,3 @@ void StatusBar::mouseDoubleClickEvent(QMouseEvent* event)
     emit statusBarDoubleClicked();
 }
 
-#include "statusbar.moc"
-

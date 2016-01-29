@@ -24,5 +24,3 @@ void Preferences::on_saveButton_clicked()
     }
     QDialog::accept();
 }
-
-#include "preferences.moc"

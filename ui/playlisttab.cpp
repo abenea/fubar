@@ -195,5 +195,3 @@ bool PlaylistTab::dropMimeData(const QMimeData* data)
     model_->dropMimeData(data, Qt::CopyAction, 0, 0, QModelIndex());
     return false;
 }
-
-#include "playlisttab.moc"

@@ -102,5 +102,3 @@ void SeekSlider::mousePressEvent(QMouseEvent *event)
         QSlider::mousePressEvent(event);
     }
 }
-
-#include "seekslider.moc"

@@ -65,5 +65,3 @@ QStringList LibraryPreferencesDialog::getCurrentList()
     }
     return result;
 }
-
-#include "librarypreferencesdialog.moc"
