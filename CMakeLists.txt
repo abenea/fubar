@@ -3,7 +3,6 @@ project(fubar)
 enable_testing()
 
 find_package(Qt4 4.5 REQUIRED QtCore QtGui QtTest Phonon)
-include(${QT_USE_FILE})
 set(CMAKE_AUTOMOC ON)
 find_package(KDE4 REQUIRED)
 
@@ -25,6 +24,7 @@ function(add_qtest name src libs)
 endfunction()
 
 add_library(util util.cpp)
+target_link_libraries(util Qt4::QtCore)
 
 add_subdirectory(ui)
 add_subdirectory(library)

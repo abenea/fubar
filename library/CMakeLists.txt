@@ -7,4 +7,4 @@ add_library(library
             cuefile.cpp
             library.cpp
             ${PROTO_GENERATED})
-target_link_libraries(library ${PROTOBUF_LIBRARY} ${TAGLIB_LIBRARY} ${CUE_LIBRARIES})
+target_link_libraries(library Qt4::QtCore ${PROTOBUF_LIBRARY} ${TAGLIB_LIBRARY} ${CUE_LIBRARIES})
