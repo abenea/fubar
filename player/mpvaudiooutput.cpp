@@ -17,7 +17,7 @@ qint64 pos_to_qint64(const std::string &s) { return qint64(std::stof(s) * 1000);
 }
 
 // TODO enable ytdl
-MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), emittedAboutToFinish_(false) {
+MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped) {
     setlocale(LC_NUMERIC, "C");
     handle_ = mpv::qt::Handle::FromRawHandle(mpv_create());
     if (static_cast<mpv_handle *>(handle_) == nullptr)
@@ -31,7 +31,8 @@ MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), emittedAboutToFi
     }
     thread_.reset(new std::thread([this] { event_loop(); }));
     observe_property("playback-time");
-    observe_property("time-remaining", MPV_FORMAT_DOUBLE);
+    observe_property("idle", MPV_FORMAT_FLAG);
+    // TODO watch pause
 }
 
 MpvAudioOutput::~MpvAudioOutput() {
@@ -83,7 +84,6 @@ AudioState MpvAudioOutput::state() const { return state_; }
 
 void MpvAudioOutput::stop() {
     command(QVariantList({"stop"}));
-    setState(AudioState::Stopped);
 }
 
 qint64 MpvAudioOutput::totalTime() const {
@@ -96,7 +96,7 @@ qint64 MpvAudioOutput::totalTime() const {
 void MpvAudioOutput::event_loop() {
     while (true) {
         auto event = mpv_wait_event(handle_, -1);
-//         qDebug() << "mpv event " << mpv_event_name(event->event_id);
+        //         qDebug() << "mpv event " << mpv_event_name(event->event_id);
         switch (event->event_id) {
         case MPV_EVENT_SHUTDOWN:
             return;
@@ -104,32 +104,28 @@ void MpvAudioOutput::event_loop() {
             qWarning() << "mpv queue overflow";
             break;
         case MPV_EVENT_FILE_LOADED:
-            emittedAboutToFinish_ = false;
-            setState(AudioState::Playing);
             emit currentSourceChanged();
             break;
         case MPV_EVENT_END_FILE: {
-            emittedAboutToFinish_ = false;
             auto end_ev = reinterpret_cast<mpv_event_end_file *>(event->data);
             if (end_ev->reason == MPV_END_FILE_REASON_ERROR)
                 qWarning() << "Ended file: " << mpv_error_string(end_ev->error);
-            setState(AudioState::Stopped);
             break;
         }
         case MPV_EVENT_PROPERTY_CHANGE: {
             auto prop = reinterpret_cast<mpv_event_property *>(event->data);
             if (prop->format != MPV_FORMAT_NONE && prop->data) {
-                //                 qDebug() << "property change " << prop->name << " "
-                //                          << *(reinterpret_cast<char **>(prop->data));
                 if (std::string(prop->name) == "playback-time") {
                     std::string pos(*(reinterpret_cast<char **>(prop->data)));
                     emit tick(pos_to_qint64(pos));
-                } else if (std::string(prop->name) == "time-remaining") {
-                    double remaining = *reinterpret_cast<double *>(prop->data);
-                    if (remaining < 3 && !emittedAboutToFinish_) {
-                        emit aboutToFinish();
-                        emittedAboutToFinish_ = true;
+                } else if (std::string(prop->name) == "idle") {
+                    int idle = *reinterpret_cast<int *>(prop->data);
+                    if (idle) {
+                        setState(AudioState::Stopped);
+                        emit finished();
                     }
+                    else
+                        setState(AudioState::Playing);
                 }
             }
             break;

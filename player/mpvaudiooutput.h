@@ -37,5 +37,4 @@ private:
     mpv::qt::Handle handle_;
     AudioState state_;
     std::unique_ptr<std::thread> thread_;
-    bool emittedAboutToFinish_;
 };
