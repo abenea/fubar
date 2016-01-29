@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(fubar)
 enable_testing()
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt4 4.5 REQUIRED QtCore QtGui QtTest Phonon)
 set(CMAKE_AUTOMOC ON)
 find_package(KDE4 REQUIRED)

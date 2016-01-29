@@ -6,8 +6,7 @@ SET(LASTFMPLUGIN_HEADERS lastfmplugin.h)
 SET(LASTFMPLUGIN_SOURCES lastfmplugin.cpp preferences.cpp)
 
 INCLUDE(${QT_USE_FILE})
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${LIBLASTFM_INCLUDE_DIR} Qt4::QtXml)
+include_directories(${LIBLASTFM_INCLUDE_DIR} Qt4::QtXml)
 qt4_wrap_ui(lastfm_UI config.ui)
 
 add_library(lastfm SHARED ${LASTFMPLUGIN_MOC} ${LASTFMPLUGIN_SOURCES} ${lastfm_UI})
