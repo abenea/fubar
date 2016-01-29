@@ -1,7 +1,7 @@
 #pragma once
 
-#include "plugins/lastfm/ui_config.h"
-#include "plugins/lastfm/lastfmplugin.h"
+#include "ui_config.h"
+#include "lastfmplugin.h"
 #include <QDialog>
 
 class Preferences : public QDialog, private Ui::PreferencesDialog

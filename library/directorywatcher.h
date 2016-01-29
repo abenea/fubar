@@ -1,6 +1,6 @@
 #pragma once
 
-#include "library/libraryeventtype.h"
+#include "libraryeventtype.h"
 #include <QString>
 #include <QMutex>
 #include <QWaitCondition>
