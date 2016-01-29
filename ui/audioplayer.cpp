@@ -98,6 +98,7 @@ void AudioPlayer::writeSettings()
 
 void AudioPlayer::aboutToFinish()
 {
+    audioOutput_->clearQueue();
     if (!queue_.isEmpty()) {
         auto enqueued = queue_.peekTrack();
         if (enqueued.second.isValid()) {
@@ -161,6 +162,7 @@ void AudioPlayer::currentSourceChanged()
     } else {
         qDebug() << "Source changed to null track!";
     }
+    aboutToFinish();
 }
 
 void AudioPlayer::slotTick(qint64 pos)
@@ -269,11 +271,15 @@ void AudioPlayer::clearQueue()
 //         // buffer next song
 //         playingModel_->enqueueNextTrack();
 //     }
+    aboutToFinish();
 }
 
 void AudioPlayer::enqueueTracks(PModel model, QModelIndexList tracks)
 {
+    bool queue_was_empty = queue_.isEmpty();
     queue_.pushTracks(model, tracks);
+    if (queue_was_empty)
+        aboutToFinish();
 }
 
 void AudioPlayer::setLastPlayed(PModel playlistModel, const QModelIndex &index)
