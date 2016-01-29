@@ -134,6 +134,8 @@ void MpvAudioOutput::event_loop() {
             }
             break;
         }
+        default:
+            break;
         }
     }
 }
