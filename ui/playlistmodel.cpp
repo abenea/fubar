@@ -93,13 +93,7 @@ bool PlaylistModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         addTracks(myData->getTracks());
         return true;
     } else if (data->hasUrls()) {
-        for (QUrl url : data->urls()) {
-            QFileInfo f(url.toLocalFile());
-            if (f.isDir()) {
-                addDirectory(f.absoluteFilePath());
-            } else
-                addFiles(QStringList( {url.toLocalFile()}));
-        }
+        addUrls(data->urls());
         return true;
     }
     return false;
@@ -126,21 +120,9 @@ QModelIndex PlaylistModel::index(int row, int column, const QModelIndex& parent)
     return createIndex(row, column);
 }
 
-void PlaylistModel::addDirectory(const QString& path)
-{
+void PlaylistModel::addUrls(const QList<QUrl>& urls) {
     int oldSize = playlist_.tracks.size();
-    playlist_.addDirectory(path);
-    int newSize = playlist_.tracks.size();
-    if (newSize > oldSize) {
-        beginInsertRows(QModelIndex(), oldSize, newSize - 1);
-        endInsertRows();
-    }
-}
-
-void PlaylistModel::addFiles(const QStringList& files)
-{
-    int oldSize = playlist_.tracks.size();
-    playlist_.addFiles(files);
+    playlist_.addUrls(urls);
     int newSize = playlist_.tracks.size();
     if (newSize > oldSize) {
         beginInsertRows(QModelIndex(), oldSize, newSize - 1);

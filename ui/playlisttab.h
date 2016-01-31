@@ -24,8 +24,7 @@ public:
     void updateCursorAndScroll(QModelIndex index);
     void focusFilter();
 
-    void addDirectory(const QString &directory);
-    void addFiles(const QStringList &files);
+    void addUrls(const QList<QUrl>& urls);
     void addTracks(const QList<PTrack> &tracks);
     void removeTracks(QModelIndexList trackList);
     void serialize(QByteArray& data) const;

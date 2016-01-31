@@ -17,6 +17,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QDebug>
+#include <QUrl>
 #include <QDockWidget>
 #include <QPlainTextEdit>
 #include <QVariant>
@@ -235,7 +236,9 @@ void MainWindow::on_addDirectoryAction_triggered()
 
     PlaylistTab *tab = getActivePlaylist();
     if (tab) {
-        tab->addDirectory(directory);
+        QList<QUrl> urls;
+        urls.append(QUrl::fromLocalFile(directory));
+        tab->addUrls(urls);
     }
 }
 
@@ -247,9 +250,11 @@ void MainWindow::on_addFilesAction_triggered()
 
     PlaylistTab *tab = getActivePlaylist();
     if (tab) {
-        // Apparently you should iterate over a copy
-        QStringList files2 = files;
-        tab->addFiles(files2);
+        QList<QUrl> urls;
+        for (QString path : files) {
+            urls.append(QUrl::fromLocalFile(path));
+        }
+        tab->addUrls(urls);
     }
 }
 

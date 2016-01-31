@@ -3,6 +3,7 @@
 #include "library/track.h"
 #include <QDebug>
 #include <QDir>
+#include <QUrl>
 #include <sstream>
 #include <fstream>
 #include <exception>
@@ -12,8 +13,7 @@
 
 using namespace std;
 
-void Playlist::addDirectory(const QString &path)
-{
+void Playlist::addDirectory(const QString &path) {
     QDir dir(path);
     dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
     foreach (QFileInfo info, dir.entryInfoList()) {
@@ -25,16 +25,7 @@ void Playlist::addDirectory(const QString &path)
     }
 }
 
-void Playlist::addFiles(const QStringList& files)
-{
-    foreach (QString file, files) {
-        QFileInfo info(file);
-        addFile(info);
-    }
-}
-
-void Playlist::addFile(const QFileInfo& file)
-{
+void Playlist::addFile(const QFileInfo &file) {
     TagLib::FileRef fileref;
     QByteArray encodedName = QFile::encodeName(file.filePath());
     fileref = TagLib::FileRef(encodedName.constData(), true);
@@ -61,8 +52,23 @@ void Playlist::addFile(const QFileInfo& file)
     }
 }
 
-void Playlist::deserialize(const QByteArray& bytes)
-{
+void Playlist::addUrls(const QList<QUrl>& urls) {
+    for (const auto& url: urls) {
+        if (url.isLocalFile()) {
+            QFileInfo info(url.toLocalFile());
+            if (info.isDir())
+                addDirectory(info.absoluteFilePath());
+            else
+                addFile(info.absoluteFilePath());
+        } else {
+            shared_ptr<Track> track(new Track());
+            track->location = url.toString();
+            tracks.append(track);
+        }
+    }
+}
+
+void Playlist::deserialize(const QByteArray &bytes) {
     proto::Library plibrary;
     if (!plibrary.ParseFromArray(bytes.constData(), bytes.size())) {
         qDebug() << "Cannot parse proto::library for playlist";
@@ -72,11 +78,10 @@ void Playlist::deserialize(const QByteArray& bytes)
         tracks.append(shared_ptr<Track>(new Track(plibrary.tracks(i))));
 }
 
-void Playlist::serialize(QByteArray& bytes) const
-{
+void Playlist::serialize(QByteArray &bytes) const {
     proto::Library plibrary;
     for (PTrack track : tracks) {
-        proto::Track* ptrack = plibrary.add_tracks();
+        proto::Track *ptrack = plibrary.add_tracks();
         track->fillProtoTrack(*ptrack);
     }
     int len = plibrary.ByteSize();

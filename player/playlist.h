@@ -2,6 +2,7 @@
 
 #include "library/track_forward.h"
 #include <QString>
+#include <QUrl>
 #include <QStringList>
 #include <QFileInfo>
 #include <QByteArray>
@@ -14,7 +15,7 @@ public:
 
     void addDirectory(const QString &path);
     void addFile(const QFileInfo &file);
-    void addFiles(const QStringList& files);
+    void addUrls(const QList<QUrl>& urls);
 
     void deserialize(const QByteArray& bytes);
     void serialize(QByteArray& bytes) const;

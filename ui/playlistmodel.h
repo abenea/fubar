@@ -31,8 +31,7 @@ public:
     bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
 
     Playlist& playlist() { return playlist_;  }
-    void addDirectory(const QString& path);
-    void addFiles(const QStringList& files);
+    void addUrls(const QList<QUrl>& urls);
     void addTracks(QList<PTrack> tracks);
     void removeIndexes(QModelIndexList indexes);
     void clear();

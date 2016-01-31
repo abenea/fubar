@@ -100,16 +100,9 @@ void PlaylistTab::repaintTracks(std::vector<QPersistentModelIndex> indexes)
         ui_.playlist->update(filterModel_.mapFromSource(index));
 }
 
-void PlaylistTab::addDirectory(const QString& directory)
-{
+void PlaylistTab::addUrls(const QList<QUrl>& urls) {
     if (!model_->playlist().synced)
-        model_->addDirectory(directory);
-}
-
-void PlaylistTab::addFiles(const QStringList& files)
-{
-    if (!model_->playlist().synced)
-        model_->addFiles(files);
+        model_->addUrls(urls);
 }
 
 void PlaylistTab::addTracks(const QList<shared_ptr<Track>>& tracks)
