@@ -48,7 +48,7 @@ MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1)
     thread_.reset(new std::thread([this] { event_loop(); }));
     observe_property("playback-time");
     observe_property("idle", MPV_FORMAT_FLAG);
-    // TODO watch pause
+    observe_property("pause", MPV_FORMAT_FLAG);
 }
 
 MpvAudioOutput::~MpvAudioOutput() {
@@ -75,15 +75,12 @@ void MpvAudioOutput::enqueue(const QString &source) {
 
 void MpvAudioOutput::pause() {
     set_property("pause", true);
-    setState(AudioState::Paused);
 }
 
 void MpvAudioOutput::play() {
     auto paused = get_property_variant(handle_, "pause");
-    if (paused.isValid() and paused.toBool()) {
+    if (paused.isValid() and paused.toBool())
         set_property("pause", false);
-        setState(AudioState::Playing);
-    }
 }
 
 void MpvAudioOutput::play(qint64 offset) {
@@ -157,6 +154,9 @@ void MpvAudioOutput::event_loop() {
                         emit finished();
                     } else
                         setState(AudioState::Playing);
+                } else if (std::string(prop->name) == "pause") {
+                    int pause = *reinterpret_cast<int *>(prop->data);
+                    setState(pause ? AudioState::Paused : AudioState::Playing);
                 }
             }
             break;
