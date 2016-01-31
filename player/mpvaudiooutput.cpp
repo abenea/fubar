@@ -49,6 +49,9 @@ MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1)
     observe_property("playback-time");
     observe_property("idle", MPV_FORMAT_FLAG);
     observe_property("pause", MPV_FORMAT_FLAG);
+    r = mpv_request_log_messages(handle_, "warn");
+    if (r < 0)
+        qDebug() << "mpv_request_log_messages failed: " << mpv_error_string(r);
 }
 
 MpvAudioOutput::~MpvAudioOutput() {
@@ -139,6 +142,11 @@ void MpvAudioOutput::event_loop() {
             auto end_ev = reinterpret_cast<mpv_event_end_file *>(event->data);
             if (end_ev->reason == MPV_END_FILE_REASON_ERROR)
                 qWarning() << "Ended file: " << mpv_error_string(end_ev->error);
+            break;
+        }
+        case MPV_EVENT_LOG_MESSAGE: {
+            auto log = reinterpret_cast<mpv_event_log_message *>(event->data);
+            qDebug() << "mpv [" << log->prefix << "] " << log->text;
             break;
         }
         case MPV_EVENT_PROPERTY_CHANGE: {
