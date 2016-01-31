@@ -2,6 +2,7 @@
 #include "audiostate.h"
 #include <QDebug>
 #include <mpv/client.h>
+#include <cassert>
 
 namespace mpv {
 namespace qt {
@@ -14,10 +15,25 @@ static inline int command_variant2(mpv_handle *ctx, const QVariant &args) {
 
 namespace {
 qint64 pos_to_qint64(const std::string &s) { return qint64(std::stof(s) * 1000); }
+QString audioStateToStr(AudioState as) {
+    switch (as) {
+        case AudioState::Buffering:
+            return "Buffering";
+        case AudioState::Playing:
+            return "Playing";
+        case AudioState::Stopped:
+            return "Stopped";
+        case AudioState::Paused:
+            return "Paused";
+        case AudioState::Unknown:
+            return "Unknown";
+    }
+    assert(0);
+}
 }
 
 // TODO enable ytdl
-MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped) {
+MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1) {
     setlocale(LC_NUMERIC, "C");
     handle_ = mpv::qt::Handle::FromRawHandle(mpv_create());
     if (static_cast<mpv_handle *>(handle_) == nullptr)
@@ -70,21 +86,28 @@ void MpvAudioOutput::play() {
     }
 }
 
-void MpvAudioOutput::play(qint64 offset) { Q_UNUSED(offset); }
+void MpvAudioOutput::play(qint64 offset) {
+    seek_offset_ = offset;
+    play();
+}
 
 void MpvAudioOutput::seek(qint64 time) {
     command(QVariantList({"seek", QString::number(time / 1000), "absolute"}));
 }
 
 void MpvAudioOutput::setVolume(qreal newVolume) {
-    set_property("volume", static_cast<int>(newVolume * 100));
+        volume_ = static_cast<int>(newVolume * 100);
+        setVolume(); }
+
+void MpvAudioOutput::setVolume() {
+    if (state_ == AudioState::Playing || state_ == AudioState::Paused) {
+        set_property("volume", volume_);
+    }
 }
 
 AudioState MpvAudioOutput::state() const { return state_; }
 
-void MpvAudioOutput::stop() {
-    command(QVariantList({"stop"}));
-}
+void MpvAudioOutput::stop() { command(QVariantList({"stop"})); }
 
 qint64 MpvAudioOutput::totalTime() const {
     auto d = get_property_variant(handle_, "duration");
@@ -103,8 +126,17 @@ void MpvAudioOutput::event_loop() {
         case MPV_EVENT_QUEUE_OVERFLOW:
             qWarning() << "mpv queue overflow";
             break;
+        case MPV_EVENT_START_FILE:
+            setState(AudioState::Buffering);
+            break;
         case MPV_EVENT_FILE_LOADED:
+            setState(AudioState::Playing);
             emit currentSourceChanged();
+            setVolume();
+            if (seek_offset_ != -1) {
+                seek(seek_offset_);
+                seek_offset_ = -1;
+            }
             break;
         case MPV_EVENT_END_FILE: {
             auto end_ev = reinterpret_cast<mpv_event_end_file *>(event->data);
@@ -123,8 +155,7 @@ void MpvAudioOutput::event_loop() {
                     if (idle) {
                         setState(AudioState::Stopped);
                         emit finished();
-                    }
-                    else
+                    } else
                         setState(AudioState::Playing);
                 }
             }
@@ -145,7 +176,7 @@ void MpvAudioOutput::command(const QVariant &args) {
 void MpvAudioOutput::set_property(const QString &name, const QVariant &v) {
     int r = set_property_variant(handle_, name, v);
     if (r < 0)
-        qDebug() << "Failed to set property: " << name << " to " << v;
+        qDebug() << "Failed to set property: " << name << " to " << v << ": " << mpv_error_string(r);
 }
 
 void MpvAudioOutput::observe_property(const std::string &name, mpv_format format) {

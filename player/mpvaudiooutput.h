@@ -28,6 +28,7 @@ public:
     void clearQueue();
 
 private:
+    void setVolume();
     void setState(AudioState newState);
     void event_loop();
     void command(const QVariant& args);
@@ -37,4 +38,6 @@ private:
     mpv::qt::Handle handle_;
     AudioState state_;
     std::unique_ptr<std::thread> thread_;
+    qreal volume_;
+    qint64 seek_offset_;
 };
