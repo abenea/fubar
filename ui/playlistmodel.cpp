@@ -10,17 +10,10 @@
 
 using namespace std;
 
-PlaylistModel::PlaylistModel(Library* library, QObject* parent)
+PlaylistModel::PlaylistModel(bool editable, QObject* parent)
     : QAbstractItemModel(parent)
 {
-    if (library) {
-        playlist_.synced = true;
-        addTracks(library->getTracks());
-        QObject::connect(library, SIGNAL(libraryChanged(LibraryEvent)), this, SLOT(libraryChanged(LibraryEvent)));
-        QObject::connect(library, SIGNAL(libraryChanged(QList<PTrack>)), this, SLOT(libraryChanged(QList<PTrack>)));
-    } else {
-        playlist_.synced = false;
-    }
+    dropActions_ = editable ? Qt::CopyAction : Qt::CopyAction | Qt::MoveAction;
 }
 
 int PlaylistModel::rowCount(const QModelIndex&) const
@@ -57,7 +50,7 @@ QStringList PlaylistModel::mimeTypes() const
 
 Qt::DropActions PlaylistModel::supportedDropActions() const
 {
-    return playlist_.synced ? Qt::CopyAction : Qt::CopyAction | Qt::MoveAction;
+    return dropActions_;
 }
 
 Qt::ItemFlags PlaylistModel::flags(const QModelIndex& index) const
@@ -148,9 +141,6 @@ QList<PTrack> PlaylistModel::getTracks(QModelIndexList trackList) const
 
 void PlaylistModel::libraryChanged(LibraryEvent event)
 {
-    if (!playlist_.synced)
-        return;
-
     if (event.op == CREATE) {
         beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size());
         playlist_.tracks.append(event.track);
@@ -196,10 +186,8 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
 
 void PlaylistModel::libraryChanged(QList<PTrack> tracks)
 {
-    if (playlist_.synced) {
-        clear();
-        addTracks(tracks);
-    }
+    clear();
+    addTracks(tracks);
 }
 
 void PlaylistModel::clear()

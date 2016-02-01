@@ -7,15 +7,14 @@
 #include <memory>
 #include <vector>
 
-class Library;
-class LibraryEvent;
+struct LibraryEvent;
 class QMimeData;
 
 class PlaylistModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    PlaylistModel(Library* library, QObject* parent = 0);
+    PlaylistModel(bool editable, QObject* parent = 0);
 
     virtual int rowCount(const QModelIndex&) const;
     virtual int columnCount(const QModelIndex&) const;
@@ -37,6 +36,7 @@ public:
     void clear();
     void deserialize(const QByteArray& data);
     QList<PTrack> getTracks(QModelIndexList trackList) const;
+    void libraryChanged(LibraryEvent event);
 
     void notifyQueueStatusChanged(std::vector<QPersistentModelIndex> indexes);
 
@@ -44,11 +44,11 @@ signals:
     void queueStatusChanged(std::vector<QPersistentModelIndex> indexes);
 
 protected slots:
-    void libraryChanged(LibraryEvent event);
     void libraryChanged(QList<PTrack> tracks);
 
 private:
     Playlist playlist_;
+    Qt::DropActions dropActions_;
 };
 
 enum PlaylistRoles {

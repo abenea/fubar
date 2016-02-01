@@ -247,7 +247,12 @@ PModel AudioPlayer::createPlaylist(bool synced)
 {
     if (synced && !library_)
         return PModel();
-    PModel model(new PlaylistModel(synced ? library_ : nullptr));
+    PModel model(new PlaylistModel(!synced));
+    if (synced) {
+        model->addTracks(library_->getTracks());
+        QObject::connect(library_, SIGNAL(libraryChanged(LibraryEvent)), model.get(), SLOT(libraryChanged(LibraryEvent)));
+        QObject::connect(library_, SIGNAL(libraryChanged(QList<PTrack>)), model.get(), SLOT(libraryChanged(QList<PTrack>)));
+    }
     playlists_.insert(model);
     return model;
 }
