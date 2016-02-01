@@ -31,6 +31,10 @@ public:
 
     void dump();
 
+    // Url hax
+    bool isUrl();
+    void updateDuration(int duration);
+
     // CUE TRAX HAX
     bool isCueTrack();
     QString cueTrackLocation();

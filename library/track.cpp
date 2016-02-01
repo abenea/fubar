@@ -115,6 +115,15 @@ void Track::dump()
         qDebug() << "    " << it.key().toUtf8() << "=" << it.value().toUtf8();
 }
 
+bool Track::isUrl() {
+    return location.startsWith("http");
+}
+
+void Track::updateDuration(int duration) {
+    if (isUrl())
+        audioproperties.length = duration;
+}
+
 void Track::updateAudioInfo(PTrack track)
 {
     if (!track)

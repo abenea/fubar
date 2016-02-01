@@ -31,6 +31,7 @@ AudioPlayer::AudioPlayer(Library* library, Backend backend, bool testing, QObjec
     QObject::connect(audioOutput_.get(), SIGNAL(tick(qint64)), this, SLOT(slotTick(qint64)));
     QObject::connect(audioOutput_.get(), SIGNAL(stateChanged(AudioState)), this, SLOT(slotAudioStateChanged(AudioState)));
     QObject::connect(audioOutput_.get(), SIGNAL(finished()), this, SLOT(slotFinished()));
+    QObject::connect(audioOutput_.get(), SIGNAL(durationChanged(double)), this, SLOT(durationChanged(double)));
     // Not using Phono totalTimeChanged() signal because it returns 0 when used with enqueue()
     // TODO: report bug to phonon
 //    QObject::connect(audioOutput_, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
@@ -421,6 +422,16 @@ void AudioPlayer::slotFinished()
     if (queue_.peeked())
         queue_.unpeek();
     next();
+}
+
+void AudioPlayer::durationChanged(double duration) {
+    if (!playingTrack_)
+        return;
+
+    playingTrack_->updateDuration(static_cast<int>(duration));
+    playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
+    // Update UI
+    emit trackPlaying(playingTrack_);
 }
 
 AudioPlayer::ReplayGainMode AudioPlayer::replayGainFromString(QString str)

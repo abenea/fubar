@@ -17,16 +17,16 @@ namespace {
 qint64 pos_to_qint64(const std::string &s) { return qint64(std::stof(s) * 1000); }
 QString audioStateToStr(AudioState as) {
     switch (as) {
-        case AudioState::Buffering:
-            return "Buffering";
-        case AudioState::Playing:
-            return "Playing";
-        case AudioState::Stopped:
-            return "Stopped";
-        case AudioState::Paused:
-            return "Paused";
-        case AudioState::Unknown:
-            return "Unknown";
+    case AudioState::Buffering:
+        return "Buffering";
+    case AudioState::Playing:
+        return "Playing";
+    case AudioState::Stopped:
+        return "Stopped";
+    case AudioState::Paused:
+        return "Paused";
+    case AudioState::Unknown:
+        return "Unknown";
     }
     assert(0);
 }
@@ -40,6 +40,7 @@ MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1)
         qDebug() << "Cannot mpv_create()";
     mpv::qt::set_option_variant(handle_, "vo", "null");
     mpv::qt::set_option_variant(handle_, "softvol", "yes");
+    mpv::qt::set_option_variant(handle_, "ytdl", "yes");
     int r = mpv_initialize(handle_);
     if (r < 0) {
         qDebug() << "Failed to initialize mpv backend: " << mpv_error_string(r);
@@ -49,6 +50,9 @@ MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1)
     observe_property("playback-time");
     observe_property("idle", MPV_FORMAT_FLAG);
     observe_property("pause", MPV_FORMAT_FLAG);
+    observe_property("duration", MPV_FORMAT_DOUBLE);
+    observe_property("metadata", MPV_FORMAT_NODE);
+
     r = mpv_request_log_messages(handle_, "warn");
     if (r < 0)
         qDebug() << "mpv_request_log_messages failed: " << mpv_error_string(r);
@@ -76,9 +80,7 @@ void MpvAudioOutput::enqueue(const QString &source) {
     command(QVariantList({"loadfile", source, "append"}));
 }
 
-void MpvAudioOutput::pause() {
-    set_property("pause", true);
-}
+void MpvAudioOutput::pause() { set_property("pause", true); }
 
 void MpvAudioOutput::play() {
     auto paused = get_property_variant(handle_, "pause");
@@ -96,8 +98,9 @@ void MpvAudioOutput::seek(qint64 time) {
 }
 
 void MpvAudioOutput::setVolume(qreal newVolume) {
-        volume_ = static_cast<int>(newVolume * 100);
-        setVolume(); }
+    volume_ = static_cast<int>(newVolume * 100);
+    setVolume();
+}
 
 void MpvAudioOutput::setVolume() {
     if (state_ == AudioState::Playing || state_ == AudioState::Paused) {
@@ -165,6 +168,11 @@ void MpvAudioOutput::event_loop() {
                 } else if (std::string(prop->name) == "pause") {
                     int pause = *reinterpret_cast<int *>(prop->data);
                     setState(pause ? AudioState::Paused : AudioState::Playing);
+                } else if (std::string(prop->name) == "duration") {
+                    double v = *reinterpret_cast<double *>(prop->data);
+                    emit durationChanged(v);
+                } else if (std::string(prop->name) == "metadata") {
+                    // TODO get bitrate, samplerate, audio format, title
                 }
             }
             break;
@@ -184,7 +192,8 @@ void MpvAudioOutput::command(const QVariant &args) {
 void MpvAudioOutput::set_property(const QString &name, const QVariant &v) {
     int r = set_property_variant(handle_, name, v);
     if (r < 0)
-        qDebug() << "Failed to set property: " << name << " to " << v << ": " << mpv_error_string(r);
+        qDebug() << "Failed to set property: " << name << " to " << v << ": "
+                 << mpv_error_string(r);
 }
 
 void MpvAudioOutput::observe_property(const std::string &name, mpv_format format) {

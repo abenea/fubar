@@ -75,6 +75,7 @@ private slots:
     void slotTick(qint64 pos);
     void slotFinished();
     void configChanged(QString key, QVariant value);
+    void durationChanged(double duration);
 
 private:
     void setBuffering(PModel playlistModel, QModelIndex index, bool clearTrack = false);
