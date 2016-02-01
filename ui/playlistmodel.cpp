@@ -14,6 +14,7 @@ PlaylistModel::PlaylistModel(bool editable, QObject* parent)
     : QAbstractItemModel(parent)
 {
     dropActions_ = editable ? Qt::CopyAction : Qt::CopyAction | Qt::MoveAction;
+    playlist_.synced = !editable;
 }
 
 int PlaylistModel::rowCount(const QModelIndex&) const
