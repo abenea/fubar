@@ -130,10 +130,11 @@ void Track::updateDuration(int duration) {
         audioproperties.length = duration;
 }
 
-void Track::updateMetadata(const QString &title, const QString audioFormat) {
+void Track::updateMetadata(const QString &title, const QString& audioFormat, int sampleRate) {
     if (isUrl()) {
         metadata["title"] = title;
         metadata["audio-format"] = audioFormat;
+        audioproperties.samplerate = sampleRate;
     }
 }
 

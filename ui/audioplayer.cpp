@@ -32,7 +32,7 @@ AudioPlayer::AudioPlayer(Library* library, Backend backend, bool testing, QObjec
     QObject::connect(audioOutput_.get(), SIGNAL(stateChanged(AudioState)), this, SLOT(slotAudioStateChanged(AudioState)));
     QObject::connect(audioOutput_.get(), SIGNAL(finished()), this, SLOT(slotFinished()));
     QObject::connect(audioOutput_.get(), SIGNAL(durationChanged(double)), this, SLOT(durationChanged(double)));
-    QObject::connect(audioOutput_.get(), SIGNAL(metadataChanged(QString, QString)), this, SLOT(metadataChanged(QString, QString)));
+    QObject::connect(audioOutput_.get(), SIGNAL(metadataChanged(QString, QString, int)), this, SLOT(metadataChanged(QString, QString, int)));
     // Not using Phono totalTimeChanged() signal because it returns 0 when used with enqueue()
     // TODO: report bug to phonon
 //    QObject::connect(audioOutput_, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
@@ -435,11 +435,11 @@ void AudioPlayer::durationChanged(double duration) {
     emit trackPlaying(playingTrack_);
 }
 
-void AudioPlayer::metadataChanged(QString title, QString audioFormat) {
+void AudioPlayer::metadataChanged(QString title, QString audioFormat, int sampleRate) {
     if (!playingTrack_)
         return;
 
-    playingTrack_->updateMetadata(title, audioFormat);
+    playingTrack_->updateMetadata(title, audioFormat, sampleRate);
     playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
     // Update UI
     emit trackPlaying(playingTrack_);

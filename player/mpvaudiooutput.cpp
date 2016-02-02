@@ -171,8 +171,9 @@ void MpvAudioOutput::event_loop() {
                     double v = *reinterpret_cast<double *>(prop->data);
                     emit durationChanged(v);
                 } else if (std::string(prop->name) == "metadata") {
-                    // TODO get prop audio-params audio-bitrate
-                    emit metadataChanged(get_property("media-title").toString(), get_property("audio-format").toString());
+                    emit metadataChanged(get_property("media-title").toString(),
+                                         get_property("audio-format").toString(),
+                                         get_property("audio-params/samplerate").toInt());
                 }
             }
             break;

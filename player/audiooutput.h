@@ -18,7 +18,7 @@ signals:
     void stateChanged(AudioState state);
     void finished();
     void durationChanged(double);
-    void metadataChanged(QString title, QString audioFormat);
+    void metadataChanged(QString title, QString audioFormat, int sampleRate);
 
 public slots:
     virtual void setVolume(qreal newVolume) = 0;
