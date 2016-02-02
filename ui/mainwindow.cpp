@@ -202,7 +202,7 @@ void MainWindow::tick(qint64 /*pos*/)
     PTrack track = player_.getCurrentTrack();
     if (track) {
         QString progress = msToPrettyTime(player_.currentTime()) + " / " + msToPrettyTime(track->audioproperties.length * 1000);
-        QString format = QFileInfo(track->location).suffix().toUpper();
+        QString format = track->audioFormat();
         statusBar_.showMessage(QString("%1 %2kbps %3Hz  %4  %5").arg(format).arg(track->audioproperties.bitrate).arg(track->audioproperties.samplerate).arg(QChar(164)).arg(progress));
     }
 }
@@ -547,7 +547,7 @@ void MainWindow::updateUI(PTrack track)
             if (playlistTab)
                 playlistTab->updateCursor(player_.getPlayingIndex());
         }
-        QString track_info = track->metadata["artist"] + " - " + track->metadata["title"];
+        QString track_info = (track->metadata["artist"].isEmpty() ? QString() : track->metadata["artist"] + " - ") + track->metadata["title"];
         title =  track_info + "  [fubar]";
         tray_tooltip = track_info;
         seekMax = track->audioproperties.length;

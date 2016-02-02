@@ -32,7 +32,6 @@ QString audioStateToStr(AudioState as) {
 }
 }
 
-// TODO enable ytdl
 MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1) {
     setlocale(LC_NUMERIC, "C");
     handle_ = mpv::qt::Handle::FromRawHandle(mpv_create());
@@ -70,7 +69,7 @@ void MpvAudioOutput::setCurrentSource(const QString &source) {
 void MpvAudioOutput::clearQueue() { command(QVariantList({"playlist-clear"})); }
 
 qint64 MpvAudioOutput::currentTime() const {
-    auto r = get_property_variant(handle_, "playback-time");
+    auto r = get_property("playback-time");
     if (!r.isValid())
         return 0;
     return pos_to_qint64(r.toString().toStdString());
@@ -83,7 +82,7 @@ void MpvAudioOutput::enqueue(const QString &source) {
 void MpvAudioOutput::pause() { set_property("pause", true); }
 
 void MpvAudioOutput::play() {
-    auto paused = get_property_variant(handle_, "pause");
+    auto paused = get_property("pause");
     if (paused.isValid() and paused.toBool())
         set_property("pause", false);
 }
@@ -113,7 +112,7 @@ AudioState MpvAudioOutput::state() const { return state_; }
 void MpvAudioOutput::stop() { command(QVariantList({"stop"})); }
 
 qint64 MpvAudioOutput::totalTime() const {
-    auto d = get_property_variant(handle_, "duration");
+    auto d = get_property("duration");
     if (d == QVariant())
         return 0;
     return d.toInt();
@@ -172,7 +171,7 @@ void MpvAudioOutput::event_loop() {
                     double v = *reinterpret_cast<double *>(prop->data);
                     emit durationChanged(v);
                 } else if (std::string(prop->name) == "metadata") {
-                    // TODO get bitrate, samplerate, audio format, title
+                    emit metadataChanged(get_property("media-title").toString(), get_property("audio-format").toString());
                 }
             }
             break;
@@ -194,6 +193,10 @@ void MpvAudioOutput::set_property(const QString &name, const QVariant &v) {
     if (r < 0)
         qDebug() << "Failed to set property: " << name << " to " << v << ": "
                  << mpv_error_string(r);
+}
+
+QVariant MpvAudioOutput::get_property(const QString &name) const {
+    return get_property_variant(handle_, name);
 }
 
 void MpvAudioOutput::observe_property(const std::string &name, mpv_format format) {

@@ -25,7 +25,8 @@ public:
     Track() {}
     Track(proto::Track ptrack);
 
-    QString path() { return location; }
+    QString path() const { return location; }
+    QString audioFormat() const;
 
     void fillProtoTrack(proto::Track& ptrack);
 
@@ -34,6 +35,7 @@ public:
     // Url hax
     bool isUrl();
     void updateDuration(int duration);
+    void updateMetadata(const QString& title, const QString audioFormat);
 
     // CUE TRAX HAX
     bool isCueTrack();

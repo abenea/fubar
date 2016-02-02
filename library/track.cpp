@@ -47,6 +47,12 @@ void Track::fillProtoTrack(proto::Track& ptrack)
     }
 }
 
+QString Track::audioFormat() const {
+    if (metadata.count("audio-format"))
+        return metadata["audio-format"];
+    return QFileInfo(location).suffix().toUpper();
+}
+
 bool Track::isCue()
 {
     return location.toLower().endsWith(".cue");
@@ -122,6 +128,13 @@ bool Track::isUrl() {
 void Track::updateDuration(int duration) {
     if (isUrl())
         audioproperties.length = duration;
+}
+
+void Track::updateMetadata(const QString &title, const QString audioFormat) {
+    if (isUrl()) {
+        metadata["title"] = title;
+        metadata["audio-format"] = audioFormat;
+    }
 }
 
 void Track::updateAudioInfo(PTrack track)

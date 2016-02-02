@@ -76,6 +76,7 @@ private slots:
     void slotFinished();
     void configChanged(QString key, QVariant value);
     void durationChanged(double duration);
+    void metadataChanged(QString title, QString audioFormat);
 
 private:
     void setBuffering(PModel playlistModel, QModelIndex index, bool clearTrack = false);
