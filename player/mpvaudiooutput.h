@@ -35,6 +35,7 @@ private:
     void set_property(const QString& name, const QVariant& v);
     QVariant get_property(const QString& name) const;
     void observe_property(const std::string& name, mpv_format format=MPV_FORMAT_STRING);
+    void set_option(const QString &name, const QVariant &value);
 
     mpv::qt::Handle handle_;
     AudioState state_;

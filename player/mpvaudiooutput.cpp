@@ -37,9 +37,9 @@ MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1)
     handle_ = mpv::qt::Handle::FromRawHandle(mpv_create());
     if (static_cast<mpv_handle *>(handle_) == nullptr)
         qDebug() << "Cannot mpv_create()";
-    mpv::qt::set_option_variant(handle_, "vo", "null");
-    mpv::qt::set_option_variant(handle_, "softvol", "yes");
-    mpv::qt::set_option_variant(handle_, "ytdl", "yes");
+    set_option("no-video", true);
+    set_option("softvol", "yes");
+    set_option("ytdl", "yes");
     int r = mpv_initialize(handle_);
     if (r < 0) {
         qDebug() << "Failed to initialize mpv backend: " << mpv_error_string(r);
@@ -171,6 +171,7 @@ void MpvAudioOutput::event_loop() {
                     double v = *reinterpret_cast<double *>(prop->data);
                     emit durationChanged(v);
                 } else if (std::string(prop->name) == "metadata") {
+                    // TODO get prop audio-params audio-bitrate
                     emit metadataChanged(get_property("media-title").toString(), get_property("audio-format").toString());
                 }
             }
@@ -203,6 +204,12 @@ void MpvAudioOutput::observe_property(const std::string &name, mpv_format format
     auto r = mpv_observe_property(handle_, 0, name.c_str(), format);
     if (r < 0)
         qDebug() << "Failed mpv_observe_property " << name.c_str() << ": " << mpv_error_string(r);
+}
+
+void MpvAudioOutput::set_option(const QString &name, const QVariant &value) {
+    auto r = mpv::qt::set_option_variant(handle_, name, value);
+    if (r < 0)
+        qDebug() << "Failed mpv_set_option " << name << ": " << mpv_error_string(r);
 }
 
 void MpvAudioOutput::setState(AudioState newState) {
