@@ -86,6 +86,8 @@ std::pair<PModel, QPersistentModelIndex> Queue::popTrack()
 void Queue::popPeekedTrack()
 {
     peeked_ = false;
+    if (queue_.empty())
+        return;
     std::pair<PModel, QPersistentModelIndex> p = getFirst(true);
     p.first->notifyQueueStatusChanged({p.second});
 }
