@@ -25,7 +25,7 @@ public:
 
     Library* getLibrary() { return library_; }
 
-    void setPlaybackOrder(PlaybackOrder playbackOrder) { playbackOrder_ = playbackOrder; }
+    void setPlaybackOrder(PlaybackOrder playbackOrder);
     PlaybackOrder playbackOrder() { return playbackOrder_; }
 
     PTrack getCurrentTrack();

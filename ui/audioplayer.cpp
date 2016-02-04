@@ -100,6 +100,8 @@ void AudioPlayer::writeSettings()
 
 void AudioPlayer::aboutToFinish()
 {
+    if (!playingTrack_)
+        return;
     audioOutput_->clearQueue();
     if (!queue_.isEmpty()) {
         auto enqueued = queue_.peekTrack();
@@ -114,6 +116,11 @@ void AudioPlayer::aboutToFinish()
             return;
         bufferTrack(playingModel_, index);
     }
+}
+
+void AudioPlayer::setPlaybackOrder(PlaybackOrder playbackOrder) {
+    playbackOrder_ = playbackOrder;
+    aboutToFinish();
 }
 
 void AudioPlayer::setBuffering(PModel playlistModel, QModelIndex index, bool clearTrack)
