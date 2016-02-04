@@ -158,8 +158,11 @@ void AudioPlayer::bufferTrack(PModel playlistModel, QModelIndex index)
 void AudioPlayer::currentSourceChanged()
 {
 //     qDebug() << "currentSourceChanged() " << audioOutput_->currentTime() << " " << audioOutput_->totalTime();
-    if (queue_.peeked())
-        queue_.popPeekedTrack();
+    if (queue_.peeked()) {
+        auto p = queue_.peekTrack();
+        if (p.first == bufferingTrackPlaylist_ && p.second == bufferingIndex_)
+            queue_.popPeekedTrack();
+    }
     if (bufferingTrackPlaylist_) {
         setPlaying(bufferingTrackPlaylist_, bufferingIndex_);
         setBuffering(PModel(), QModelIndex(), true);
