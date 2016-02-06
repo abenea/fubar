@@ -18,21 +18,21 @@ void Playlist::addDirectory(const QString &path) {
     dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
     foreach (QFileInfo info, dir.entryInfoList()) {
         if (info.isFile()) {
-            addFile(info);
+            addFile(path);
         } else {
-            addDirectory(info.filePath());
+            addDirectory(path);
         }
     }
 }
 
-void Playlist::addFile(const QFileInfo &file) {
+void Playlist::addFile(const QString &path) {
     TagLib::FileRef fileref;
-    QByteArray encodedName = QFile::encodeName(file.filePath());
+    QByteArray encodedName = QFile::encodeName(path);
     fileref = TagLib::FileRef(encodedName.constData(), true);
 
     if (!fileref.isNull()) {
         shared_ptr<Track> track(new Track());
-        track->location = file.filePath();
+        track->location = path;
         if (TagLib::Tag *tag = fileref.tag()) {
             track->metadata["title"] = TStringToQString(tag->title());
             track->metadata["artist"] = TStringToQString(tag->artist());
@@ -52,14 +52,29 @@ void Playlist::addFile(const QFileInfo &file) {
     }
 }
 
+void Playlist::addM3u(const QString &path) {
+    QFile m3u(path);
+    if (!m3u.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    while (!m3u.atEnd()) {
+        QByteArray line = m3u.readLine();
+        if (!line.startsWith("#"))
+            addFile(line.trimmed());
+    }
+}
+
 void Playlist::addUrls(const QList<QUrl>& urls) {
     for (const auto& url: urls) {
         if (url.isLocalFile()) {
             QFileInfo info(url.toLocalFile());
             if (info.isDir())
                 addDirectory(info.absoluteFilePath());
-            else
-                addFile(info.absoluteFilePath());
+            else {
+                if (info.suffix() == "m3u")
+                    addM3u(info.absoluteFilePath());
+                else
+                    addFile(info.absoluteFilePath());
+            }
         } else {
             shared_ptr<Track> track(new Track());
             track->location = url.toString();

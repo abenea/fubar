@@ -14,9 +14,12 @@ public:
     bool synced;
 
     void addDirectory(const QString &path);
-    void addFile(const QFileInfo &file);
+    void addFile(const QString &path);
     void addUrls(const QList<QUrl>& urls);
 
     void deserialize(const QByteArray& bytes);
     void serialize(QByteArray& bytes) const;
+
+private:
+    void addM3u(const QString &path);
 };
