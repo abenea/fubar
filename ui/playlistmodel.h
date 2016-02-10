@@ -36,9 +36,11 @@ public:
     void clear();
     void deserialize(const QByteArray& data);
     QList<PTrack> getTracks(QModelIndexList trackList) const;
-    void libraryChanged(LibraryEvent event);
 
     void notifyQueueStatusChanged(std::vector<QPersistentModelIndex> indexes);
+
+public slots:
+    void libraryChanged(LibraryEvent event);
 
 signals:
     void queueStatusChanged(std::vector<QPersistentModelIndex> indexes);
