@@ -445,20 +445,22 @@ void AudioPlayer::durationChanged(double duration) {
     if (!playingTrack_)
         return;
 
-    playingTrack_->updateDuration(static_cast<int>(duration));
-    playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
-    // Update UI
-    emit trackPlaying(playingTrack_);
+    if (playingTrack_->updateDuration(static_cast<int>(duration))) {
+        playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
+        // Update UI
+        emit trackPlaying(playingTrack_);
+    }
 }
 
 void AudioPlayer::metadataChanged(QString title, QString audioFormat, int sampleRate) {
     if (!playingTrack_)
         return;
 
-    playingTrack_->updateMetadata(title, audioFormat, sampleRate);
-    playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
-    // Update UI
-    emit trackPlaying(playingTrack_);
+    if (playingTrack_->updateMetadata(title, audioFormat, sampleRate)) {
+        playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
+        // Update UI
+        emit trackPlaying(playingTrack_);
+    }
 }
 
 AudioPlayer::ReplayGainMode AudioPlayer::replayGainFromString(QString str)

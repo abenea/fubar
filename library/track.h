@@ -34,8 +34,8 @@ public:
 
     // Url hax
     bool isUrl();
-    void updateDuration(int duration);
-    void updateMetadata(const QString& title, const QString& audioFormat, int sampleRate);
+    bool updateDuration(int duration);
+    bool updateMetadata(const QString& title, const QString& audioFormat, int sampleRate);
 
     // CUE TRAX HAX
     bool isCueTrack();

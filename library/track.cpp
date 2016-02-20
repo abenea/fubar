@@ -125,17 +125,22 @@ bool Track::isUrl() {
     return location.startsWith("http");
 }
 
-void Track::updateDuration(int duration) {
-    if (isUrl())
+bool Track::updateDuration(int duration) {
+    if (isUrl()) {
         audioproperties.length = duration;
+        return true;
+    }
+    return false;
 }
 
-void Track::updateMetadata(const QString &title, const QString& audioFormat, int sampleRate) {
+bool Track::updateMetadata(const QString &title, const QString& audioFormat, int sampleRate) {
     if (isUrl()) {
         metadata["title"] = title;
         metadata["audio-format"] = audioFormat;
         audioproperties.samplerate = sampleRate;
+        return true;
     }
+    return false;
 }
 
 void Track::updateAudioInfo(PTrack track)
