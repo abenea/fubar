@@ -651,9 +651,11 @@ void Library::fileCallback(QString path, LibraryEventType event)
                 if (oldTrack->mtime != fileInfo.lastModified().toTime_t()) {
 //                    qDebug() << "FILE MODIFY " << path;
                     PTrack track = scanFile(path);
-                    it.value()->addFile(track);
-                    dirty_ = true;
-                    emitLibraryChanged(track, MODIFY);
+                    if (track) {
+                        it.value()->addFile(track);
+                        dirty_ = true;
+                        emitLibraryChanged(track, MODIFY);
+                    }
                 }
             } else {
                 // We tried taglib-reading this but it failed
