@@ -18,9 +18,9 @@ void Playlist::addDirectory(const QString &path) {
     dir.setFilter(QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot);
     foreach (QFileInfo info, dir.entryInfoList()) {
         if (info.isFile()) {
-            addFile(path);
+            addFile(info.absoluteFilePath());
         } else {
-            addDirectory(path);
+            addDirectory(info.absoluteFilePath());
         }
     }
 }
