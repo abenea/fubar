@@ -166,7 +166,10 @@ void MpvAudioOutput::event_loop() {
                         setState(AudioState::Playing);
                 } else if (std::string(prop->name) == "pause") {
                     int pause = *reinterpret_cast<int *>(prop->data);
-                    setState(pause ? AudioState::Paused : AudioState::Playing);
+                    if (pause)
+                        setState(AudioState::Paused);
+                    else if (state_ == AudioState::Paused)
+                        setState(AudioState::Playing);
                 } else if (std::string(prop->name) == "duration") {
                     double v = *reinterpret_cast<double *>(prop->data);
                     emit durationChanged(v);
