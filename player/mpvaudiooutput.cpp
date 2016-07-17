@@ -32,7 +32,7 @@ QString audioStateToStr(AudioState as) {
 }
 }
 
-MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1) {
+MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1), volumeNeverSet_(true) {
     setlocale(LC_NUMERIC, "C");
     handle_ = mpv::qt::Handle::FromRawHandle(mpv_create());
     if (static_cast<mpv_handle *>(handle_) == nullptr)
@@ -103,7 +103,8 @@ void MpvAudioOutput::setVolume(qreal newVolume) {
 
 void MpvAudioOutput::setVolume() {
     if (state_ == AudioState::Playing || state_ == AudioState::Paused) {
-        set_property("volume", volume_);
+        if (set_property("volume", volume_))
+            volumeNeverSet_ = false;
     }
 }
 
@@ -157,6 +158,8 @@ void MpvAudioOutput::event_loop() {
                 if (std::string(prop->name) == "playback-time") {
                     std::string pos(*(reinterpret_cast<char **>(prop->data)));
                     emit tick(pos_to_qint64(pos));
+                    if (volumeNeverSet_)
+                        setVolume();
                 } else if (std::string(prop->name) == "idle") {
                     int idle = *reinterpret_cast<int *>(prop->data);
                     if (idle) {
@@ -193,11 +196,14 @@ void MpvAudioOutput::command(const QVariant &args) {
         qDebug() << "Command failed: " << args << " " << mpv_error_string(r);
 }
 
-void MpvAudioOutput::set_property(const QString &name, const QVariant &v) {
+bool MpvAudioOutput::set_property(const QString &name, const QVariant &v) {
     int r = set_property_variant(handle_, name, v);
-    if (r < 0)
+    if (r < 0) {
         qDebug() << "Failed to set property: " << name << " to " << v << ": "
                  << mpv_error_string(r);
+        return false;
+    }
+    return true;
 }
 
 QVariant MpvAudioOutput::get_property(const QString &name) const {

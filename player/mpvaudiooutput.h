@@ -32,7 +32,7 @@ private:
     void setState(AudioState newState);
     void event_loop();
     void command(const QVariant& args);
-    void set_property(const QString& name, const QVariant& v);
+    bool set_property(const QString& name, const QVariant& v);
     QVariant get_property(const QString& name) const;
     void observe_property(const std::string& name, mpv_format format=MPV_FORMAT_STRING);
     void set_option(const QString &name, const QVariant &value);
@@ -42,4 +42,5 @@ private:
     std::unique_ptr<std::thread> thread_;
     qreal volume_;
     qint64 seek_offset_;
+    bool volumeNeverSet_;
 };
