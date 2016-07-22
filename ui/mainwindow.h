@@ -82,6 +82,8 @@ private slots:
     void on_mainToolBar_actionTriggered(QAction* action);
 
     void on_showLyricsAction_triggered();
+    void dockVisibilityChanged(bool visible);
+    void consoleVisibilityChanged(bool visible);
 
     void tick(qint64 pos);
 
@@ -108,7 +110,7 @@ private slots:
 
 private:
     void readDockSettings(QDockWidget* dock, QString name);
-    void writeDockSettings(QDockWidget* dock, QString name);
+    void writeDockSettings(QDockWidget* dock, QString name, bool isVisible);
     void setDockSize(QDockWidget *dock, QSize size);
     std::deque<std::function<void()>> dockHackFunctions_;
 
@@ -131,6 +133,8 @@ private:
     QSystemTrayIcon *trayIcon_;
 
     ConsoleWindow* console_;
+    bool consoleEnabled_ = false;
+    bool lyricsDockEnabled_ = false;
     Config config_;
 
     QDockWidget* lyricsDock_;

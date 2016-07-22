@@ -80,6 +80,8 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
 //     lyricsWidget_->setObjectName("LyricsWidget");
     lyricsWidget_->setReadOnly(true);
     lyricsDock_->setWidget(lyricsWidget_);
+    QObject::connect(lyricsDock_, SIGNAL(visibilityChanged(bool)), this, SLOT(dockVisibilityChanged(bool)));
+
 
 //     playlistTabs->setTabsClosable(true);
     QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(removePlaylistTab(int)));
@@ -92,6 +94,7 @@ MainWindow::MainWindow(AudioPlayer& player, QWidget *parent)
     instance = this;
 
     console_ = new ConsoleWindow(this);
+    QObject::connect(console_, SIGNAL(visibilityChanged(bool)), this, SLOT(consoleVisibilityChanged(bool)));
 
     readSettings();
 
@@ -361,13 +364,13 @@ std::function<QString (const QString&)> dockSetting(QString &name)
     return [&name](const QString& s) -> QString {return name + "/" + s;};
 }
 
-void MainWindow::writeDockSettings(QDockWidget* dock, QString name)
+void MainWindow::writeDockSettings(QDockWidget* dock, QString name, bool isVisible)
 {
     QSettings settings;
     auto setting = dockSetting(name);
     settings.setValue(setting("dockarea"), dockWidgetArea(dock));
     settings.setValue(setting("floating"), dock->isFloating());
-    settings.setValue(setting("visible"), dock->isVisible());
+    settings.setValue(setting("visible"), isVisible);
     settings.setValue(setting("size"), dock->size());
     settings.setValue(setting("pos"), dock->pos());
 }
@@ -434,8 +437,8 @@ void MainWindow::writeSettings()
     settings.setValue("mainwindow/maximized", isMaximized());
     settings.setValue("mainwindow/geometry", saveGeometry());
     settings.setValue("mainwindow/state", saveState());
-    writeDockSettings(lyricsDock_, "lyrics");
-    writeDockSettings(console_, "console");
+    writeDockSettings(lyricsDock_, "lyrics", lyricsDockEnabled_);
+    writeDockSettings(console_, "console", consoleEnabled_);
 
     settings.setValue("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_);
 
@@ -618,10 +621,11 @@ bool MainWindow::isEnqueued(PlaylistTab* playlistTab, QModelIndex index)
 
 void MainWindow::showHideConsole()
 {
-    if (console_->isHidden())
+    if (console_->isHidden()) {
         console_->show();
-    else
+    } else {
         console_->hide();
+    }
 }
 
 bool MainWindow::eventFilter(QObject* /*watched*/, QEvent* event)
@@ -664,4 +668,16 @@ void MainWindow::restoreMaximizedState()
     QSettings qsettings;
     if (qsettings.value("mainwindow/maximized", true).toBool())
         KWindowSystem::setState(winId(), NET::Max);
+}
+
+void MainWindow::dockVisibilityChanged(bool visible)
+{
+    if (isVisible())
+        lyricsDockEnabled_ = visible;
+}
+
+void MainWindow::consoleVisibilityChanged(bool visible)
+{
+    if (isVisible())
+        consoleEnabled_ = visible;
 }
