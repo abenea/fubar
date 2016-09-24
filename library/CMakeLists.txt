@@ -1,5 +1,5 @@
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS track.proto)
-include_directories(${TAGLIB_INCLUDE_DIR} ${CUE_INCLUDE_DIR})
+include_directories(${TAGLIB_INCLUDE_DIR} ${CUE_INCLUDE_DIRS})
 add_library(library
             directorywatcher.cpp
             directory.cpp

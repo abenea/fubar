@@ -1,6 +1,6 @@
 #include "cuefile.h"
 extern "C" {
-#include <libcue.h>
+#include <libcue/libcue.h>
 }
 #include <QDebug>
 #include <stdexcept>
