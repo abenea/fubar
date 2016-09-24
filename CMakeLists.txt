@@ -15,6 +15,7 @@ find_package(Protobuf REQUIRED)
 find_package(MPV REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x -fexceptions -lpthread")
+add_definitions(-DPROTOBUF_INLINE_NOT_IN_HEADERS=0)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
