@@ -56,6 +56,7 @@ public slots:
     void showHide();
     void removePlaylistTab(int index);
     void on_clearQueueAction_triggered();
+    void lyricsUpdated(PTrack track);
 
 protected:
     virtual void closeEvent(QCloseEvent* );

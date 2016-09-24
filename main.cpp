@@ -4,6 +4,7 @@
 #include "ui/pluginmanager.h"
 #include "ui/mainwindow.h"
 #include "ui/unixsignalshandler.h"
+#include <glyr/glyr.h>
 #include <QtGui/QApplication>
 #include <QFileInfo>
 #include <QDir>
@@ -46,6 +47,9 @@ int main(int argc, char *argv[]) {
 
     qRegisterMetaType<AudioState>("AudioState");
     qRegisterMetaType<LibraryEvent>("LibraryEvent");
+
+    glyr_init();
+    atexit(glyr_cleanup);
 
     Library library;
     AudioPlayer player(&library, argc > 1 ? Backend::phonon : Backend::mpv);

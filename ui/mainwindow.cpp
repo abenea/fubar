@@ -8,6 +8,8 @@
 #include "librarypreferencesdialog.h"
 #include "consolewindow.h"
 #include "configwindow.h"
+#include "lyricsthread.h"
+#include "lyricsthreaddeleter.h"
 #include <Qt>
 #include <QTableView>
 #include <QSettings>
@@ -502,6 +504,11 @@ void MainWindow::focusFilter() {
         getActivePlaylist()->focusFilter();
 }
 
+void MainWindow::lyricsUpdated(PTrack track) {
+    if (player_.getCurrentTrack() == track)
+        lyricsWidget_->setPlainText(track->metadata.value("lyrics"));
+}
+
 void MainWindow::updateUI(PTrack track) {
     int seekMax = 0;
     QString title = "fubar";
@@ -518,7 +525,15 @@ void MainWindow::updateUI(PTrack track) {
         title = track_info + "  [fubar]";
         tray_tooltip = track_info;
         seekMax = track->audioproperties.length;
-        lyricsWidget_->setPlainText(track->metadata.value("lyrics"));
+        if (track->metadata.value("lyrics").isEmpty()) {
+            if (!track->metadata.value("artist").isEmpty() &&
+                !track->metadata.value("title").isEmpty()) {
+                LyricsThread *thread = new LyricsThread(track, this);
+                new LyricsThreadDeleter(thread);
+                thread->start();
+            }
+        } else
+            lyricsWidget_->setPlainText(track->metadata.value("lyrics"));
     }
     trayIcon_->setToolTip(tray_tooltip);
     setWindowTitle(title);
