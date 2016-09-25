@@ -525,6 +525,7 @@ void MainWindow::updateUI(PTrack track) {
         title = track_info + "  [fubar]";
         tray_tooltip = track_info;
         seekMax = track->audioproperties.length;
+        lyricsWidget_->setPlainText(track->metadata.value("lyrics"));
         if (track->metadata.value("lyrics").isEmpty()) {
             if (!track->metadata.value("artist").isEmpty() &&
                 !track->metadata.value("title").isEmpty()) {
@@ -532,8 +533,7 @@ void MainWindow::updateUI(PTrack track) {
                 new LyricsThreadDeleter(thread);
                 thread->start();
             }
-        } else
-            lyricsWidget_->setPlainText(track->metadata.value("lyrics"));
+        }
     }
     trayIcon_->setToolTip(tray_tooltip);
     setWindowTitle(title);
