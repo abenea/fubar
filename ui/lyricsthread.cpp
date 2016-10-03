@@ -20,7 +20,7 @@ void fetchLyrics(PTrack track) {
     glyr_opt_title(&my_query, qPrintable(track->metadata["title"]));
     list = glyr_get(&my_query, NULL, NULL);
     if (list) {
-        track->metadata["lyrics"] = list->data;
+        track->metadata["lyrics"] = QString::fromUtf8(list->data);
         qDebug() << "Got lyrics from " << list->prov;
     }
 }
