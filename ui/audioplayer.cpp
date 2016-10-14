@@ -446,7 +446,8 @@ void AudioPlayer::durationChanged(double duration) {
         return;
 
     if (playingTrack_->updateDuration(static_cast<int>(duration))) {
-        playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
+        if (playingModel_)
+            playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
         // Update UI
         emit trackPlaying(playingTrack_);
     }
@@ -457,7 +458,8 @@ void AudioPlayer::metadataChanged(QString title, QString audioFormat, int sample
         return;
 
     if (playingTrack_->updateMetadata(title, audioFormat, sampleRate)) {
-        playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
+        if (playingModel_)
+            playingModel_->libraryChanged(LibraryEvent(playingTrack_, LibraryEventType::MODIFY));
         // Update UI
         emit trackPlaying(playingTrack_);
     }
