@@ -232,7 +232,6 @@ void AudioPlayer::playPause()
 }
 
 void AudioPlayer::pause() {
-    qDebug() << "AudioPlayer::pause()";
     if (audioOutput_->state() == AudioState::Playing)
         audioOutput_->pause();
 }
