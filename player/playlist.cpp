@@ -78,6 +78,7 @@ void Playlist::addUrls(const QList<QUrl>& urls) {
         } else {
             shared_ptr<Track> track(new Track());
             track->location = url.toString();
+            track->audioproperties.length = 0;
             tracks.append(track);
         }
     }
