@@ -14,10 +14,10 @@ class Track
 public:
     QString location;
     struct AudioProperties {
-        int length;
-        int bitrate;
-        int samplerate;
-        int channels;
+        int length = 0;
+        int bitrate = 0;
+        int samplerate = 0;
+        int channels = 0;
     } audioproperties;
     QMap<QString, QString> metadata;
     uint mtime;
