@@ -5,8 +5,12 @@
 #include <QDebug>
 #include <QUrl>
 #include <QMimeData>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <cassert>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -117,6 +121,69 @@ QModelIndex PlaylistModel::index(int row, int column, const QModelIndex& parent)
 void PlaylistModel::addUrls(const QList<QUrl>& urls) {
     int oldSize = playlist_.tracks.size();
     playlist_.addUrls(urls);
+    int newSize = playlist_.tracks.size();
+    if (newSize > oldSize) {
+        beginInsertRows(QModelIndex(), oldSize, newSize - 1);
+        endInsertRows();
+    }
+    for (const QUrl& url : urls) {
+        if (!url.host().contains("youtube.com"))
+            continue;
+        QProcess *ytcue = new QProcess();
+        QObject::connect(ytcue, SIGNAL(readyRead()), this, SLOT(youtube_cue_output()));
+        QObject::connect(ytcue, SIGNAL(finished(int)), this, SLOT(youtube_cue_finished(int)));
+        QObject::connect(ytcue, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(youtube_cue_error(QProcess::ProcessError)));
+        ytcue->start("youtube-cue " + url.toString());
+    }
+}
+
+void PlaylistModel::youtube_cue_finished(int status)
+{
+    QProcess *ytcue = qobject_cast<QProcess*>(QObject::sender());
+    if (status)
+        qWarning() << "youtube-cue returned status " << status;
+    ytcue->deleteLater();
+}
+
+void PlaylistModel::youtube_cue_error(QProcess::ProcessError error)
+{
+    QProcess *ytcue = qobject_cast<QProcess*>(QObject::sender());
+    qWarning() << "youtube-cue process error " << error;
+    ytcue->deleteLater();
+}
+
+void PlaylistModel::youtube_cue_output()
+{
+    QProcess *ytcue = qobject_cast<QProcess*>(QObject::sender());
+    QByteArray output = ytcue->readAll();
+    qDebug() << "read from yt-cue\n" << QString(output);
+    QJsonParseError parseError;
+    auto jsonDoc = QJsonDocument::fromJson(output, &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        qWarning() << "Error parsing json from youtube-cue at offset " << parseError.offset << ": "
+                   << parseError.errorString();
+        return;
+    }
+    if (!jsonDoc.isObject()) {
+        qWarning() << "json from youtube-cue is not an object";
+        return;
+    }
+
+    int oldSize = playlist_.tracks.size();
+    auto o = jsonDoc.object().toVariantMap();
+    QString url = o["url"].toString();
+    int i = 0;
+    for (const auto & info : jsonDoc.object().value("tracks").toArray()) {
+        QVariantMap track_info = info.toObject().toVariantMap();
+        shared_ptr<Track> track(new Track());
+        track->location = url;
+        track->metadata["album"] = o["title"].toString();
+        track->metadata["title"] = track_info["title"].toString();
+        track->metadata["_cue_offset"] = QString::number(track_info["offset"].toInt() * 1000);
+        track->metadata["track"] = QString::number(++i);
+        track->audioproperties.length = track_info["duration"].toInt();
+        playlist_.tracks.append(track);
+    }
     int newSize = playlist_.tracks.size();
     if (newSize > oldSize) {
         beginInsertRows(QModelIndex(), oldSize, newSize - 1);

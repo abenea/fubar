@@ -4,6 +4,7 @@
 
 #include <QAbstractTableModel>
 #include <QStringList>
+#include <QProcess>
 #include <memory>
 #include <vector>
 
@@ -47,7 +48,9 @@ signals:
 
 protected slots:
     void libraryChanged(QList<PTrack> tracks);
-
+    void youtube_cue_output();
+    void youtube_cue_finished(int status);
+    void youtube_cue_error(QProcess::ProcessError error);
 private:
     Playlist playlist_;
     Qt::DropActions dropActions_;

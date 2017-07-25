@@ -126,7 +126,7 @@ bool Track::isUrl() {
 }
 
 bool Track::updateDuration(int duration) {
-    if (isUrl()) {
+    if (isUrl() && !isCueTrack()) {
         audioproperties.length = duration;
         return true;
     }
@@ -134,7 +134,7 @@ bool Track::updateDuration(int duration) {
 }
 
 bool Track::updateMetadata(const QString &title, const QString& audioFormat, int sampleRate) {
-    if (isUrl()) {
+    if (isUrl() && !isCueTrack()) {
         metadata["title"] = title;
         metadata["audio-format"] = audioFormat;
         audioproperties.samplerate = sampleRate;
