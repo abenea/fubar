@@ -34,7 +34,3 @@ void ScreensaverPlugin::stateChanged(bool active) {
     if (active)
         emit pause();
 }
-
-QT_BEGIN_NAMESPACE
-Q_EXPORT_PLUGIN2(screensaver, ScreensaverPlugin);
-QT_END_NAMESPACE

@@ -1,5 +1,4 @@
 #include "audioplayer.h"
-#include "player/phononaudiooutput.h"
 #include "player/mpvaudiooutput.h"
 #include "ui/mainwindow.h"
 #include "library/library.h"
@@ -22,10 +21,7 @@ AudioPlayer::AudioPlayer(Library* library, Backend backend, bool testing, QObjec
     , lengthHack_(false)
     , testing_(testing)
 {
-    if (backend == Backend::mpv)
-        audioOutput_.reset(new MpvAudioOutput);
-    else
-        audioOutput_.reset(new PhononAudioOutput);
+    audioOutput_.reset(new MpvAudioOutput);
     QObject::connect(audioOutput_.get(), SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
     QObject::connect(audioOutput_.get(), SIGNAL(currentSourceChanged()), this, SLOT(currentSourceChanged()));
     QObject::connect(audioOutput_.get(), SIGNAL(tick(qint64)), this, SLOT(slotTick(qint64)));

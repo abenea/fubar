@@ -6,8 +6,8 @@
 #include <QNetworkReply>
 #include <QSettings>
 #include <QDir>
-#include <lastfm/ws.h>
-#include <lastfm/XmlQuery.h>
+#include <lastfm5/ws.h>
+#include <lastfm5/XmlQuery.h>
 #include <cstdio>
 
 LastfmPlugin::LastfmPlugin(QObject* parent)
@@ -206,8 +206,3 @@ void LastfmPlugin::configure()
     Preferences* widget = new Preferences(*this);
     widget->show();
 }
-
-
-QT_BEGIN_NAMESPACE
-Q_EXPORT_PLUGIN2(lastfm, LastfmPlugin);
-QT_END_NAMESPACE

@@ -15,10 +15,10 @@ find_path(LIBLASTFM_INCLUDE_DIR NAMES global.h
    /usr/local/include
    /opt/kde4/include
    ${KDE4_INCLUDE_DIR}
-   PATH_SUFFIXES lastfm
+   PATH_SUFFIXES lastfm5
 )
 
-find_library( LIBLASTFM_LIBRARY NAMES lastfm
+find_library( LIBLASTFM_LIBRARY NAMES lastfm5
     PATHS
     ~/usr/lib
    /opt/local/lib

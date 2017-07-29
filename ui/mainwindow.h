@@ -7,7 +7,7 @@
 #include "statusbar.h"
 #include "seekslider.h"
 #include "pluginspreferences.h"
-#include <QtGui/QMainWindow>
+#include <QtWidgets/QMainWindow>
 #include <QModelIndex>
 #include <QKeySequence>
 #include <QSystemTrayIcon>

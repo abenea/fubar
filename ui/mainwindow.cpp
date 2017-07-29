@@ -26,7 +26,7 @@
 #include <QtCore/qmath.h>
 #include <QTimer>
 #include <kwindowsystem.h>
-#include <kaction.h>
+#include <kglobalaccel.h>
 #include <netwm_def.h>
 
 MainWindow *MainWindow::instance = 0;
@@ -123,9 +123,9 @@ void MainWindow::addGlobalShortcut(QKeySequence shortcut,
                                    QObject *object,
                                    const char *slot,
                                    QString name) {
-    KAction *action = new KAction(name, this);
+    QAction *action = new QAction(name, this);
     action->setObjectName(name);
-    action->setGlobalShortcut(KShortcut(shortcut), KAction::ActiveShortcut, KAction::Autoloading);
+    KGlobalAccel::setGlobalShortcut(action, shortcut);
     QObject::connect(action, SIGNAL(triggered()), object, slot);
 }
 

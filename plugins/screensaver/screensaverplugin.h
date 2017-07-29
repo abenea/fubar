@@ -6,6 +6,7 @@ class ScreensaverPlugin : public QObject, public PluginInterface
 {
     Q_OBJECT
     Q_INTERFACES(PluginInterface)
+    Q_PLUGIN_METADATA(IID "fubar.ScreenSaver" FILE "screensaver.json")
 
 public:
     explicit ScreensaverPlugin(QObject* parent = 0);

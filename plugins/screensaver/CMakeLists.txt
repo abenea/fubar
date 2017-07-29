@@ -1,8 +1,8 @@
 project(screensaver)
 
-find_package(Qt4 4.5 REQUIRED QtCore QtDBus)
+find_package(Qt5 5.0 REQUIRED Core DBus)
 
 add_library(screensaver SHARED screensaverplugin.cpp)
-target_link_libraries(screensaver Qt4::QtDBus)
+target_link_libraries(screensaver Qt5::DBus)
 
 install(TARGETS screensaver DESTINATION lib/fubar/)

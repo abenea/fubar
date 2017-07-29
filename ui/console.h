@@ -12,7 +12,7 @@ signals:
 
 private:
     Console();
-    void update(QtMsgType type, const char* message);
+    void update(QtMsgType type, const QString &message);
 
     static Console* instance_;
 };
