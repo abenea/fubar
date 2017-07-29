@@ -2,12 +2,11 @@ cmake_minimum_required(VERSION 2.8.12)
 project(fubar)
 enable_testing()
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-find_package(Qt4 4.5 REQUIRED QtCore QtGui QtTest Phonon)
-set(CMAKE_AUTOMOC ON)
-find_package(KDE4 REQUIRED)
-
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+find_package(Qt5 5.0 REQUIRED Core Gui Widgets Test)
+find_package(KF5WindowSystem)
+find_package(KF5GlobalAccel)
 find_package(Cue REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Taglib 1.8.0 REQUIRED)
@@ -15,6 +14,7 @@ find_package(Protobuf REQUIRED)
 find_package(MPV REQUIRED)
 find_package(Glyr REQUIRED)
 
+set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x -fexceptions -lpthread")
 add_definitions(-DPROTOBUF_INLINE_NOT_IN_HEADERS=0)
 
@@ -28,15 +28,15 @@ function(add_qtest name src libs)
 endfunction()
 
 add_library(util util.cpp)
-target_link_libraries(util Qt4::QtCore)
+target_link_libraries(util Qt5::Core)
 
 add_subdirectory(ui)
 add_subdirectory(library)
 add_subdirectory(player)
 add_subdirectory(plugins)
 
-qt4_add_resources(ui_RC ui/icons/icons.qrc)
+qt5_add_resources(ui_RC ui/icons/icons.qrc)
 add_executable(fubar main.cpp ${ui_RC})
-target_link_libraries(fubar util ui player library Qt4::QtGui ${TAGLIB_LIBRARY} ${KDE4_KDEUI_LIBRARY} ${GLYR_LIBRARIES})
+target_link_libraries(fubar util ui player library Qt5::Gui)
 
 install(TARGETS fubar DESTINATION bin/)

@@ -6,8 +6,8 @@
 #include <QString>
 #include "plugins/PluginInterface.h"
 #include "library/track_forward.h"
-#include <lastfm/Track.h>
-#include <lastfm/Audioscrobbler.h>
+#include <lastfm5/Track.h>
+#include <lastfm5/Audioscrobbler.h>
 #include <memory>
 
 class QNetworkReply;
@@ -23,6 +23,7 @@ class LastfmPlugin : public QObject, public PluginInterface
 {
     Q_OBJECT
     Q_INTERFACES(PluginInterface)
+    Q_PLUGIN_METADATA(IID "fubar.lastfm" FILE "lastfm.json")
 
 public:
     explicit LastfmPlugin(QObject* parent = 0);

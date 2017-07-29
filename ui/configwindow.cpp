@@ -9,7 +9,7 @@ ConfigWindow::ConfigWindow(Config& config, QWidget* parent)
 {
     setupUi(this);
     tableView->verticalHeader()->hide();
-    tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     model_.setHorizontalHeaderLabels({"Preference name", "Type", "Value"});
     for (auto& kv : config_.config_) {
         // name

@@ -5,7 +5,7 @@
 #include "ui/mainwindow.h"
 #include "ui/unixsignalshandler.h"
 #include <glyr/glyr.h>
-#include <QtGui/QApplication>
+#include <QtWidgets/QApplication>
 #include <QFileInfo>
 #include <QDir>
 #include <QDebug>
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     atexit(glyr_cleanup);
 
     Library library;
-    AudioPlayer player(&library, argc > 1 ? Backend::phonon : Backend::mpv);
+    AudioPlayer player(&library, Backend::mpv);
     MainWindow w(player);
     w.show();
 
@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
 
     library.start();
     QObject::connect(&a, SIGNAL(lastWindowClosed()), &library, SLOT(quit()));
+    QObject::connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
 
     int ret = a.exec();
     library.wait();
