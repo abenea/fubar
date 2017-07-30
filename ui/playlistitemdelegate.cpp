@@ -75,7 +75,7 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     }
 
     // Paint the track
-    QStyleOptionViewItemV4 back(option);
+    QStyleOptionViewItem back(option);
     back.rect = trackOption.rect;
     QApplication::style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &back, painter);
 
