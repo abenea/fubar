@@ -207,9 +207,11 @@ void MainWindow::tick(qint64 /*pos*/) {
         QString progress = msToPrettyTime(player_.currentTime()) + " / " +
                            msToPrettyTime(track->audioproperties.length * 1000);
         QString format = track->audioFormat();
-        statusBar_.showMessage(QString("%1 %2kbps %3Hz  %4  %5")
-                                   .arg(format)
-                                   .arg(track->audioproperties.bitrate)
+        statusBar_.showMessage(format + " " +
+                               (track->audioproperties.bitrate
+                                    ? QString("%2kbps ").arg(track->audioproperties.bitrate)
+                                    : "") +
+                               QString("%3Hz  %4  %5")
                                    .arg(track->audioproperties.samplerate)
                                    .arg(QChar(164))
                                    .arg(progress));
