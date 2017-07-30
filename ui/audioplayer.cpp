@@ -328,7 +328,9 @@ void AudioPlayer::play(PModel playlistModel, const QModelIndex& index)
     if (currentlyPlayingTrack && audioOutput_->state() == AudioState::Playing && currentlyPlayingTrack->isCueTrack() && playingTrack_->isCueTrack()
         && currentlyPlayingTrack->location == playingTrack_->location) {
         // Playing in the same cue file
-        audioOutput_->seek(playingTrack_->cueOffset());
+        if (currentlyPlayingTrack->metadata["track"] + 1 != playingTrack_->metadata["track"])
+            // Don't seek if we're going to the next track
+            audioOutput_->seek(playingTrack_->cueOffset());
         emit trackPlaying(playingTrack_);
         emit trackPositionChanged(0, true);
     } else {
