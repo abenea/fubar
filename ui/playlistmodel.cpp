@@ -177,7 +177,9 @@ void PlaylistModel::youtube_cue_output()
         QVariantMap track_info = info.toObject().toVariantMap();
         shared_ptr<Track> track(new Track());
         track->location = url;
-        track->metadata["album"] = o["title"].toString();
+        if (o.count("artist"))
+            track->metadata["artist"] = o["artist"].toString();
+        track->metadata["album"] = o.count("album") ? o["album"].toString() : o["title"].toString();
         track->metadata["title"] = track_info["title"].toString();
         track->metadata["_cue_offset"] = QString::number(track_info["offset"].toInt() * 1000);
         track->metadata["track"] = QString::number(++i);
