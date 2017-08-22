@@ -169,10 +169,24 @@ void PlaylistModel::youtube_cue_output()
         return;
     }
 
-    int oldSize = playlist_.tracks.size();
     auto o = jsonDoc.object().toVariantMap();
     QString url = o["url"].toString();
+    // Remove url
     int i = 0;
+    for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end(); ++it) {
+        PTrack &track = *it;
+        if (track->location == url && !track->isCueTrack()) {
+            beginRemoveRows(QModelIndex(), i, i);
+            it = playlist_.tracks.erase(it);
+            endRemoveRows();
+            break;
+        }
+        ++i;
+    }
+
+    // Add url cue tracks
+    int oldSize = playlist_.tracks.size();
+    i = 0;
     for (const auto & info : jsonDoc.object().value("tracks").toArray()) {
         QVariantMap track_info = info.toObject().toVariantMap();
         shared_ptr<Track> track(new Track());
