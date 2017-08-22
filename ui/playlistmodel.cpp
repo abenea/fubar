@@ -254,17 +254,6 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
             }
             ++i;
         }
-    } else if (event.op == DELETE_CUE) {
-        int i = 0;
-        for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end(); ++it) {
-            PTrack track = *it;
-            if (track->location == event.track->location && track->isCueTrack()) {
-                beginRemoveRows(QModelIndex(), i, i);
-                playlist_.tracks.erase(it);
-                endRemoveRows();
-            }
-            ++i;
-        }
     }
 }
 
