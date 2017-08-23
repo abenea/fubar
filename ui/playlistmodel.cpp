@@ -164,10 +164,10 @@ void PlaylistModel::youtube_cue_output()
                    << parseError.errorString();
         return;
     }
-    if (!jsonDoc.isObject()) {
-        qWarning() << "json from youtube-cue is not an object";
+    if (!jsonDoc.isObject() || !jsonDoc.object().contains("tracks") ||
+        !jsonDoc.object().value("tracks").isArray() ||
+        jsonDoc.object().value("tracks").toArray().size() == 0)
         return;
-    }
 
     auto o = jsonDoc.object().toVariantMap();
     QString url = o["url"].toString();
