@@ -190,6 +190,9 @@ void AudioPlayer::slotTick(qint64 pos)
     // Cue hack: if we're past the cue track position, go to next track
     if (playingTrack_ && playingTrack_->isCueTrack() && playingTrack_->audioproperties.length
         && playingTrack_->audioproperties.length * 1000 + 1000 <= trackpos) {
+        if (!bufferingTrack_)
+            // If there's no track to go to, stop
+            stop();
         aboutToFinish();
         slotFinished();
     }
