@@ -133,7 +133,7 @@ void PlaylistModel::addUrls(const QList<QUrl>& urls) {
         QObject::connect(ytcue, SIGNAL(readyRead()), this, SLOT(youtube_cue_output()));
         QObject::connect(ytcue, SIGNAL(finished(int)), this, SLOT(youtube_cue_finished(int)));
         QObject::connect(ytcue, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(youtube_cue_error(QProcess::ProcessError)));
-        ytcue->start("youtube-cue " + url.toString());
+        ytcue->start("youtube-cue --musicbrainz-app fubar --musicbrainz-version 0.1 " + url.toString());
     }
 }
 
