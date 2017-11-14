@@ -3,8 +3,8 @@ Section: sound
 Priority: optional
 Maintainer: Andrei Benea <abenea@gmail.com>
 Build-Depends: debhelper (>= 9.0.0), cmake, protobuf-compiler, libprotobuf-dev,
- libboost-system-dev, libcue-dev, liblastfm-dev, libtag1-dev, libphonon-dev,
- libmpv-dev (>= 0.8.0), kdelibs5-dev
+ libboost-system-dev, libcue-dev, liblastfm5-dev, libtag1-dev, libglyr-dev,
+ libmpv-dev (>= 0.8.0), libkf5windowsystem-dev, libkf5globalaccel-dev
 Standards-Version: 3.9.6
 
 Package: fubar
