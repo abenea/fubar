@@ -1,6 +1,7 @@
 #include "pluginspreferences.h"
 #include "pluginmanager.h"
 #include <QDebug>
+#include <QCheckBox>
 
 PluginsPreferences::PluginsPreferences(QWidget* parent)
     : QDialog(parent)
@@ -10,14 +11,13 @@ PluginsPreferences::PluginsPreferences(QWidget* parent)
     pluginTable->setRowCount(plugins.size());
     pluginTable->setColumnCount(2);
     for (std::size_t i = 0; i < plugins.size(); ++i) {
-        QTableWidgetItem* dialog = new QTableWidgetItem(plugins[i]);
-        dialog->setFlags(Qt::ItemIsEnabled);
-        pluginTable->setItem(i, 1, dialog);
-
-        QTableWidgetItem* checkbox = new QTableWidgetItem();
-        checkbox->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        QCheckBox* checkbox = new QCheckBox();
         checkbox->setCheckState(PluginManager::instance->isEnabled(plugins[i]) ? Qt::Checked : Qt::Unchecked);
-        pluginTable->setItem(i, 0, checkbox);
+        pluginTable->setCellWidget(i, 0, checkbox);
+
+        QTableWidgetItem* pluginName = new QTableWidgetItem(plugins[i]);
+        pluginName->setFlags(Qt::ItemIsEnabled);
+        pluginTable->setItem(i, 1, pluginName);
     }
     connect(pluginTable, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(slot_itemDoubleClicked(QTableWidgetItem*)));
 }
@@ -35,7 +35,8 @@ void PluginsPreferences::on_okButton_clicked()
     // An advantage to having the plugins loaded at all times is that they are
     // configurable even when disabled.
     for (int i = 0; i < pluginTable->rowCount(); ++i) {
-        bool enabled = pluginTable->item(i, 0)->checkState() == Qt::Checked;
+        QCheckBox *checkbox = (QCheckBox *) pluginTable->cellWidget(i, 0);
+        bool enabled = checkbox->checkState() == Qt::Checked;
         QString plugin = pluginTable->item(i, 1)->text();
         if (enabled)
             PluginManager::instance->enablePlugin(plugin);
