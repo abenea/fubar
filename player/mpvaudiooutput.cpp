@@ -37,7 +37,7 @@ MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1)
     handle_ = mpv::qt::Handle::FromRawHandle(mpv_create());
     if (static_cast<mpv_handle *>(handle_) == nullptr)
         qDebug() << "Cannot mpv_create()";
-    set_option("no-video", true);
+    set_option("video", "no");
     set_option("softvol", "yes");
     set_option("ytdl", "yes");
     int r = mpv_initialize(handle_);
