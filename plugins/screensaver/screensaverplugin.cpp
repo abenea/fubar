@@ -3,9 +3,10 @@
 #include <QDBusConnection>
 
 namespace {
-const QString SERVICE = "org.freedesktop.ScreenSaver";
-const QString PATH = "/org/freedesktop/ScreenSaver";
-const QString INTERFACE = "org.freedesktop.ScreenSaver";
+const char *DBUS_INTERFACES[][3] = {
+    {"org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver"},
+    {"org.cinnamon.ScreenSaver", "/org/cinnamon/ScreenSaver", "org.cinnamon.ScreenSaver"},
+};
 }
 
 ScreensaverPlugin::ScreensaverPlugin(QObject *parent) : QObject(parent) {
@@ -19,14 +20,18 @@ ScreensaverPlugin::~ScreensaverPlugin() {
 
 void ScreensaverPlugin::init(QObject &fubarApp) {
     fubar_ = &fubarApp;
-    QDBusConnection::sessionBus().connect(
-        SERVICE, PATH, INTERFACE, "ActiveChanged", this, SLOT(stateChanged(bool)));
+    for (auto &dbus : DBUS_INTERFACES) {
+        QDBusConnection::sessionBus().connect(
+            dbus[0], dbus[1], dbus[2], "ActiveChanged", this, SLOT(stateChanged(bool)));
+    }
     connect(this, SIGNAL(pause()), fubar_, SLOT(pause()));
 }
 
 void ScreensaverPlugin::deinit() {
-    QDBusConnection::sessionBus().disconnect(
-        SERVICE, PATH, INTERFACE, "ActiveChanged", this, SLOT(stateChanged(bool)));
+    for (auto &dbus : DBUS_INTERFACES) {
+        QDBusConnection::sessionBus().disconnect(
+            dbus[0], dbus[1], dbus[2], "ActiveChanged", this, SLOT(stateChanged(bool)));
+    }
     disconnect(this, 0, fubar_, 0);
 }
 
