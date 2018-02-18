@@ -119,40 +119,64 @@ QModelIndex PlaylistModel::index(int row, int column, const QModelIndex& parent)
 }
 
 void PlaylistModel::addUrls(const QList<QUrl>& urls) {
+    QList<QUrl> youtubePlaylists, toAdd;
+    for (const QUrl &url : urls) {
+        if (url.toString().contains("playlist?list="))
+            youtubePlaylists.push_back(url);
+        else
+            toAdd.push_back(url);
+    }
     int oldSize = playlist_.tracks.size();
-    playlist_.addUrls(urls);
+    playlist_.addUrls(toAdd);
     int newSize = playlist_.tracks.size();
     if (newSize > oldSize) {
         beginInsertRows(QModelIndex(), oldSize, newSize - 1);
         endInsertRows();
     }
-    for (const QUrl& url : urls) {
+    for (const QUrl &url : toAdd) {
         if (!url.host().contains("youtube.com"))
             continue;
         QProcess *ytcue = new QProcess();
-        QObject::connect(ytcue, SIGNAL(readyRead()), this, SLOT(youtube_cue_output()));
-        QObject::connect(ytcue, SIGNAL(finished(int)), this, SLOT(youtube_cue_finished(int)));
-        QObject::connect(ytcue, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(youtube_cue_error(QProcess::ProcessError)));
+        QObject::connect(ytcue, SIGNAL(readyRead()), this, SLOT(youtubeCueOutput()));
+        QObject::connect(ytcue, SIGNAL(finished(int)), this, SLOT(youtubeCueFinished(int)));
+        QObject::connect(ytcue, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(youtubeCueError(QProcess::ProcessError)));
         ytcue->start("youtube-cue --musicbrainz-app fubar --musicbrainz-version 0.1 " + url.toString());
+    }
+    for (const QUrl &url : youtubePlaylists) {
+        QProcess *ytdl = new QProcess();
+        QObject::connect(ytdl, SIGNAL(readyRead()), this, SLOT(youtubeDlOutput()));
+        QObject::connect(ytdl, SIGNAL(finished(int)), this, SLOT(youtubeDlFinished(int)));
+        QObject::connect(ytdl, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(youtubeDlError(QProcess::ProcessError)));
+        ytdl->start("youtube-dl -j " + url.toString());
     }
 }
 
-void PlaylistModel::youtube_cue_finished(int status)
+void PlaylistModel::processError(QProcess::ProcessError error, QString processName)
 {
-    QProcess *ytcue = qobject_cast<QProcess*>(QObject::sender());
+    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
+    qWarning() << processName << " process error " << error;
+    process->deleteLater();
+}
+
+void PlaylistModel::processFinished(int status, QString processName)
+{
+    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
     if (status)
-        qWarning() << "youtube-cue returned status " << status;
-    ytcue->deleteLater();
+        qWarning() << processName << " returned status " << status;
+    process->deleteLater();
 }
 
-void PlaylistModel::youtube_cue_error(QProcess::ProcessError error)
+void PlaylistModel::youtubeCueFinished(int status)
 {
-    QProcess *ytcue = qobject_cast<QProcess*>(QObject::sender());
-    qWarning() << "youtube-cue process error " << error;
-    ytcue->deleteLater();
+    processFinished(status, "youtube-cue");
 }
 
-void PlaylistModel::youtube_cue_output()
+void PlaylistModel::youtubeCueError(QProcess::ProcessError error)
+{
+    processError(error, "youtube-cue");
+}
+
+void PlaylistModel::youtubeCueOutput()
 {
     QProcess *ytcue = qobject_cast<QProcess*>(QObject::sender());
     QByteArray output = ytcue->readAll();
@@ -205,6 +229,38 @@ void PlaylistModel::youtube_cue_output()
         beginInsertRows(QModelIndex(), oldSize, newSize - 1);
         endInsertRows();
     }
+}
+
+void PlaylistModel::youtubeDlError(QProcess::ProcessError error)
+{
+    processError(error, "youtube-dl");
+}
+
+void PlaylistModel::youtubeDlFinished(int status)
+{
+    processFinished(status, "youtube-dl");
+}
+
+void PlaylistModel::youtubeDlOutput()
+{
+    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
+    QByteArray bytes = process->readAll();
+    QString output = QString(bytes);
+    QStringList lines = output.split("\n", QString::SkipEmptyParts);
+    QList<QUrl> urls;
+    for (QString line : lines) {
+        QJsonParseError parseError;
+        auto jsonDoc = QJsonDocument::fromJson(line.toUtf8(), &parseError);
+        if (parseError.error != QJsonParseError::NoError) {
+            qWarning() << "Error parsing json from youtube-dl at offset " << parseError.offset
+                       << ": " << parseError.errorString();
+            continue;
+        }
+        if (!jsonDoc.isObject() || !jsonDoc.object().contains("webpage_url"))
+            continue;
+        urls.push_back(QUrl(jsonDoc.object().value("webpage_url").toString()));
+    }
+    addUrls(urls);
 }
 
 void PlaylistModel::deserialize(const QByteArray& data)

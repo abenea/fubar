@@ -48,10 +48,16 @@ signals:
 
 protected slots:
     void libraryChanged(QList<PTrack> tracks);
-    void youtube_cue_output();
-    void youtube_cue_finished(int status);
-    void youtube_cue_error(QProcess::ProcessError error);
+    void youtubeCueOutput();
+    void youtubeCueFinished(int status);
+    void youtubeCueError(QProcess::ProcessError error);
+    void youtubeDlOutput();
+    void youtubeDlFinished(int status);
+    void youtubeDlError(QProcess::ProcessError error);
 private:
+    void processFinished(int status, QString processName);
+    void processError(QProcess::ProcessError error, QString processName);
+
     Playlist playlist_;
     Qt::DropActions dropActions_;
 };
