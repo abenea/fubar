@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
+#include <taglib/tfilestream.h>
 
 using namespace std;
 
@@ -28,7 +29,8 @@ void Playlist::addDirectory(const QString &path) {
 void Playlist::addFile(const QString &path) {
     TagLib::FileRef fileref;
     QByteArray encodedName = QFile::encodeName(path);
-    fileref = TagLib::FileRef(encodedName.constData(), true);
+    TagLib::FileStream stream(encodedName.constData(), true);
+    fileref = TagLib::FileRef(&stream, true);
 
     if (!fileref.isNull()) {
         shared_ptr<Track> track(new Track());

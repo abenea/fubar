@@ -14,6 +14,8 @@
 #include <taglib/id3v1tag.h>
 #include <taglib/id3v2tag.h>
 #include <taglib/tpropertymap.h>
+#include <taglib/tfilestream.h>
+#include <taglib/id3v2framefactory.h>
 #include <boost/scoped_array.hpp>
 #include <boost/bind.hpp>
 #include <QDir>
@@ -452,18 +454,19 @@ PTrack Library::scanFile(const QString& path)
     TagLib::FileRef fileref;
     TagLib::Tag *tag = nullptr;
     TagLib::PropertyMap properties;
+    TagLib::FileStream stream(encodedName.constData(), true);
 
     shared_ptr<Track> track;
 
     if (path.toLower().endsWith(".mp3")) {
-        TagLib::MPEG::File* mpegFile = new TagLib::MPEG::File(encodedName);
+        TagLib::MPEG::File* mpegFile = new TagLib::MPEG::File(&stream, TagLib::ID3v2::FrameFactory::instance());
         file.reset(mpegFile);
         if (!file->isValid())
             return track;
         set_tag_and_properties(mpegFile->ID3v2Tag(), &tag, properties);
         set_tag_and_properties(mpegFile->ID3v1Tag(), &tag, properties);
     } else if (path.toLower().endsWith(".flac")) {
-        TagLib::FLAC::File* flacFile = new TagLib::FLAC::File(encodedName);
+        TagLib::FLAC::File* flacFile = new TagLib::FLAC::File(&stream, TagLib::ID3v2::FrameFactory::instance());
         file.reset(flacFile);
         if (!file->isValid())
             return track;
@@ -474,7 +477,7 @@ PTrack Library::scanFile(const QString& path)
     if (file) {
         audioProperties = file->audioProperties();
     } else {
-        fileref = TagLib::FileRef(encodedName.constData(), true);
+        fileref = TagLib::FileRef(&stream, true);
         if (fileref.isNull())
             return track;
         tag = fileref.tag();
@@ -648,8 +651,8 @@ void Library::fileCallback(QString path, LibraryEventType event)
         if (it != directories_.end()) {
             PTrack oldTrack = it.value()->getFile(fileInfo.fileName());
             if (oldTrack) {
-                if (oldTrack->mtime != fileInfo.lastModified().toTime_t()) {
 //                    qDebug() << "FILE MODIFY " << path;
+                if (oldTrack->mtime <= fileInfo.lastModified().toTime_t()) {
                     PTrack track = scanFile(path);
                     if (track) {
                         it.value()->addFile(track);
