@@ -135,8 +135,10 @@ void AudioPlayer::setPlaying(PModel playlistModel, QModelIndex index)
         lastPlayedIndex_ = playingIndex_;
     playingModel_ = playlistModel;
     playingIndex_ = QPersistentModelIndex(index);
-    if (index.isValid())
+    if (index.isValid()) {
         playingTrack_ = index.data(TrackRole).value<PTrack>();
+        bufferTrack(playingModel_, playingIndex_);
+    }
 }
 
 void AudioPlayer::bufferTrack(PModel playlistModel, QModelIndex index)
@@ -299,8 +301,13 @@ void AudioPlayer::enqueueTracks(PModel model, QModelIndexList tracks)
 {
     bool queue_was_empty = queue_.isEmpty();
     queue_.pushTracks(model, tracks);
-    if (queue_was_empty)
+    if (queue_was_empty) {
+        // Don't buffer the first track if we're already buffering the playing track
+        // Once the playing track finishes buffering, the first track will get buffered
+        if (playingTrack_ && bufferingTrack_ == playingTrack_)
+            return;
         aboutToFinish();
+    }
 }
 
 void AudioPlayer::setLastPlayed(PModel playlistModel, const QModelIndex &index)
