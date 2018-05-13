@@ -109,6 +109,11 @@ MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
                      SLOT(configChanged(QString, QVariant)));
 
     setShortcuts();
+
+    // Save tabs & window geometry every 5 minutes
+    QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(timeoutFired()));
+    timer->start(1000 * 60 * 5);
 }
 
 void MainWindow::newTabRequested() { on_newPlaylistAction_triggered(); }
@@ -217,9 +222,14 @@ void MainWindow::tick(qint64 /*pos*/) {
     }
 }
 
+void MainWindow::timeoutFired()
+{
+    writeSettings(false);
+}
+
 void MainWindow::closeEvent(QCloseEvent *event) {
     player_.stop();
-    writeSettings();
+    writeSettings(true);
     QWidget::closeEvent(event);
 }
 
@@ -404,7 +414,7 @@ void MainWindow::readSettings() {
     }
 }
 
-void MainWindow::writeSettings() {
+void MainWindow::writeSettings(bool lastPosition) {
     QSettings settings;
     settings.setValue("mainwindow/maximized", isMaximized());
     settings.setValue("mainwindow/geometry", saveGeometry());
@@ -432,6 +442,8 @@ void MainWindow::writeSettings() {
         settings.setValue("mainwindow/tabsData", QVariant(data));
     }
 
+    if (!lastPosition)
+        return;
     int position = -1;
     int lastTab = -1;
     auto lastPlayed = player_.getLastPlayed();

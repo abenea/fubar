@@ -109,6 +109,8 @@ private slots:
     void increaseVolume();
     void decreaseVolume();
 
+    void timeoutFired();
+
 private:
     void readDockSettings(QDockWidget* dock, QString name);
     void writeDockSettings(QDockWidget* dock, QString name, bool isVisible);
@@ -124,7 +126,7 @@ private:
     void addGlobalShortcut(QKeySequence shortcut, QObject* object, const char* slot, QString name);
     void addShortcut(QKeySequence shortcut, const char* func, Qt::ShortcutContext context = Qt::WindowShortcut);
 
-    void writeSettings();
+    void writeSettings(bool lastPosition);
     void readSettings();
 
     SeekSlider *seekSlider_;
