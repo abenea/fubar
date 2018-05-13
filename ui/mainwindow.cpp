@@ -78,11 +78,9 @@ MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
                      SLOT(statusBarDoubleClicked()));
 
     lyricsDock_ = new QDockWidget("Lyrics", this);
-    // Not setting an object name because we don't want save its state
-    // since Qt doesn't restore it correctly
-    //     lyricsDock_->setObjectName("LyricsDock");
+    lyricsDock_->setObjectName("LyricsDock");
     lyricsWidget_ = new QPlainTextEdit(lyricsDock_);
-    //     lyricsWidget_->setObjectName("LyricsWidget");
+    lyricsWidget_->setObjectName("LyricsWidget");
     lyricsWidget_->setReadOnly(true);
     lyricsDock_->setWidget(lyricsWidget_);
     QObject::connect(lyricsDock_, SIGNAL(visibilityChanged(bool)), this,
@@ -100,6 +98,7 @@ MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
     instance = this;
 
     console_ = new ConsoleWindow(this);
+    console_->setObjectName("ConsoleWindow");
     QObject::connect(console_, SIGNAL(visibilityChanged(bool)), this,
                      SLOT(consoleVisibilityChanged(bool)));
 
