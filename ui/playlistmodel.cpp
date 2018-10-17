@@ -147,7 +147,7 @@ void PlaylistModel::addUrls(const QList<QUrl>& urls) {
         QObject::connect(ytdl, SIGNAL(readyRead()), this, SLOT(youtubeDlOutput()));
         QObject::connect(ytdl, SIGNAL(finished(int)), this, SLOT(youtubeDlFinished(int)));
         QObject::connect(ytdl, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(youtubeDlError(QProcess::ProcessError)));
-        ytdl->start("youtube-dl -j " + url.toString());
+        ytdl->start("youtube-dl -j --ignore-errors " + url.toString());
     }
 }
 
@@ -247,7 +247,8 @@ void PlaylistModel::youtubeDlOutput()
     QByteArray bytes = process->readAll();
     QString output = QString(bytes);
     QStringList lines = output.split("\n", QString::SkipEmptyParts);
-    QList<QUrl> urls;
+
+    int oldSize = playlist_.tracks.size();
     for (QString line : lines) {
         QJsonParseError parseError;
         auto jsonDoc = QJsonDocument::fromJson(line.toUtf8(), &parseError);
@@ -258,9 +259,24 @@ void PlaylistModel::youtubeDlOutput()
         }
         if (!jsonDoc.isObject() || !jsonDoc.object().contains("webpage_url"))
             continue;
-        urls.push_back(QUrl(jsonDoc.object().value("webpage_url").toString()));
+
+        QVariantMap track_info = jsonDoc.object().toVariantMap();
+        shared_ptr<Track> track(new Track());
+        track->location = track_info["webpage_url"].toString();
+        if (track_info.count("artist"))
+            track->metadata["artist"] = track_info["artist"].toString();
+        if (track_info.count("album"))
+            track->metadata["album"] = track_info["album"].toString();
+        if (track_info.count("track"))
+            track->metadata["title"] = track_info["track"].toString();
+        track->audioproperties.length = track_info["duration"].toInt();
+        playlist_.tracks.append(track);
     }
-    addUrls(urls);
+    int newSize = playlist_.tracks.size();
+    if (newSize > oldSize) {
+        beginInsertRows(QModelIndex(), oldSize, newSize - 1);
+        endInsertRows();
+    }
 }
 
 void PlaylistModel::deserialize(const QByteArray& data)
