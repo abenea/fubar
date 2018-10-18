@@ -144,7 +144,8 @@ void PlaylistModel::addUrls(const QList<QUrl>& urls) {
     }
     for (const QUrl &url : youtubePlaylists) {
         QProcess *ytdl = new QProcess();
-        QObject::connect(ytdl, SIGNAL(readyRead()), this, SLOT(youtubeDlOutput()));
+        youtubeDlBuffers[ytdl] = QString();
+        QObject::connect(ytdl, SIGNAL(readyReadStandardOutput()), this, SLOT(youtubeDlOutput()));
         QObject::connect(ytdl, SIGNAL(finished(int)), this, SLOT(youtubeDlFinished(int)));
         QObject::connect(ytdl, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(youtubeDlError(QProcess::ProcessError)));
         ytdl->start("youtube-dl -j --ignore-errors " + url.toString());
@@ -233,28 +234,40 @@ void PlaylistModel::youtubeCueOutput()
 
 void PlaylistModel::youtubeDlError(QProcess::ProcessError error)
 {
+    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
+    youtubeDlBuffers.erase(process);
     processError(error, "youtube-dl");
 }
 
 void PlaylistModel::youtubeDlFinished(int status)
 {
+    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
+    youtubeDlBuffers.erase(process);
     processFinished(status, "youtube-dl");
 }
 
 void PlaylistModel::youtubeDlOutput()
 {
     QProcess *process = qobject_cast<QProcess*>(QObject::sender());
-    QByteArray bytes = process->readAll();
-    QString output = QString(bytes);
-    QStringList lines = output.split("\n", QString::SkipEmptyParts);
-
+    QTextStream stdoutStream(process->readAllStandardOutput());
     int oldSize = playlist_.tracks.size();
-    for (QString line : lines) {
+
+    while (true) {
+        QString line = stdoutStream.readLine();
+        if (line.isNull())
+            break;
+        if (!youtubeDlBuffers[process].isEmpty()) {
+            line = youtubeDlBuffers[process] + line;
+            youtubeDlBuffers[process].clear();
+        }
+
         QJsonParseError parseError;
         auto jsonDoc = QJsonDocument::fromJson(line.toUtf8(), &parseError);
         if (parseError.error != QJsonParseError::NoError) {
             qWarning() << "Error parsing json from youtube-dl at offset " << parseError.offset
                        << ": " << parseError.errorString();
+            if (stdoutStream.atEnd())
+                youtubeDlBuffers[process] = line;
             continue;
         }
         if (!jsonDoc.isObject() || !jsonDoc.object().contains("webpage_url"))
@@ -272,6 +285,7 @@ void PlaylistModel::youtubeDlOutput()
         track->audioproperties.length = track_info["duration"].toInt();
         playlist_.tracks.append(track);
     }
+
     int newSize = playlist_.tracks.size();
     if (newSize > oldSize) {
         beginInsertRows(QModelIndex(), oldSize, newSize - 1);

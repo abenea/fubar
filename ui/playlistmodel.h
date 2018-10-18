@@ -6,6 +6,7 @@
 #include <QStringList>
 #include <QProcess>
 #include <memory>
+#include <map>
 #include <vector>
 
 struct LibraryEvent;
@@ -60,6 +61,7 @@ private:
 
     Playlist playlist_;
     Qt::DropActions dropActions_;
+    std::map<QProcess*, QString> youtubeDlBuffers;
 };
 
 enum PlaylistRoles {
