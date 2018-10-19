@@ -135,7 +135,7 @@ bool Track::updateDuration(int duration) {
 
 bool Track::updateMetadata(const QString &title, const QString& audioFormat, int sampleRate) {
     if (isUrl() && !isCueTrack()) {
-        if (!metadata.count("title"))
+        if (metadata.value("title", "").isEmpty())
             metadata["title"] = title;
         metadata["audio-format"] = audioFormat;
         audioproperties.samplerate = sampleRate;
