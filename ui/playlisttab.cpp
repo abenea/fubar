@@ -15,7 +15,8 @@ PlaylistTab::PlaylistTab(PModel model, QWidget* parent)
     ui_.setupUi(this);
     filterModel_.setSourceModel(model_.get());
     filterModel_.setDynamicSortFilter(model_->playlist().synced);
-    filterModel_.sort(0);
+    if (model_->playlist().synced)
+        filterModel_.sort(0);
     ui_.playlist->setModel(&filterModel_);
 
     connect(model_.get(), SIGNAL(queueStatusChanged(std::vector<QPersistentModelIndex>)), this, SLOT(repaintTracks(std::vector<QPersistentModelIndex>)));
