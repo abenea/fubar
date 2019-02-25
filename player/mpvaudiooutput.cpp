@@ -40,6 +40,7 @@ MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1)
     set_option("video", "no");
     set_option("softvol", "yes");
     set_option("ytdl", "yes");
+    set_property("audio-client-name", "fubar");
     int r = mpv_initialize(handle_);
     if (r < 0) {
         qDebug() << "Failed to initialize mpv backend: " << mpv_error_string(r);
