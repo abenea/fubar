@@ -73,7 +73,6 @@ void LastfmPlugin::logout()
 {
     m_scrobbler.reset();
     resetVariables();
-    disconnect(fubar_, 0, this, 0);
     if (m_jobs.contains("auth")) {
         m_jobs["auth"]->abort();
         m_jobs["auth"]->close();
