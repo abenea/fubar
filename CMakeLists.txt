@@ -15,7 +15,7 @@ find_package(MPV REQUIRED)
 find_package(Glyr REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x -fexceptions -lpthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -fexceptions -pthread")
 add_definitions(-DPROTOBUF_INLINE_NOT_IN_HEADERS=0)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
