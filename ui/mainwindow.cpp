@@ -10,6 +10,7 @@
 #include "configwindow.h"
 #include "lyricsthread.h"
 #include "lyricsthreaddeleter.h"
+#include "mprisplayer.h"
 #include <Qt>
 #include <QTableView>
 #include <QSettings>
@@ -109,6 +110,8 @@ MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
                      SLOT(configChanged(QString, QVariant)));
 
     setShortcuts();
+
+    mprisPlayer_ = new MPRISPlayer(this, &player_);
 
     // Save tabs & window geometry every 5 minutes
     QTimer *timer = new QTimer(this);

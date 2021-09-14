@@ -20,6 +20,7 @@ set(ui_SOURCES
     console.cpp
     lyricsthread.cpp
     lyricsthreaddeleter.cpp
+    mprisplayer.cpp
     queue.cpp)
 qt5_wrap_ui(ui_UI mainwindow.ui playlist.ui librarypreferences.ui plugins.ui configwindow.ui)
 

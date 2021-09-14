@@ -20,6 +20,7 @@ class Library;
 class ConsoleWindow;
 class QDockWidget;
 class QPlainTextEdit;
+class MPRISPlayer;
 
 class MainWindow : public QMainWindow, private Ui::MainWindowClass
 {
@@ -144,6 +145,8 @@ private:
     QPlainTextEdit* lyricsWidget_;
 
     AudioPlayer& player_;
+
+    MPRISPlayer* mprisPlayer_;
 
     boost::bimap<PModel, PlaylistTab*> playlistModels_;
 
