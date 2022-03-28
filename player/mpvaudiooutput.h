@@ -1,6 +1,6 @@
 #pragma once
 #include "audiooutput.h"
-#include <mpv/qthelper.hpp>
+#include "qthelper.hpp"
 #include <thread>
 
 class MpvAudioOutput : public AudioOutput
