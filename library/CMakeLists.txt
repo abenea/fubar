@@ -9,4 +9,4 @@ add_library(library
             cuefile.cpp
             library.cpp
             ${PROTO_SRCS} ${PROTO_HDRS})
-target_link_libraries(library Qt5::Core ${PROTOBUF_LIBRARY} ${TAGLIB_LIBRARY} ${CUE_LIBRARIES})
+target_link_libraries(library util Qt5::Core ${PROTOBUF_LIBRARY} ${TAGLIB_LIBRARY} ${CUE_LIBRARIES})

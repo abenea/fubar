@@ -3,7 +3,7 @@
 #include "mockaudiooutput.h"
 #include "ui/mainwindow.h"
 #include <QDebug>
-#include <playlistmodel.h>
+#include <ui/playlistmodel.h>
 
 #define verify(track)                                                                              \
     {                                                                                              \
@@ -46,7 +46,7 @@ void PlayerTest::deletePlaylist(int pos) { mw_->removePlaylistTab(pos); }
 
 void PlayerTest::init() {
     audio_ = new MockAudioOutput();
-    player_ = new AudioPlayer(nullptr, audio_, true);
+    player_ = new AudioPlayer(nullptr, Backend::mpv, /*testing=*/true);
     mw_ = new MainWindow(*player_);
     player_->setMainWindow(mw_);
 }
@@ -213,4 +213,3 @@ void PlayerTest::enqueueDeletedPlaylist() {
 }
 
 QTEST_MAIN(PlayerTest)
-#include "playertest.moc"

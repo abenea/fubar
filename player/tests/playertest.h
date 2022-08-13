@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QtTest/QTest>
-#include <audioplayer.h>
+#include <ui/audioplayer.h>
 
 class MainWindow;
 class AudioPlayer;

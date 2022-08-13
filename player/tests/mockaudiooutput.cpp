@@ -45,5 +45,3 @@ qint64 MockAudioOutput::currentTime() const { return 0; }
 void MockAudioOutput::setVolume(qreal /*newVolume*/) {}
 
 void MockAudioOutput::setTickInterval(qint32 /*newTickInterval*/) {}
-
-#include "mockaudiooutput.moc"
