@@ -62,6 +62,6 @@ bool ConfigFilter::filterAcceptsRow(int source_row, const QModelIndex& /*source_
 
 void ConfigFilter::setFilter(QString filter)
 {
-    filter_ = filter.split(" ", QString::SkipEmptyParts);
+    filter_ = filter.split(" ", Qt::SkipEmptyParts);
     invalidateFilter();
 }

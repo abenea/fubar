@@ -103,7 +103,7 @@ void Playlist::serialize(QByteArray &bytes) const {
         proto::Track *ptrack = plibrary.add_tracks();
         track->fillProtoTrack(*ptrack);
     }
-    int len = plibrary.ByteSize();
+    size_t len = plibrary.ByteSizeLong();
     bytes.resize(len);
     plibrary.SerializeToArray(bytes.data(), len);
 }

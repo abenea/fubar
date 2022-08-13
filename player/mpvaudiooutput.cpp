@@ -14,23 +14,10 @@ static inline int command_variant2(mpv_handle *ctx, const QVariant &args) {
 }
 
 namespace {
+
 qint64 pos_to_qint64(const std::string &s) { return qint64(std::stof(s) * 1000); }
-QString audioStateToStr(AudioState as) {
-    switch (as) {
-    case AudioState::Buffering:
-        return "Buffering";
-    case AudioState::Playing:
-        return "Playing";
-    case AudioState::Stopped:
-        return "Stopped";
-    case AudioState::Paused:
-        return "Paused";
-    case AudioState::Unknown:
-        return "Unknown";
-    }
-    assert(0);
-}
-}
+
+} // namespace
 
 MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1), volumeNeverSet_(true) {
     setlocale(LC_NUMERIC, "C");

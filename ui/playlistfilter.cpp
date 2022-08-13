@@ -22,7 +22,7 @@ PlaylistFilter::PlaylistFilter(QObject *parent) :
 
 void PlaylistFilter::setFilter(const QString& filter)
 {
-    filter_ = filter.split(" ", QString::SkipEmptyParts);
+    filter_ = filter.split(" ", Qt::SkipEmptyParts);
     invalidateFilter();
 }
 

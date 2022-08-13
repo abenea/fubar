@@ -295,7 +295,7 @@ void Library::saveToDisk()
         it.value()->addFilesToProto(plibrary);
     }
 
-    int len = plibrary.ByteSize();
+    size_t len = plibrary.ByteSizeLong();
     boost::scoped_array<char> tmp(new char[len]);
     plibrary.SerializeToArray(tmp.get(), len);
 
