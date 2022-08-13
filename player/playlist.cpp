@@ -1,4 +1,5 @@
-#include "playlist.h"
+#include "player/playlist.h"
+
 #include "library/track.h"
 #include "library/track.pb.h"
 #include <QDebug>

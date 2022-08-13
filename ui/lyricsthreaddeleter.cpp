@@ -1,4 +1,4 @@
-#include "lyricsthreaddeleter.h"
+#include "ui/lyricsthreaddeleter.h"
 #include <QThread>
 
 LyricsThreadDeleter::LyricsThreadDeleter(QThread *thread) : thread_(thread) {

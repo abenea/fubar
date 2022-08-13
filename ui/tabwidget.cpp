@@ -1,6 +1,6 @@
-#include "tabwidget.h"
-#include "playlisttab.h"
-#include "tabbar.h"
+#include "ui/tabwidget.h"
+#include "ui/playlisttab.h"
+#include "ui/tabbar.h"
 #include <QDebug>
 #include <QMimeData>
 

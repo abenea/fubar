@@ -1,7 +1,7 @@
-#include "playlistview.h"
-#include "mainwindow.h"
-#include "playlistitemdelegate.h"
-#include "playlisttab.h"
+#include "ui/playlistview.h"
+#include "ui/mainwindow.h"
+#include "ui/playlistitemdelegate.h"
+#include "ui/playlisttab.h"
 #include <QAction>
 #include <QHeaderView>
 #include <QKeyEvent>

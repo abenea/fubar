@@ -1,6 +1,6 @@
-#include "directory.h"
-#include "track.h"
-#include "track.pb.h"
+#include "library/directory.h"
+#include "library/track.h"
+#include "library/track.pb.h"
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>

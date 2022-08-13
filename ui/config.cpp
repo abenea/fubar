@@ -1,4 +1,5 @@
-#include "config.h"
+#include "ui/config.h"
+
 #include <QDebug>
 
 void Config::set(QString key, QVariant value) {

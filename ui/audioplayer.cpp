@@ -1,8 +1,9 @@
-#include "audioplayer.h"
+#include "ui/audioplayer.h"
+
 #include "library/library.h"
 #include "library/track.h"
 #include "player/mpvaudiooutput.h"
-#include "playlistmodel.h"
+#include "ui/playlistmodel.h"
 #include "ui/mainwindow.h"
 #include <QDebug>
 #include <QSettings>

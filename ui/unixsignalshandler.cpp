@@ -1,4 +1,4 @@
-#include "unixsignalshandler.h"
+#include "ui/unixsignalshandler.h"
 #include "ui/mainwindow.h"
 #include <QDebug>
 #include <signal.h>

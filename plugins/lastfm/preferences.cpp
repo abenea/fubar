@@ -1,4 +1,5 @@
-#include "preferences.h"
+#include "plugins/lastfm/preferences.h"
+
 #include <QSettings>
 
 Preferences::Preferences(LastfmPlugin &plugin, QWidget *parent) : QDialog(parent), plugin_(plugin) {

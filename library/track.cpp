@@ -1,6 +1,6 @@
-#include "track.h"
-#include "track.pb.h"
-#include "track_forward.h"
+#include "library/track.h"
+#include "library/track.pb.h"
+#include "library/track_forward.h"
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>

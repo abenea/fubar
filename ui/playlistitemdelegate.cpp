@@ -1,7 +1,7 @@
-#include "playlistitemdelegate.h"
+#include "ui/playlistitemdelegate.h"
 #include "library/track.h"
-#include "mainwindow.h"
-#include "playlistmodel.h"
+#include "ui/mainwindow.h"
+#include "ui/playlistmodel.h"
 #include <QApplication>
 #include <QFileInfo>
 #include <QPainter>

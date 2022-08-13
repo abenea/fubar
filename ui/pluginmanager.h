@@ -1,6 +1,6 @@
 #pragma once
 
-#include "audioplayer.h"
+#include "ui/audioplayer.h"
 #include <map>
 #include <memory>
 #include <set>

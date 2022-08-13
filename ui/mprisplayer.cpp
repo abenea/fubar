@@ -1,6 +1,6 @@
-#include "mprisplayer.h"
-#include "audioplayer.h"
-#include "mainwindow.h"
+#include "ui/mprisplayer.h"
+#include "ui/audioplayer.h"
+#include "ui/mainwindow.h"
 #include <QDBusConnection>
 #include <QtDBus/QtDBus>
 

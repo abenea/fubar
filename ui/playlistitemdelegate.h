@@ -1,6 +1,6 @@
 #pragma once
 
-#include "playlistfilter.h"
+#include "ui/playlistfilter.h"
 #include <QStyledItemDelegate>
 
 class PlaylistItemDelegate : public QStyledItemDelegate {

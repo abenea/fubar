@@ -1,6 +1,6 @@
-#include "playlistfilter.h"
+#include "ui/playlistfilter.h"
 #include "library/track.h"
-#include "playlistmodel.h"
+#include "ui/playlistmodel.h"
 
 #include <boost/cast.hpp>
 using namespace std;

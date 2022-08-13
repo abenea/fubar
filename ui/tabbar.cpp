@@ -1,4 +1,4 @@
-#include "tabbar.h"
+#include "ui/tabbar.h"
 #include <QDebug>
 #include <QMouseEvent>
 

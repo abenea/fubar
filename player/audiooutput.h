@@ -1,6 +1,6 @@
 #pragma once
 
-#include "audiostate.h"
+#include "player/audiostate.h"
 #include <QObject>
 
 class AudioOutput : public QObject {

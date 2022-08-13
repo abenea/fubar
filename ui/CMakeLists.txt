@@ -1,4 +1,4 @@
-set(ui_SOURCES
+add_library(ui
     audioplayer.cpp
     mainwindow.cpp
     seekslider.cpp
@@ -22,8 +22,10 @@ set(ui_SOURCES
     lyricsthreaddeleter.cpp
     mprisplayer.cpp
     queue.cpp)
-qt5_wrap_ui(ui_UI mainwindow.ui playlist.ui librarypreferences.ui plugins.ui configwindow.ui)
 
-include_directories(${GLYR_INCLUDE_DIRS})
-add_library(ui ${ui_UI} ${ui_SOURCES})
-target_link_libraries(ui player Qt5::Widgets ${GLYR_LIBRARIES} KF5::WindowSystem KF5::GlobalAccel)
+# HACK needed because some headers include uic generated files.
+target_include_directories(ui INTERFACE $<TARGET_PROPERTY:ui,INCLUDE_DIRECTORIES>)
+
+target_link_libraries(ui
+    PUBLIC Qt5::Widgets
+    PRIVATE player Glyr KF5::WindowSystem KF5::GlobalAccel)

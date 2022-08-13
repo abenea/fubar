@@ -1,11 +1,12 @@
 #pragma once
 
-#include "libraryeventtype.h"
 #include <QMutex>
 #include <QString>
 #include <QWaitCondition>
 #include <boost/bimap.hpp>
 #include <boost/function.hpp>
+
+#include "library/libraryeventtype.h"
 
 struct inotify_event;
 

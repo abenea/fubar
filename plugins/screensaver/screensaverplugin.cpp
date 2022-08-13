@@ -1,4 +1,4 @@
-#include "screensaverplugin.h"
+#include "plugins/screensaver/screensaverplugin.h"
 #include <QDBusConnection>
 #include <QDebug>
 

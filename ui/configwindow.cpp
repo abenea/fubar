@@ -1,5 +1,6 @@
-#include "configwindow.h"
-#include "config.h"
+#include "ui/configwindow.h"
+
+#include "ui/config.h"
 #include <QDebug>
 #include <boost/type_traits/detail/is_mem_fun_pointer_impl.hpp>
 

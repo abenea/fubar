@@ -1,7 +1,7 @@
 #pragma once
 
-#include "libraryeventtype.h"
-#include "track_forward.h"
+#include "library/libraryeventtype.h"
+#include "library/track_forward.h"
 
 #include <QList>
 #include <QMap>

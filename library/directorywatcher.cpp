@@ -1,4 +1,5 @@
-#include "directorywatcher.h"
+#include "library/directorywatcher.h"
+
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>

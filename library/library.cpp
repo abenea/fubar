@@ -1,10 +1,10 @@
-#include "library.h"
+#include "library/library.h"
 
-#include "cuefile.h"
-#include "directory.h"
-#include "directorywatcher.h"
-#include "track.h"
-#include "track.pb.h"
+#include "library/cuefile.h"
+#include "library/directory.h"
+#include "library/directorywatcher.h"
+#include "library/track.h"
+#include "library/track.pb.h"
 #include "util.h"
 #include <QDateTime>
 #include <QDebug>

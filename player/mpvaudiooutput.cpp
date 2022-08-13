@@ -1,8 +1,10 @@
-#include "mpvaudiooutput.h"
-#include "audiostate.h"
+#include "player/mpvaudiooutput.h"
+
 #include <QDebug>
 #include <cassert>
 #include <mpv/client.h>
+
+#include "player/audiostate.h"
 
 namespace mpv {
 namespace qt {

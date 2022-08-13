@@ -1,4 +1,4 @@
-#include "mockaudiooutput.h"
+#include "player/tests/mockaudiooutput.h"
 #include <QDebug>
 
 void MockAudioOutput::triggerAboutToFinish() {

@@ -1,4 +1,4 @@
-#include "playlistmodel.h"
+#include "ui/playlistmodel.h"
 #include "library/library.h"
 #include "library/track.h"
 #include "player/playlistmimedata.h"

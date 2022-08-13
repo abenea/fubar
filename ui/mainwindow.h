@@ -1,11 +1,5 @@
 #pragma once
 
-#include "audioplayer.h"
-#include "config.h"
-#include "playlistmodel_forward.h"
-#include "pluginspreferences.h"
-#include "seekslider.h"
-#include "statusbar.h"
 #include "ui/ui_mainwindow.h"
 #include <QKeySequence>
 #include <QModelIndex>
@@ -14,6 +8,12 @@
 #include <boost/bimap.hpp>
 #include <deque>
 #include <memory>
+
+#include "ui/audioplayer.h"
+#include "ui/config.h"
+#include "ui/playlistmodel_forward.h"
+#include "ui/seekslider.h"
+#include "ui/statusbar.h"
 
 class PlaylistTab;
 class Library;

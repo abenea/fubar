@@ -1,5 +1,5 @@
-#include "consolewindow.h"
-#include "console.h"
+#include "ui/consolewindow.h"
+#include "ui/console.h"
 #include <QPlainTextEdit>
 
 std::size_t MAX_MESSAGES = 500;

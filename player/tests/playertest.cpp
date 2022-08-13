@@ -1,9 +1,11 @@
-#include "playertest.h"
-#include "library/track.h"
-#include "mockaudiooutput.h"
-#include "ui/mainwindow.h"
+#include "player/tests/playertest.h"
+
 #include <QDebug>
-#include <ui/playlistmodel.h>
+
+#include "library/track.h"
+#include "player/tests/mockaudiooutput.h"
+#include "ui/mainwindow.h"
+#include "ui/playlistmodel.h"
 
 #define verify(track)                                                                              \
     {                                                                                              \

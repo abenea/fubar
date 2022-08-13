@@ -1,5 +1,5 @@
-#include "pluginspreferences.h"
-#include "pluginmanager.h"
+#include "ui/pluginspreferences.h"
+#include "ui/pluginmanager.h"
 #include <QCheckBox>
 #include <QDebug>
 

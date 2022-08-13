@@ -1,4 +1,4 @@
-#include "lyricsthread.h"
+#include "ui/lyricsthread.h"
 #include "library/track.h"
 #include "ui/mainwindow.h"
 #include <QDebug>

@@ -1,4 +1,5 @@
-#include "cuefile.h"
+#include "library/cuefile.h"
+
 extern "C" {
 #include <libcue/libcue.h>
 }

@@ -1,4 +1,4 @@
-#include "librarypreferencesdialog.h"
+#include "ui/librarypreferencesdialog.h"
 #include <QDebug>
 #include <QFileInfo>
 

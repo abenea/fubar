@@ -1,8 +1,8 @@
 #pragma once
 #include "library/track_forward.h"
 #include "player/audiostate.h"
-#include "playlistmodel_forward.h"
-#include "queue.h"
+#include "ui/playlistmodel_forward.h"
+#include "ui/queue.h"
 #include <QObject>
 #include <memory>
 #include <set>

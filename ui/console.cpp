@@ -1,4 +1,4 @@
-#include "console.h"
+#include "ui/console.h"
 #include <QMetaType>
 #include <QtGlobal>
 #include <iostream>

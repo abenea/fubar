@@ -1,4 +1,4 @@
-#include "seekslider.h"
+#include "ui/seekslider.h"
 #include "player/audiooutput.h"
 #include <QDebug>
 #include <QStyle>
