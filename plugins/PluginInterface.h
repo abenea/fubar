@@ -1,13 +1,12 @@
 #pragma once
 
-#include <QtPlugin>
 #include <QObject>
+#include <QtPlugin>
 
-class PluginInterface
-{
+class PluginInterface {
 public:
     virtual ~PluginInterface() {}
-    virtual void init(QObject& fubarApp) = 0;
+    virtual void init(QObject &fubarApp) = 0;
     virtual void deinit() = 0;
     virtual void configure() {}
 };

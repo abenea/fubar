@@ -2,8 +2,7 @@
 #include <QObject>
 #include <QSocketNotifier>
 
-class UnixSignalsHandler : public QObject
-{
+class UnixSignalsHandler : public QObject {
     Q_OBJECT
 public:
     UnixSignalsHandler(QObject *parent = 0);

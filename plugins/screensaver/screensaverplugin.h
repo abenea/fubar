@@ -1,18 +1,17 @@
 #pragma once
-#include <QObject>
 #include "plugins/PluginInterface.h"
+#include <QObject>
 
-class ScreensaverPlugin : public QObject, public PluginInterface
-{
+class ScreensaverPlugin : public QObject, public PluginInterface {
     Q_OBJECT
     Q_INTERFACES(PluginInterface)
     Q_PLUGIN_METADATA(IID "fubar.ScreenSaver" FILE "screensaver.json")
 
 public:
-    explicit ScreensaverPlugin(QObject* parent = 0);
+    explicit ScreensaverPlugin(QObject *parent = 0);
     ~ScreensaverPlugin();
 
-    void init(QObject& fubarApp);
+    void init(QObject &fubarApp);
     void deinit();
 
 signals:
@@ -22,5 +21,5 @@ private slots:
     void stateChanged(bool active);
 
 private:
-    QObject* fubar_;
+    QObject *fubar_;
 };

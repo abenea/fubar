@@ -4,11 +4,10 @@
 class TabBar;
 class QMimeData;
 
-class TabWidget : public QTabWidget
-{
+class TabWidget : public QTabWidget {
     Q_OBJECT
 public:
-    TabWidget(QWidget* parent = 0);
+    TabWidget(QWidget *parent = 0);
 
 signals:
     void tabCloseRequested(int index);
@@ -21,5 +20,5 @@ protected slots:
     void slotDropRequested(int index, const QMimeData *mimeData);
 
 private:
-    TabBar* tabBar_;
+    TabBar *tabBar_;
 };

@@ -3,36 +3,27 @@
 #include "library/track.h"
 #include "player/playlistmimedata.h"
 #include <QDebug>
-#include <QUrl>
-#include <QMimeData>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
+#include <QMimeData>
+#include <QUrl>
 #include <cassert>
-#include <string>
 #include <sstream>
+#include <string>
 
 using namespace std;
 
-PlaylistModel::PlaylistModel(bool editable, QObject* parent)
-    : QAbstractItemModel(parent)
-{
+PlaylistModel::PlaylistModel(bool editable, QObject *parent) : QAbstractItemModel(parent) {
     dropActions_ = editable ? Qt::CopyAction : Qt::CopyAction | Qt::MoveAction;
     playlist_.synced = !editable;
 }
 
-int PlaylistModel::rowCount(const QModelIndex&) const
-{
-    return playlist_.tracks.size();
-}
+int PlaylistModel::rowCount(const QModelIndex &) const { return playlist_.tracks.size(); }
 
-int PlaylistModel::columnCount(const QModelIndex&) const
-{
-    return 1;
-}
+int PlaylistModel::columnCount(const QModelIndex &) const { return 1; }
 
-QVariant PlaylistModel::data(const QModelIndex& index, int role) const
-{
+QVariant PlaylistModel::data(const QModelIndex &index, int role) const {
     if (!index.isValid())
         return QVariant();
 
@@ -45,21 +36,16 @@ QVariant PlaylistModel::data(const QModelIndex& index, int role) const
     }
 }
 
-QStringList PlaylistModel::mimeTypes() const
-{
+QStringList PlaylistModel::mimeTypes() const {
     QStringList types;
     types << "text/uri-list";
     types << "binary/playlist";
     return types;
 }
 
-Qt::DropActions PlaylistModel::supportedDropActions() const
-{
-    return dropActions_;
-}
+Qt::DropActions PlaylistModel::supportedDropActions() const { return dropActions_; }
 
-Qt::ItemFlags PlaylistModel::flags(const QModelIndex& index) const
-{
+Qt::ItemFlags PlaylistModel::flags(const QModelIndex &index) const {
     Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
 
     if (index.isValid()) {
@@ -69,13 +55,12 @@ Qt::ItemFlags PlaylistModel::flags(const QModelIndex& index) const
     }
 }
 
-QMimeData* PlaylistModel::mimeData(const QModelIndexList& indexes) const
-{
+QMimeData *PlaylistModel::mimeData(const QModelIndexList &indexes) const {
     return new PlaylistMimeData(getTracks(indexes));
 }
 
-bool PlaylistModel::dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column,
-								 const QModelIndex &parent) {
+bool PlaylistModel::dropMimeData(
+    const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) {
     Q_UNUSED(row);
     Q_UNUSED(column);
     Q_UNUSED(parent);
@@ -86,7 +71,7 @@ bool PlaylistModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
         return false;
     }
 
-    const PlaylistMimeData* myData = qobject_cast<const PlaylistMimeData*>(data);
+    const PlaylistMimeData *myData = qobject_cast<const PlaylistMimeData *>(data);
     if (myData) {
         addTracks(myData->getTracks());
         return true;
@@ -97,28 +82,23 @@ bool PlaylistModel::dropMimeData(const QMimeData *data, Qt::DropAction action, i
     return false;
 }
 
-bool PlaylistModel::hasChildren(const QModelIndex& parent) const
-{
+bool PlaylistModel::hasChildren(const QModelIndex &parent) const {
     if (parent.isValid())
         return false;
     else
         return true;
 }
 
-QModelIndex PlaylistModel::parent(const QModelIndex& /*index*/) const
-{
-    return QModelIndex();
-}
+QModelIndex PlaylistModel::parent(const QModelIndex & /*index*/) const { return QModelIndex(); }
 
-QModelIndex PlaylistModel::index(int row, int column, const QModelIndex& parent) const
-{
+QModelIndex PlaylistModel::index(int row, int column, const QModelIndex &parent) const {
     assert(!parent.isValid());
     if (!hasIndex(row, column, parent))
         return QModelIndex();
     return createIndex(row, column);
 }
 
-void PlaylistModel::addUrls(const QList<QUrl>& urls) {
+void PlaylistModel::addUrls(const QList<QUrl> &urls) {
     QList<QUrl> youtubePlaylists, toAdd;
     for (const QUrl &url : urls) {
         if (url.toString().contains("playlist?list="))
@@ -139,47 +119,43 @@ void PlaylistModel::addUrls(const QList<QUrl>& urls) {
         QProcess *ytcue = new QProcess();
         QObject::connect(ytcue, SIGNAL(readyRead()), this, SLOT(youtubeCueOutput()));
         QObject::connect(ytcue, SIGNAL(finished(int)), this, SLOT(youtubeCueFinished(int)));
-        QObject::connect(ytcue, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(youtubeCueError(QProcess::ProcessError)));
-        ytcue->start("youtube-cue --musicbrainz-app fubar --musicbrainz-version 0.1 " + url.toString());
+        QObject::connect(ytcue, SIGNAL(errorOccurred(QProcess::ProcessError)), this,
+                         SLOT(youtubeCueError(QProcess::ProcessError)));
+        ytcue->start("youtube-cue --musicbrainz-app fubar --musicbrainz-version 0.1 " +
+                     url.toString());
     }
     for (const QUrl &url : youtubePlaylists) {
         QProcess *ytdl = new QProcess();
         youtubeDlBuffers[ytdl] = QString();
         QObject::connect(ytdl, SIGNAL(readyReadStandardOutput()), this, SLOT(youtubeDlOutput()));
         QObject::connect(ytdl, SIGNAL(finished(int)), this, SLOT(youtubeDlFinished(int)));
-        QObject::connect(ytdl, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(youtubeDlError(QProcess::ProcessError)));
+        QObject::connect(ytdl, SIGNAL(errorOccurred(QProcess::ProcessError)), this,
+                         SLOT(youtubeDlError(QProcess::ProcessError)));
         ytdl->start("youtube-dl -j --ignore-errors " + url.toString());
     }
 }
 
-void PlaylistModel::processError(QProcess::ProcessError error, QString processName)
-{
-    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
+void PlaylistModel::processError(QProcess::ProcessError error, QString processName) {
+    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
     qWarning() << processName << " process error " << error;
     process->deleteLater();
 }
 
-void PlaylistModel::processFinished(int status, QString processName)
-{
-    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
+void PlaylistModel::processFinished(int status, QString processName) {
+    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
     if (status)
         qWarning() << processName << " returned status " << status;
     process->deleteLater();
 }
 
-void PlaylistModel::youtubeCueFinished(int status)
-{
-    processFinished(status, "youtube-cue");
-}
+void PlaylistModel::youtubeCueFinished(int status) { processFinished(status, "youtube-cue"); }
 
-void PlaylistModel::youtubeCueError(QProcess::ProcessError error)
-{
+void PlaylistModel::youtubeCueError(QProcess::ProcessError error) {
     processError(error, "youtube-cue");
 }
 
-void PlaylistModel::youtubeCueOutput()
-{
-    QProcess *ytcue = qobject_cast<QProcess*>(QObject::sender());
+void PlaylistModel::youtubeCueOutput() {
+    QProcess *ytcue = qobject_cast<QProcess *>(QObject::sender());
     QByteArray output = ytcue->readAll();
     qDebug() << "read from yt-cue\n" << QString(output);
     QJsonParseError parseError;
@@ -198,7 +174,8 @@ void PlaylistModel::youtubeCueOutput()
     QString url = o["url"].toString();
     // Remove url
     int i = 0;
-    for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end(); ++it) {
+    for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end();
+         ++it) {
         PTrack &track = *it;
         if (track->location == url && !track->isCueTrack()) {
             beginRemoveRows(QModelIndex(), i, i);
@@ -212,7 +189,7 @@ void PlaylistModel::youtubeCueOutput()
     // Add url cue tracks
     int oldSize = playlist_.tracks.size();
     i = 0;
-    for (const auto & info : jsonDoc.object().value("tracks").toArray()) {
+    for (const auto &info : jsonDoc.object().value("tracks").toArray()) {
         QVariantMap track_info = info.toObject().toVariantMap();
         shared_ptr<Track> track(new Track());
         track->location = url;
@@ -232,23 +209,20 @@ void PlaylistModel::youtubeCueOutput()
     }
 }
 
-void PlaylistModel::youtubeDlError(QProcess::ProcessError error)
-{
-    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
+void PlaylistModel::youtubeDlError(QProcess::ProcessError error) {
+    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
     youtubeDlBuffers.erase(process);
     processError(error, "youtube-dl");
 }
 
-void PlaylistModel::youtubeDlFinished(int status)
-{
-    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
+void PlaylistModel::youtubeDlFinished(int status) {
+    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
     youtubeDlBuffers.erase(process);
     processFinished(status, "youtube-dl");
 }
 
-void PlaylistModel::youtubeDlOutput()
-{
-    QProcess *process = qobject_cast<QProcess*>(QObject::sender());
+void PlaylistModel::youtubeDlOutput() {
+    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
     QTextStream stdoutStream(process->readAllStandardOutput());
     int oldSize = playlist_.tracks.size();
 
@@ -293,34 +267,31 @@ void PlaylistModel::youtubeDlOutput()
     }
 }
 
-void PlaylistModel::deserialize(const QByteArray& data)
-{
+void PlaylistModel::deserialize(const QByteArray &data) {
     playlist_.deserialize(data);
     int newSize = playlist_.tracks.size();
     beginInsertRows(QModelIndex(), 0, newSize - 1);
     endInsertRows();
 }
 
-QList<PTrack> PlaylistModel::getTracks(QModelIndexList trackList) const
-{
+QList<PTrack> PlaylistModel::getTracks(QModelIndexList trackList) const {
     QList<PTrack> tracks;
-    for (auto& index : trackList)
+    for (auto &index : trackList)
         tracks.append(playlist_.tracks.at(index.row()));
     return tracks;
 }
 
-void PlaylistModel::libraryChanged(LibraryEvent event)
-{
+void PlaylistModel::libraryChanged(LibraryEvent event) {
     if (event.op == CREATE) {
         beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size());
         playlist_.tracks.append(event.track);
-        qDebug() << "UPDATING MODEL: " << event.track->metadata["artist"] << " " << event.track->metadata["title"] <<
-                 " " << event.track->audioproperties.length;
+        qDebug() << "UPDATING MODEL: " << event.track->metadata["artist"] << " "
+                 << event.track->metadata["title"] << " " << event.track->audioproperties.length;
         endInsertRows();
     } else if (event.op == MODIFY) {
         int i = 0;
         // could be using setData, but not sure it's worth it
-        for (const auto& track : playlist_.tracks) {
+        for (const auto &track : playlist_.tracks) {
             if (track->location == event.track->location) {
                 playlist_.tracks.replace(i, event.track);
                 emit dataChanged(index(i, 0, QModelIndex()), index(i, 0, QModelIndex()));
@@ -330,7 +301,8 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
         }
     } else if (event.op == DELETE) {
         int i = 0;
-        for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end(); ++it) {
+        for (QList<PTrack>::iterator it = playlist_.tracks.begin(); it != playlist_.tracks.end();
+             ++it) {
             PTrack track = *it;
             if (track->location == event.track->location) {
                 beginRemoveRows(QModelIndex(), i, i);
@@ -343,28 +315,25 @@ void PlaylistModel::libraryChanged(LibraryEvent event)
     }
 }
 
-void PlaylistModel::libraryChanged(QList<PTrack> tracks)
-{
+void PlaylistModel::libraryChanged(QList<PTrack> tracks) {
     clear();
     addTracks(tracks);
 }
 
-void PlaylistModel::clear()
-{
+void PlaylistModel::clear() {
     beginRemoveRows(QModelIndex(), 0, playlist_.tracks.size() - 1);
     playlist_.tracks.clear();
     endRemoveRows();
 }
 
-void PlaylistModel::addTracks(QList<PTrack> tracks)
-{
-    beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size() + tracks.size() - 1);
+void PlaylistModel::addTracks(QList<PTrack> tracks) {
+    beginInsertRows(QModelIndex(), playlist_.tracks.size(),
+                    playlist_.tracks.size() + tracks.size() - 1);
     playlist_.tracks.append(tracks);
     endInsertRows();
 }
 
-void PlaylistModel::removeIndexes(QModelIndexList indexes)
-{
+void PlaylistModel::removeIndexes(QModelIndexList indexes) {
     std::vector<QPersistentModelIndex> pindexes;
     pindexes.reserve(indexes.size());
     for (auto index : indexes)
@@ -376,7 +345,6 @@ void PlaylistModel::removeIndexes(QModelIndexList indexes)
     }
 }
 
-void PlaylistModel::notifyQueueStatusChanged(vector<QPersistentModelIndex> indexes)
-{
+void PlaylistModel::notifyQueueStatusChanged(vector<QPersistentModelIndex> indexes) {
     emit queueStatusChanged(indexes);
 }

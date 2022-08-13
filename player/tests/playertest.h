@@ -1,14 +1,13 @@
 #pragma once
 
-#include <audioplayer.h>
 #include <QtTest/QTest>
+#include <audioplayer.h>
 
 class MainWindow;
 class AudioPlayer;
 class MockAudioOutput;
 
-class PlayerTest : public QObject
-{
+class PlayerTest : public QObject {
     Q_OBJECT
 
 private slots:
@@ -37,7 +36,7 @@ private:
     void removeAt(PModel p, int pos);
     void enqueue(PModel p, int pos);
 
-    AudioPlayer* player_;
-    MockAudioOutput* audio_;
-    MainWindow* mw_;
+    AudioPlayer *player_;
+    MockAudioOutput *audio_;
+    MainWindow *mw_;
 };

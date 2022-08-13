@@ -1,35 +1,33 @@
 #pragma once
 
-#include <QObject>
-#include <QtPlugin>
-#include <QMap>
-#include <QString>
-#include "plugins/PluginInterface.h"
 #include "library/track_forward.h"
-#include <lastfm5/Track.h>
+#include "plugins/PluginInterface.h"
+#include <QMap>
+#include <QObject>
+#include <QString>
+#include <QtPlugin>
 #include <lastfm5/Audioscrobbler.h>
+#include <lastfm5/Track.h>
 #include <memory>
 
 class QNetworkReply;
 
-namespace lastfm
-{
+namespace lastfm {
 class Audioscrobbler;
 }
 
 class Preferences;
 
-class LastfmPlugin : public QObject, public PluginInterface
-{
+class LastfmPlugin : public QObject, public PluginInterface {
     Q_OBJECT
     Q_INTERFACES(PluginInterface)
     Q_PLUGIN_METADATA(IID "fubar.lastfm" FILE "lastfm.json")
 
 public:
-    explicit LastfmPlugin(QObject* parent = 0);
+    explicit LastfmPlugin(QObject *parent = 0);
     ~LastfmPlugin();
 
-    void init(QObject& fubarApp);
+    void init(QObject &fubarApp);
     void deinit();
     void configure();
 
@@ -40,14 +38,14 @@ private slots:
     void onAuthenticated();
 
 private:
-    QMap< QString, QNetworkReply* > m_jobs;
+    QMap<QString, QNetworkReply *> m_jobs;
 
     void login();
     void logout();
     void gotSession();
     void resetVariables();
     void checkScrobble();
-    void copyTrackMetadata(lastfm::MutableTrack& to, PTrack from);
+    void copyTrackMetadata(lastfm::MutableTrack &to, PTrack from);
 
     std::unique_ptr<lastfm::Audioscrobbler> m_scrobbler;
     lastfm::MutableTrack m_current;
@@ -57,7 +55,7 @@ private:
     QString m_sessionKey;
     char *m_sessionKeyArray;
 
-    QObject* fubar_;
+    QObject *fubar_;
 
     friend class Preferences;
 };

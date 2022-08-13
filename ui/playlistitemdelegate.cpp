@@ -1,36 +1,37 @@
 #include "playlistitemdelegate.h"
-#include "playlistmodel.h"
-#include "mainwindow.h"
 #include "library/track.h"
+#include "mainwindow.h"
+#include "playlistmodel.h"
+#include <QApplication>
 #include <QFileInfo>
 #include <QPainter>
-#include <QApplication>
 
-QSize PlaylistItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
+QSize PlaylistItemDelegate::sizeHint(const QStyleOptionViewItem &option,
+                                     const QModelIndex &index) const {
     int height = 0;
 
-    QFont boldfont( option.font );
-    boldfont.setBold( true );
-    QFontMetricsF bfm( boldfont );
+    QFont boldfont(option.font);
+    boldfont.setBold(true);
+    QFontMetricsF bfm(boldfont);
 
     int fontHeight = bfm.height();
 
-    int rowCount = (getGroupMode(index) == Grouping::Head  || getGroupMode(index) == Grouping::None) ? 2 : 1;
+    int rowCount =
+        (getGroupMode(index) == Grouping::Head || getGroupMode(index) == Grouping::None) ? 2 : 1;
 
     height = rowCount * fontHeight + rowCount * 2;
     return QSize(120, height);
 }
 
-void drawText(QPainter *painter, QRect &rect, const QString &text, int space = 0)
-{
+void drawText(QPainter *painter, QRect &rect, const QString &text, int space = 0) {
     painter->drawText(rect, text);
     QRect used = painter->boundingRect(rect, 0, text);
     rect.setLeft(rect.left() + used.width() + space);
 }
 
-void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
+void PlaylistItemDelegate::paint(QPainter *painter,
+                                 const QStyleOptionViewItem &option,
+                                 const QModelIndex &index) const {
     painter->save();
 
     PTrack track = index.data(TrackRole).value<PTrack>();
@@ -91,7 +92,8 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     if (title.size() == 0)
         title = QFileInfo(track->path()).completeBaseName();
     QString albumArtist = track->metadata.value("album artist", "");
-    if (!albumArtist.isEmpty() && albumArtist != track->metadata["artist"] && !track->metadata["artist"].isEmpty())
+    if (!albumArtist.isEmpty() && albumArtist != track->metadata["artist"] &&
+        !track->metadata["artist"].isEmpty())
         title += " // " + track->metadata["artist"];
     QString leftText = QString("%1. %2").arg(track->metadata["track"], 2, QChar('0')).arg(title);
     int minutes = track->audioproperties.length / 60;
@@ -103,13 +105,15 @@ void PlaylistItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     QRect queueRect = trackOption.rect;
     queueRect.setLeft(trackOption.rect.left() + 45);
     queueRect.setRight(trackOption.rect.left() + 55);
-    painter->drawText(queueRect, Qt::AlignHCenter, MainWindow::instance->isEnqueued(MainWindow::instance->getActivePlaylist(), index) ? QString(QChar(1342)) : QString());
+    painter->drawText(
+        queueRect, Qt::AlignHCenter,
+        MainWindow::instance->isEnqueued(MainWindow::instance->getActivePlaylist(), index)
+            ? QString(QChar(1342))
+            : QString());
 
     painter->restore();
 }
 
-Grouping::Mode PlaylistItemDelegate::getGroupMode(const QModelIndex& index)
-{
+Grouping::Mode PlaylistItemDelegate::getGroupMode(const QModelIndex &index) {
     return index.data(GroupingModeRole).value<Grouping::Mode>();
 }
-

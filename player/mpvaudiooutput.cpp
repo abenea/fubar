@@ -1,8 +1,8 @@
 #include "mpvaudiooutput.h"
 #include "audiostate.h"
 #include <QDebug>
-#include <mpv/client.h>
 #include <cassert>
+#include <mpv/client.h>
 
 namespace mpv {
 namespace qt {
@@ -10,8 +10,8 @@ static inline int command_variant2(mpv_handle *ctx, const QVariant &args) {
     node_builder node(args);
     return mpv_command_node(ctx, node.node(), 0);
 }
-}
-}
+} // namespace qt
+} // namespace mpv
 
 namespace {
 
@@ -19,7 +19,8 @@ qint64 pos_to_qint64(const std::string &s) { return qint64(std::stof(s) * 1000);
 
 } // namespace
 
-MpvAudioOutput::MpvAudioOutput() : state_(AudioState::Stopped), seek_offset_(-1), volumeNeverSet_(true) {
+MpvAudioOutput::MpvAudioOutput()
+    : state_(AudioState::Stopped), seek_offset_(-1), volumeNeverSet_(true) {
     setlocale(LC_NUMERIC, "C");
     handle_ = mpv::qt::Handle::FromRawHandle(mpv_create());
     if (static_cast<mpv_handle *>(handle_) == nullptr)

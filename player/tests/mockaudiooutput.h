@@ -2,8 +2,7 @@
 
 #include "player/audiooutput.h"
 
-class MockAudioOutput : public AudioOutput
-{
+class MockAudioOutput : public AudioOutput {
     Q_OBJECT
 public:
     MockAudioOutput() {}
@@ -22,14 +21,15 @@ public slots:
 public:
     qint64 currentTime() const;
     qint64 totalTime() const;
-    void setCurrentSource(const QString& source);
-    void enqueue(const QString& source);
+    void setCurrentSource(const QString &source);
+    void enqueue(const QString &source);
     void clearQueue();
     AudioState state() const;
     QString currentSource() const;
 
     void triggerAboutToFinish();
     void triggerCurrentSourceChanged();
+
 private:
     QString source_;
     QString nextSource_;

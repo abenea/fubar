@@ -2,13 +2,17 @@
 #include "library/track.h"
 #include "mockaudiooutput.h"
 #include "ui/mainwindow.h"
-#include <playlistmodel.h>
 #include <QDebug>
+#include <playlistmodel.h>
 
-#define verify(track) {if (audio_->currentSource() != track) qDebug() << "Current source is" << audio_->currentSource() << "!=" << track; QVERIFY(audio_->currentSource() == track); }
+#define verify(track)                                                                              \
+    {                                                                                              \
+        if (audio_->currentSource() != track)                                                      \
+            qDebug() << "Current source is" << audio_->currentSource() << "!=" << track;           \
+        QVERIFY(audio_->currentSource() == track);                                                 \
+    }
 
-QList<PTrack> generateTracks(int start, int no)
-{
+QList<PTrack> generateTracks(int start, int no) {
     QList<PTrack> result;
     for (int i = start; i < start + no; ++i) {
         auto track = new Track();
@@ -18,68 +22,49 @@ QList<PTrack> generateTracks(int start, int no)
     return result;
 }
 
-QList<PTrack> generateTracks(int no)
-{
-    return generateTracks(0, no);
-}
+QList<PTrack> generateTracks(int no) { return generateTracks(0, no); }
 
-PModel PlayerTest::newPlaylist()
-{
+PModel PlayerTest::newPlaylist() {
     auto p = player_->createPlaylist(false);
     mw_->addPlaylist(p, "", false);
     return p;
 }
 
-PModel PlayerTest::newPlaylist(QList<PTrack> tracks)
-{
+PModel PlayerTest::newPlaylist(QList<PTrack> tracks) {
     auto p = newPlaylist();
     p->addTracks(tracks);
     return p;
 }
 
-void PlayerTest::removeAt(PModel p, int pos)
-{
-    p->removeIndexes({p->index(pos, 0)});
-}
+void PlayerTest::removeAt(PModel p, int pos) { p->removeIndexes({p->index(pos, 0)}); }
 
-void PlayerTest::enqueue(PModel p, int pos)
-{
+void PlayerTest::enqueue(PModel p, int pos) {
     player_->enqueueTracks(p, {QModelIndex(p->index(pos, 0))});
 }
 
-void PlayerTest::deletePlaylist(int pos)
-{
-    mw_->removePlaylistTab(pos);
-}
+void PlayerTest::deletePlaylist(int pos) { mw_->removePlaylistTab(pos); }
 
-void PlayerTest::init()
-{
+void PlayerTest::init() {
     audio_ = new MockAudioOutput();
     player_ = new AudioPlayer(nullptr, audio_, true);
     mw_ = new MainWindow(*player_);
     player_->setMainWindow(mw_);
 }
 
-void PlayerTest::cleanup()
-{
+void PlayerTest::cleanup() {
     delete mw_;
     delete player_;
     delete audio_;
 }
 
-void PlayerTest::noPlaylists()
-{
-    player_->play();
-}
+void PlayerTest::noPlaylists() { player_->play(); }
 
-void PlayerTest::oneEmptyPlaylist()
-{
+void PlayerTest::oneEmptyPlaylist() {
     newPlaylist();
     player_->play();
 }
 
-void PlayerTest::oneTrack()
-{
+void PlayerTest::oneTrack() {
     newPlaylist(generateTracks(1));
     player_->play();
     verify("0");
@@ -87,8 +72,7 @@ void PlayerTest::oneTrack()
     player_->prev();
 }
 
-void PlayerTest::prevNext()
-{
+void PlayerTest::prevNext() {
     newPlaylist(generateTracks(2));
     player_->play();
     verify("0");
@@ -98,8 +82,7 @@ void PlayerTest::prevNext()
     verify("0");
 }
 
-void PlayerTest::autoEnqueueNext()
-{
+void PlayerTest::autoEnqueueNext() {
     newPlaylist(generateTracks(2));
     player_->play();
     audio_->triggerAboutToFinish();
@@ -112,8 +95,7 @@ void PlayerTest::autoEnqueueNext()
     verify("1");
 }
 
-void PlayerTest::autoEnqueueNextDeletedHelper()
-{
+void PlayerTest::autoEnqueueNextDeletedHelper() {
     auto p = newPlaylist(generateTracks(3));
     player_->play();
     audio_->triggerAboutToFinish();
@@ -122,22 +104,19 @@ void PlayerTest::autoEnqueueNextDeletedHelper()
     verify("1");
 }
 
-void PlayerTest::autoEnqueueNextDeletedNext()
-{
+void PlayerTest::autoEnqueueNextDeletedNext() {
     autoEnqueueNextDeletedHelper();
     player_->next();
     verify("2");
 }
 
-void PlayerTest::autoEnqueueNextDeletedPrev()
-{
+void PlayerTest::autoEnqueueNextDeletedPrev() {
     autoEnqueueNextDeletedHelper();
     player_->prev();
     verify("0");
 }
 
-void PlayerTest::autoEnqueueNextDeletedThenAutoEnqueue()
-{
+void PlayerTest::autoEnqueueNextDeletedThenAutoEnqueue() {
     auto p = newPlaylist(generateTracks(3));
     player_->play();
     audio_->triggerAboutToFinish();
@@ -149,8 +128,7 @@ void PlayerTest::autoEnqueueNextDeletedThenAutoEnqueue()
     verify("2");
 }
 
-void PlayerTest::enqueue()
-{
+void PlayerTest::enqueue() {
     auto p1 = newPlaylist(generateTracks(3));
     auto p2 = newPlaylist(generateTracks(3, 3));
     player_->play();
@@ -177,8 +155,7 @@ void PlayerTest::enqueue()
     verify("1");
 }
 
-void PlayerTest::enqueueDeleted()
-{
+void PlayerTest::enqueueDeleted() {
     auto p1 = newPlaylist(generateTracks(3));
     player_->play();
     verify("0");
@@ -195,8 +172,7 @@ void PlayerTest::enqueueDeleted()
     verify("0");
 }
 
-void PlayerTest::enqueueDeletedPlaylist()
-{
+void PlayerTest::enqueueDeletedPlaylist() {
     auto p1 = newPlaylist(generateTracks(3));
     auto p2 = newPlaylist(generateTracks(3, 3));
     player_->play();

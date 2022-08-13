@@ -3,40 +3,43 @@
 #include "player/playlist.h"
 
 #include <QAbstractTableModel>
-#include <QStringList>
 #include <QProcess>
-#include <memory>
+#include <QStringList>
 #include <map>
+#include <memory>
 #include <vector>
 
 struct LibraryEvent;
 class QMimeData;
 
-class PlaylistModel : public QAbstractItemModel
-{
+class PlaylistModel : public QAbstractItemModel {
     Q_OBJECT
 public:
-    PlaylistModel(bool editable, QObject* parent = 0);
+    PlaylistModel(bool editable, QObject *parent = 0);
 
-    virtual int rowCount(const QModelIndex&) const;
-    virtual int columnCount(const QModelIndex&) const;
-    virtual QModelIndex parent(const QModelIndex& index) const;
-    virtual bool hasChildren(const QModelIndex& parent = QModelIndex()) const;
-    virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
-    virtual QVariant data(const QModelIndex& index, int role) const;
+    virtual int rowCount(const QModelIndex &) const;
+    virtual int columnCount(const QModelIndex &) const;
+    virtual QModelIndex parent(const QModelIndex &index) const;
+    virtual bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
+    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    virtual QVariant data(const QModelIndex &index, int role) const;
 
     Qt::DropActions supportedDropActions() const;
-    Qt::ItemFlags flags(const QModelIndex& index) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const;
     QStringList mimeTypes() const;
-    QMimeData* mimeData(const QModelIndexList& indexes) const;
-    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
+    QMimeData *mimeData(const QModelIndexList &indexes) const;
+    bool dropMimeData(const QMimeData *data,
+                      Qt::DropAction action,
+                      int row,
+                      int column,
+                      const QModelIndex &parent);
 
-    Playlist& playlist() { return playlist_;  }
-    void addUrls(const QList<QUrl>& urls);
+    Playlist &playlist() { return playlist_; }
+    void addUrls(const QList<QUrl> &urls);
     void addTracks(QList<PTrack> tracks);
     void removeIndexes(QModelIndexList indexes);
     void clear();
-    void deserialize(const QByteArray& data);
+    void deserialize(const QByteArray &data);
     QList<PTrack> getTracks(QModelIndexList trackList) const;
 
     void notifyQueueStatusChanged(std::vector<QPersistentModelIndex> indexes);
@@ -55,19 +58,16 @@ protected slots:
     void youtubeDlOutput();
     void youtubeDlFinished(int status);
     void youtubeDlError(QProcess::ProcessError error);
+
 private:
     void processFinished(int status, QString processName);
     void processError(QProcess::ProcessError error, QString processName);
 
     Playlist playlist_;
     Qt::DropActions dropActions_;
-    std::map<QProcess*, QString> youtubeDlBuffers;
+    std::map<QProcess *, QString> youtubeDlBuffers;
 };
 
-enum PlaylistRoles {
-    TrackRole = Qt::UserRole,
-    GroupingModeRole,
-    GroupItemsRole
-};
+enum PlaylistRoles { TrackRole = Qt::UserRole, GroupingModeRole, GroupItemsRole };
 
 Q_DECLARE_METATYPE(PTrack)

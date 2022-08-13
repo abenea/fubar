@@ -1,81 +1,74 @@
 #include "library.h"
 
-#include "util.h"
-#include "track.h"
+#include "cuefile.h"
 #include "directory.h"
 #include "directorywatcher.h"
+#include "track.h"
 #include "track.pb.h"
-#include "cuefile.h"
-#include <taglib/fileref.h>
-#include <taglib/tag.h>
-#include <taglib/mpegfile.h>
-#include <taglib/flacfile.h>
-#include <taglib/xiphcomment.h>
-#include <taglib/id3v1tag.h>
-#include <taglib/id3v2tag.h>
-#include <taglib/tpropertymap.h>
-#include <taglib/tfilestream.h>
-#include <taglib/id3v2framefactory.h>
-#include <boost/scoped_array.hpp>
-#include <boost/bind.hpp>
+#include "util.h"
+#include <QDateTime>
+#include <QDebug>
 #include <QDir>
 #include <QFileInfo>
-#include <QDebug>
 #include <QSettings>
 #include <QTimer>
-#include <QDateTime>
-#include <set>
+#include <boost/bind.hpp>
+#include <boost/scoped_array.hpp>
 #include <cstdio>
+#include <set>
+#include <taglib/fileref.h>
+#include <taglib/flacfile.h>
+#include <taglib/id3v1tag.h>
+#include <taglib/id3v2framefactory.h>
+#include <taglib/id3v2tag.h>
+#include <taglib/mpegfile.h>
+#include <taglib/tag.h>
+#include <taglib/tfilestream.h>
+#include <taglib/tpropertymap.h>
+#include <taglib/xiphcomment.h>
 
 using namespace std;
 
-const char* library_filename = "media_library";
+const char *library_filename = "media_library";
 const int persist_interval = 5 * 60 * 1000;
 
-string LibraryEvent::op2str()
-{
-    switch(op) {
-        case CREATE:
-            return "Add";
-        case DELETE:
-            return "Delete";
-        case MODIFY:
-            return "Modify";
-        case UNKNOWN:
-        default:
-            return "Unknown";
+string LibraryEvent::op2str() {
+    switch (op) {
+    case CREATE:
+        return "Add";
+    case DELETE:
+        return "Delete";
+    case MODIFY:
+        return "Modify";
+    case UNKNOWN:
+    default:
+        return "Unknown";
     }
 }
 
-Library::Library(QObject * parent)
-    : QThread(parent)
-    , mutex_(QMutex::Recursive)
-    , quit_(false)
-    , rescanning_(false)
-    , watching_(false)
-    , should_be_working_(true)
-    , dirty_(false)
-{
+Library::Library(QObject *parent)
+    : QThread(parent),
+      mutex_(QMutex::Recursive),
+      quit_(false),
+      rescanning_(false),
+      watching_(false),
+      should_be_working_(true),
+      dirty_(false) {
     QTimer::singleShot(persist_interval, this, SLOT(persist()));
     getFoldersFromSettings();
     loadFromDisk();
 }
 
-Library::~Library()
-{
-    saveToDisk();
-}
+Library::~Library() { saveToDisk(); }
 
-void Library::stopRescanning()
-{
+void Library::stopRescanning() {
     QMutexLocker locker(&stop_rescan_mutex_);
     while (rescanning_) {
         stop_rescan_.wait(&stop_rescan_mutex_);
     }
 }
 
-void Library::startMonitoring()
-{
+void Library::startMonitoring() {
     QMutexLocker locker(&pause_monitoring_mutex_);
     QList<PTrack> tracks = getTracks();
     emit(libraryChanged(tracks));
@@ -83,8 +76,7 @@ void Library::startMonitoring()
     pause_monitoring_.wakeAll();
 }
 
-void Library::stopMonitoring()
-{
+void Library::stopMonitoring() {
     if (!should_be_working_)
         return;
 
@@ -93,8 +85,7 @@ void Library::stopMonitoring()
     stopWatch();
 }
 
-void Library::restartMonitoring(bool wipeDatabase)
-{
+void Library::restartMonitoring(bool wipeDatabase) {
     stopMonitoring();
     if (wipeDatabase) {
         QMutexLocker locker(&mutex_);
@@ -104,16 +95,14 @@ void Library::restartMonitoring(bool wipeDatabase)
     startMonitoring();
 }
 
-void Library::waitForMonitoringStart()
-{
+void Library::waitForMonitoringStart() {
     QMutexLocker locker(&pause_monitoring_mutex_);
     while (!should_be_working_) {
         pause_monitoring_.wait(&pause_monitoring_mutex_);
     }
 }
 
-void Library::run()
-{
+void Library::run() {
     while (!quit_) {
         waitForMonitoringStart();
         qDebug() << "Scanning media files";
@@ -123,8 +112,7 @@ void Library::run()
 
         if (!quit_) {
             rescan();
-        }
-        else
+        } else
             break;
         if (!should_be_working_)
             continue;
@@ -136,14 +124,12 @@ void Library::run()
     }
 }
 
-void Library::quit()
-{
+void Library::quit() {
     quit_ = true;
     stopMonitoring();
 }
 
-void Library::addDirectory(std::shared_ptr<Directory> directory)
-{
+void Library::addDirectory(std::shared_ptr<Directory> directory) {
     QMutexLocker locker(&mutex_);
     directories_.insert(directory->path(), directory);
 
@@ -155,13 +141,12 @@ void Library::addDirectory(std::shared_ptr<Directory> directory)
     }
 }
 
-void Library::removeDirectory(QString path)
-{
+void Library::removeDirectory(QString path) {
     QMutexLocker locker(&mutex_);
     qDebug() << "Deleting dir" << path;
     DirectoryMap::iterator it = directories_.find(path);
     if (it == directories_.end()) {
-//        qDebug() << " Maybe wanted to remove directory " << path << ". No dice";
+        //        qDebug() << " Maybe wanted to remove directory " << path << ". No dice";
         return;
     }
     QList<QString> subdirs = it.value()->getSubdirectoriesNames();
@@ -191,8 +176,7 @@ void Library::removeDirectory(QString path)
     qDebug() << "Done deleting dir" << path;
 }
 
-void Library::addFile(PTrack track, bool loading)
-{
+void Library::addFile(PTrack track, bool loading) {
     QMutexLocker locker(&mutex_);
     // Add to directory
     QFileInfo file_info(track->location);
@@ -220,8 +204,7 @@ void Library::addFile(PTrack track, bool loading)
     }
 }
 
-void Library::removeFile(QString path)
-{
+void Library::removeFile(QString path) {
     QMutexLocker locker(&mutex_);
     QFileInfo file_info(path);
     DirectoryMap::iterator it = directories_.find(file_info.absolutePath());
@@ -236,8 +219,7 @@ void Library::removeFile(QString path)
     }
 }
 
-void Library::loadFromDisk()
-{
+void Library::loadFromDisk() {
     QString filename = settingsDirFilePath(library_filename);
     FILE *f = std::fopen(filename.toStdString().c_str(), "rb");
     if (f == NULL) {
@@ -263,18 +245,18 @@ void Library::loadFromDisk()
         return;
 
     for (int i = 0; i < plibrary.directories_size(); ++i) {
-        const proto::Directory& pDirectory = plibrary.directories(i);
+        const proto::Directory &pDirectory = plibrary.directories(i);
         addDirectory(shared_ptr<Directory>(new Directory(pDirectory)));
     }
     for (int i = 0; i < plibrary.tracks_size(); ++i) {
         shared_ptr<Track> track(new Track(plibrary.tracks(i)));
         addFile(track, true);
     }
-    qDebug() << "Read metadata for" << plibrary.tracks_size() << "tracks in" << plibrary.directories_size() << "directories from disk";
+    qDebug() << "Read metadata for" << plibrary.tracks_size() << "tracks in"
+             << plibrary.directories_size() << "directories from disk";
 }
 
-void Library::saveToDisk()
-{
+void Library::saveToDisk() {
     if (!dirty_)
         return;
 
@@ -288,7 +270,7 @@ void Library::saveToDisk()
 
     proto::Library plibrary;
     for (DirectoryMap::const_iterator it = directories_.begin(); it != directories_.end(); ++it) {
-        proto::Directory* dir = plibrary.add_directories();
+        proto::Directory *dir = plibrary.add_directories();
         dir->Clear();
         dir->set_location(it.key().toUtf8().constData());
         dir->set_mtime(it.value()->mtime());
@@ -307,22 +289,22 @@ void Library::saveToDisk()
     fclose(f);
 }
 
-void Library::persist()
-{
+void Library::persist() {
     QMutexLocker locker(&mutex_);
     saveToDisk();
     QTimer::singleShot(persist_interval, this, SLOT(persist()));
 }
 
-void Library::scanDirectory(const QString& path)
-{
-    QDir::Filters directory_filter = QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot;
+void Library::scanDirectory(const QString &path) {
+    QDir::Filters directory_filter =
+        QDir::Dirs | QDir::Files | QDir::Readable | QDir::Hidden | QDir::NoDotAndDotDot;
     if (stopRescan())
         return;
     DirectoryMap::const_iterator it = directories_.find(path);
     watcher_->addWatch(path);
     // This mtime may be currentTime() because of god-knows-how-stat-and-move-dir-works-in-linux.
-    // So we use an incorrect mtime. Not a problem since we use <= to determine if the the directory changed.
+    // So we use an incorrect mtime. Not a problem since we use <= to determine if the the directory
+    // changed.
     uint mtime = QFileInfo(path).lastModified().toTime_t();
 
     if (it != directories_.end()) {
@@ -335,7 +317,7 @@ void Library::scanDirectory(const QString& path)
                 if (stopRescan())
                     return;
             }
-        // Stuff changed
+            // Stuff changed
         } else {
             QList<QString> newly_created_subdirs;
             shared_ptr<Directory> new_directory;
@@ -365,9 +347,11 @@ void Library::scanDirectory(const QString& path)
                         }
                     } else {
                         shared_ptr<Directory> subdir = directory->getSubdirectory(info.fileName());
-                        // Maybe this is a newly monitored directory, but its subdir may be in library already
+                        // Maybe this is a newly monitored directory, but its subdir may be in
+                        // library already
                         if (!subdir) {
-                            DirectoryMap::const_iterator subdir_it = directories_.find(info.absoluteFilePath());
+                            DirectoryMap::const_iterator subdir_it =
+                                directories_.find(info.absoluteFilePath());
                             if (subdir_it != directories_.end())
                                 subdir = *subdir_it;
                         }
@@ -381,12 +365,13 @@ void Library::scanDirectory(const QString& path)
                     }
                 }
                 foreach (QString deleted_file, old_files) {
-                    emitLibraryChanged(directory->getFile(QFileInfo(deleted_file).fileName()), DELETE);
+                    emitLibraryChanged(directory->getFile(QFileInfo(deleted_file).fileName()),
+                                       DELETE);
                 }
                 foreach (QString deleted_dir, deleted_subdirs) {
                     // Here removing child from father wont work
-                    // because the new_directory does not have deleted_dir as a son since he is freshly crawled
-                    // (directory had him as son)
+                    // because the new_directory does not have deleted_dir as a son since he is
+                    // freshly crawled (directory had him as son)
                     removeDirectory(deleted_dir);
                 }
                 // Add subdirectories so we can set mtime and be done with this directory
@@ -399,7 +384,7 @@ void Library::scanDirectory(const QString& path)
                 scanDirectory(subdir_path);
             }
         }
-    // Full scan
+        // Full scan
     } else {
         shared_ptr<Directory> directory = shared_ptr<Directory>(new Directory(path, 0));
         addDirectory(directory);
@@ -429,9 +414,8 @@ void Library::scanDirectory(const QString& path)
     }
 }
 
-template<class T>
-void set_tag_and_properties(T tag, TagLib::Tag **tag_ptr, TagLib::PropertyMap& properties)
-{
+template <class T>
+void set_tag_and_properties(T tag, TagLib::Tag **tag_ptr, TagLib::PropertyMap &properties) {
     if (*tag_ptr && !(*tag_ptr)->title().isEmpty() && !(*tag_ptr)->artist().isEmpty())
         return;
     if (tag) {
@@ -440,8 +424,7 @@ void set_tag_and_properties(T tag, TagLib::Tag **tag_ptr, TagLib::PropertyMap& p
     }
 }
 
-PTrack Library::scanFile(const QString& path)
-{
+PTrack Library::scanFile(const QString &path) {
     if (path.toLower().endsWith(".cue")) {
         return scanCue(path);
     }
@@ -459,14 +442,16 @@ PTrack Library::scanFile(const QString& path)
     shared_ptr<Track> track;
 
     if (path.toLower().endsWith(".mp3")) {
-        TagLib::MPEG::File* mpegFile = new TagLib::MPEG::File(&stream, TagLib::ID3v2::FrameFactory::instance());
+        TagLib::MPEG::File *mpegFile =
+            new TagLib::MPEG::File(&stream, TagLib::ID3v2::FrameFactory::instance());
         file.reset(mpegFile);
         if (!file->isValid())
             return track;
         set_tag_and_properties(mpegFile->ID3v2Tag(), &tag, properties);
         set_tag_and_properties(mpegFile->ID3v1Tag(), &tag, properties);
     } else if (path.toLower().endsWith(".flac")) {
-        TagLib::FLAC::File* flacFile = new TagLib::FLAC::File(&stream, TagLib::ID3v2::FrameFactory::instance());
+        TagLib::FLAC::File *flacFile =
+            new TagLib::FLAC::File(&stream, TagLib::ID3v2::FrameFactory::instance());
         file.reset(flacFile);
         if (!file->isValid())
             return track;
@@ -496,18 +481,24 @@ PTrack Library::scanFile(const QString& path)
         track->metadata["track"] = QString::number(tag->track());
 
         // Get album artist and replaygain
-//         qDebug() << "Metadata for " << track->location;
-//         for (auto item : properties) {
-//             qDebug() << TStringToQString(item.first) << " " << TStringToQString(item.second.front());
-//         }
-        std::map<QString, QString> tags{{"ALBUM ARTIST", "album artist"}, {"ALBUMARTIST", "album artist"}, {"UNSYNCED LYRICS", "lyrics"}, {"LYRICS", "lyrics"}};
-        std::set<QString> replayGainTags = {"REPLAYGAIN_ALBUM_GAIN", "REPLAYGAIN_ALBUM_PEAK", "REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_TRACK_PEAK"};
-        for (const auto& rgtag : replayGainTags) {
+        //         qDebug() << "Metadata for " << track->location;
+        //         for (auto item : properties) {
+        //             qDebug() << TStringToQString(item.first) << " " <<
+        //             TStringToQString(item.second.front());
+        //         }
+        std::map<QString, QString> tags{{"ALBUM ARTIST", "album artist"},
+                                        {"ALBUMARTIST", "album artist"},
+                                        {"UNSYNCED LYRICS", "lyrics"},
+                                        {"LYRICS", "lyrics"}};
+        std::set<QString> replayGainTags = {"REPLAYGAIN_ALBUM_GAIN", "REPLAYGAIN_ALBUM_PEAK",
+                                            "REPLAYGAIN_TRACK_GAIN", "REPLAYGAIN_TRACK_PEAK"};
+        for (const auto &rgtag : replayGainTags) {
             tags.insert(std::make_pair(rgtag, rgtag));
         }
 
-        for (const auto& tag_pair: tags) {
-            TagLib::PropertyMap::Iterator it = properties.find(tag_pair.first.toStdString().c_str());
+        for (const auto &tag_pair : tags) {
+            TagLib::PropertyMap::Iterator it =
+                properties.find(tag_pair.first.toStdString().c_str());
             if (it != properties.end() && !it->second.isEmpty()) {
                 QString value = TStringToQString(it->second.front());
                 if (!value.isEmpty())
@@ -523,13 +514,12 @@ PTrack Library::scanFile(const QString& path)
     }
 
     track->mtime = QFileInfo(path).lastModified().toTime_t();
-/*        qDebug() << "LIBRARY: " << track->metadata["artist"] << " " << track->metadata["title"] <<
-            " " << track->audioproperties.length;*/
+    /*        qDebug() << "LIBRARY: " << track->metadata["artist"] << " " <<
+       track->metadata["title"] << " " << track->audioproperties.length;*/
     return track;
 }
 
-PTrack Library::scanCue(const QString& path)
-{
+PTrack Library::scanCue(const QString &path) {
     qDebug() << "Scanning cue" << path;
     shared_ptr<Track> track;
     try {
@@ -553,15 +543,13 @@ PTrack Library::scanCue(const QString& path)
     return track;
 }
 
-void Library::setMusicFolders(QStringList folders)
-{
+void Library::setMusicFolders(QStringList folders) {
     music_folders_ = folders;
     music_folders_.removeAll("");
     setFoldersInSettings();
 }
 
-void Library::rescan()
-{
+void Library::rescan() {
     qDebug() << "Started rescan";
     {
         QMutexLocker locker(&stop_rescan_mutex_);
@@ -597,15 +585,13 @@ void Library::rescan()
     qDebug() << "Done rescan";
 }
 
-void Library::watch()
-{
+void Library::watch() {
     qDebug() << "Started watch";
     watching_ = true;
     watcher_->watch();
 }
 
-void Library::stopWatch()
-{
+void Library::stopWatch() {
     if (watching_) {
         watcher_->stop();
         qDebug() << "Done watch";
@@ -613,8 +599,7 @@ void Library::stopWatch()
     }
 }
 
-void Library::dumpDatabase() const
-{
+void Library::dumpDatabase() const {
     foreach (QString music_folder, music_folders_) {
         DirectoryMap::const_iterator it = directories_.find(music_folder);
         if (it != directories_.end())
@@ -622,8 +607,7 @@ void Library::dumpDatabase() const
     }
 }
 
-void Library::directoryCallback(QString path, LibraryEventType event)
-{
+void Library::directoryCallback(QString path, LibraryEventType event) {
     QMutexLocker locker(&mutex_);
     qDebug() << (event == CREATE ? "DIR ADD " : "DIR RM ") << path;
     if (event == CREATE) {
@@ -631,19 +615,18 @@ void Library::directoryCallback(QString path, LibraryEventType event)
     } else if (event == DELETE) {
         removeDirectory(path);
     }
-    //dumpDatabase();
+    // dumpDatabase();
 }
 
-void Library::fileCallback(QString path, LibraryEventType event)
-{
+void Library::fileCallback(QString path, LibraryEventType event) {
     QMutexLocker locker(&mutex_);
     if (event == CREATE) {
-//        qDebug() << "FILE ADD " << path;
+        //        qDebug() << "FILE ADD " << path;
         PTrack track = scanFile(path);
         if (track)
             addFile(track);
     } else if (event == DELETE) {
-//        qDebug() << "FILE RM " << path;
+        //        qDebug() << "FILE RM " << path;
         removeFile(path);
     } else if (event == MODIFY) {
         QFileInfo fileInfo(path);
@@ -651,7 +634,7 @@ void Library::fileCallback(QString path, LibraryEventType event)
         if (it != directories_.end()) {
             PTrack oldTrack = it.value()->getFile(fileInfo.fileName());
             if (oldTrack) {
-//                    qDebug() << "FILE MODIFY " << path;
+                //                    qDebug() << "FILE MODIFY " << path;
                 if (oldTrack->mtime <= fileInfo.lastModified().toTime_t()) {
                     PTrack track = scanFile(path);
                     if (track) {
@@ -672,16 +655,12 @@ void Library::fileCallback(QString path, LibraryEventType event)
             qDebug() << "Couldn't find the directory where the file was modified";
         }
     }
-    //dumpDatabase();
+    // dumpDatabase();
 }
 
-QStringList Library::getMusicFolders()
-{
-    return QStringList(music_folders_);
-}
+QStringList Library::getMusicFolders() { return QStringList(music_folders_); }
 
-QList<shared_ptr<Track>> Library::getTracks()
-{
+QList<shared_ptr<Track>> Library::getTracks() {
     QMutexLocker locker(&mutex_);
     QList<shared_ptr<Track>> result;
     for (DirectoryMap::iterator it = directories_.begin(); it != directories_.end(); ++it) {
@@ -690,21 +669,18 @@ QList<shared_ptr<Track>> Library::getTracks()
     return result;
 }
 
-void Library::getFoldersFromSettings()
-{
+void Library::getFoldersFromSettings() {
     QSettings settings;
     music_folders_ = settings.value("library/folders").toStringList();
     music_folders_.removeAll("");
 }
 
-void Library::setFoldersInSettings()
-{
+void Library::setFoldersInSettings() {
     QSettings settings;
     settings.setValue("library/folders", music_folders_);
 }
 
-void Library::emitLibraryChanged(PTrack track, LibraryEventType type)
-{
+void Library::emitLibraryChanged(PTrack track, LibraryEventType type) {
     if (track->isCue()) {
         if (type == LibraryEventType::DELETE || type == LibraryEventType::MODIFY) {
             for (PTrack cuetrack : track->getCueTracks())
@@ -718,8 +694,7 @@ void Library::emitLibraryChanged(PTrack track, LibraryEventType type)
         emit libraryChanged(LibraryEvent(track, type));
 }
 
-QList<PTrack> Library::getDirectoryTracks(shared_ptr<Directory> directory)
-{
+QList<PTrack> Library::getDirectoryTracks(shared_ptr<Directory> directory) {
     QList<PTrack> tracks;
     for (PTrack track : directory->getTracks()) {
         if (track->isCue()) {
@@ -730,8 +705,7 @@ QList<PTrack> Library::getDirectoryTracks(shared_ptr<Directory> directory)
     return tracks;
 }
 
-void Library::dirtyHack(PTrack track)
-{
+void Library::dirtyHack(PTrack track) {
     dirty_ = true;
     emitLibraryChanged(track, MODIFY);
 }

@@ -1,46 +1,34 @@
 #include "seekslider.h"
 #include "player/audiooutput.h"
+#include <QDebug>
 #include <QStyle>
 #include <QStyleOptionSlider>
-#include <QDebug>
 
-SeekSlider::SeekSlider(AudioPlayer& player, QWidget* parent)
-    : QSlider(Qt::Horizontal, parent)
-    , player_(player)
-    , pressed_(false)
-{
+SeekSlider::SeekSlider(AudioPlayer &player, QWidget *parent)
+    : QSlider(Qt::Horizontal, parent), player_(player), pressed_(false) {
     QObject::connect(&player, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
     QObject::connect(this, SIGNAL(sliderPressed()), this, SLOT(sliderPressedAction()));
     QObject::connect(this, SIGNAL(sliderReleased()), this, SLOT(sliderReleasedAction()));
     setLimits(0, 0);
 }
 
-void SeekSlider::setLimits(int min, int max)
-{
+void SeekSlider::setLimits(int min, int max) {
     setValue(min);
     setMinimum(min * 1000);
     setMaximum(max * 1000);
 }
 
-void SeekSlider::scrollTo(int pos)
-{
-    player_.seek(pos);
-}
+void SeekSlider::scrollTo(int pos) { player_.seek(pos); }
 
-void SeekSlider::tick(qint64 pos)
-{
+void SeekSlider::tick(qint64 pos) {
     if (!pressed_) {
         setValue(pos);
     }
 }
 
-void SeekSlider::sliderPressedAction()
-{
-    pressed_ = true;
-}
+void SeekSlider::sliderPressedAction() { pressed_ = true; }
 
-void SeekSlider::sliderReleasedAction()
-{
+void SeekSlider::sliderReleasedAction() {
     scrollTo(value());
     pressed_ = false;
 }
@@ -50,14 +38,12 @@ void SeekSlider::sliderReleasedAction()
  */
 
 // Function copied from qslider.cpp
-inline int SeekSlider::pick(const QPoint &pt) const
-{
+inline int SeekSlider::pick(const QPoint &pt) const {
     return orientation() == Qt::Horizontal ? pt.x() : pt.y();
 }
 
 // Function copied from qslider.cpp and modified to make it compile
-int SeekSlider::pixelPosToRangeValue(int pos) const
-{
+int SeekSlider::pixelPosToRangeValue(int pos) const {
     QStyleOptionSlider opt;
     initStyleOption(&opt);
     QRect gr = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderGroove, this);
@@ -78,12 +64,12 @@ int SeekSlider::pixelPosToRangeValue(int pos) const
 }
 
 // Based on code from qslider.cpp
-void SeekSlider::mousePressEvent(QMouseEvent *event)
-{
+void SeekSlider::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         QStyleOptionSlider opt;
         initStyleOption(&opt);
-        const QRect sliderRect = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderHandle, this);
+        const QRect sliderRect =
+            style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderHandle, this);
         const QPoint center = sliderRect.center() - sliderRect.topLeft();
         // to take half of the slider off for the setSliderPosition call we use the center - topLeft
 

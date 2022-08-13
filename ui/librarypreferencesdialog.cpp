@@ -3,17 +3,14 @@
 #include <QFileInfo>
 
 const QString FOLDER_SEPARATOR = ";";
-LibraryPreferencesDialog::LibraryPreferencesDialog(Library& library, QWidget* parent)
-    : QDialog(parent)
-    , library_(library)
-{
+LibraryPreferencesDialog::LibraryPreferencesDialog(Library &library, QWidget *parent)
+    : QDialog(parent), library_(library) {
     setupUi(this);
     QStringList folders = library_.getMusicFolders();
     libraryPaths->setText(folders.join(FOLDER_SEPARATOR));
 }
 
-void LibraryPreferencesDialog::accept()
-{
+void LibraryPreferencesDialog::accept() {
     QSet<QString> current_set;
     QStringList current_list = getCurrentList();
     foreach (QString path, current_list) {
@@ -31,29 +28,18 @@ void LibraryPreferencesDialog::accept()
     QDialog::accept();
 }
 
-void LibraryPreferencesDialog::reject()
-{
-    QDialog::reject();
-}
+void LibraryPreferencesDialog::reject() { QDialog::reject(); }
 
-void LibraryPreferencesDialog::on_actionStopMonitoring_clicked()
-{
-    library_.stopMonitoring();
-}
+void LibraryPreferencesDialog::on_actionStopMonitoring_clicked() { library_.stopMonitoring(); }
 
-void LibraryPreferencesDialog::on_actionStartMonitoring_clicked()
-{
-    library_.startMonitoring();
-}
+void LibraryPreferencesDialog::on_actionStartMonitoring_clicked() { library_.startMonitoring(); }
 
-void LibraryPreferencesDialog::on_actionRescanLibrary_clicked()
-{
+void LibraryPreferencesDialog::on_actionRescanLibrary_clicked() {
     library_.setMusicFolders(getCurrentList());
     library_.restartMonitoring(true);
 }
 
-QStringList LibraryPreferencesDialog::getCurrentList()
-{
+QStringList LibraryPreferencesDialog::getCurrentList() {
     QStringList current_list = libraryPaths->text().split(FOLDER_SEPARATOR);
     QStringList result;
     foreach (QString path, current_list) {

@@ -1,7 +1,7 @@
 #pragma once
-#include "playlistmodel_forward.h"
 #include "library/track_forward.h"
 #include "player/audiostate.h"
+#include "playlistmodel_forward.h"
 #include "queue.h"
 #include <QObject>
 #include <memory>
@@ -14,16 +14,18 @@ class AudioOutput;
 enum PlaybackOrder { Default, RepeatTrack, RepeatPlaylist, Random };
 enum class Backend { mpv, phonon };
 
-class AudioPlayer : public QObject
-{
+class AudioPlayer : public QObject {
     Q_OBJECT
 public:
-    AudioPlayer(Library* library, Backend backend = Backend::mpv, bool testing = false, QObject* parent = 0);
+    AudioPlayer(Library *library,
+                Backend backend = Backend::mpv,
+                bool testing = false,
+                QObject *parent = 0);
     virtual ~AudioPlayer();
 
     static AudioPlayer *instance;
 
-    Library* getLibrary() { return library_; }
+    Library *getLibrary() { return library_; }
 
     void setPlaybackOrder(PlaybackOrder playbackOrder);
     PlaybackOrder playbackOrder() { return playbackOrder_; }
@@ -48,7 +50,7 @@ public:
     void setLastPlayed(PModel playlistModel, const QModelIndex &index);
     std::pair<PModel, QModelIndex> getLastPlayed();
 
-    void setMainWindow(MainWindow* mainWindow);
+    void setMainWindow(MainWindow *mainWindow);
 
     bool isEnqueued(PModel playlistModel, QModelIndex index);
 
@@ -90,14 +92,14 @@ private:
     void writeSettings();
     void readSettings();
 
-    Library* library_;
+    Library *library_;
     std::unique_ptr<AudioOutput> audioOutput_;
-    MainWindow* mainWindow_;
+    MainWindow *mainWindow_;
 
     // legal values in [0..1]
     qreal volume_;
 
-    enum ReplayGainMode {None, Album, Track};
+    enum ReplayGainMode { None, Album, Track };
     QString replayGainToString(ReplayGainMode mode);
     ReplayGainMode replayGainFromString(QString str);
     ReplayGainMode replaygain_;

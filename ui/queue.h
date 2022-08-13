@@ -2,17 +2,16 @@
 
 #include "library/track_forward.h"
 #include "ui/playlistmodel_forward.h"
-#include <QString>
 #include <QModelIndex>
+#include <QString>
+#include <deque>
+#include <map>
+#include <memory>
 #include <tuple>
 #include <utility>
-#include <memory>
-#include <map>
-#include <deque>
 #include <vector>
 
-class Queue
-{
+class Queue {
 public:
     Queue();
 

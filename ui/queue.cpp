@@ -3,14 +3,10 @@
 #include "playlistmodel.h"
 #include <QDebug>
 
-Queue::Queue() : peeked_(false), enqueueOnlyOnce_(false)
-{
+Queue::Queue() : peeked_(false), enqueueOnlyOnce_(false) {}
 
-}
-
-void Queue::pushTracks(PModel playlistModel, QModelIndexList tracks)
-{
-    for (const auto& index : tracks) {
+void Queue::pushTracks(PModel playlistModel, QModelIndexList tracks) {
+    for (const auto &index : tracks) {
         auto track = index.data(TrackRole).value<PTrack>();
         auto pindex = QPersistentModelIndex(index);
         auto it = paths_.find(track->path());
@@ -19,7 +15,8 @@ void Queue::pushTracks(PModel playlistModel, QModelIndexList tracks)
             paths_.insert({track->path(), {{pindex, 1}}});
             queue_.push_back(queue_elem);
         } else {
-            if (enqueueOnlyOnce_ && paths_[track->path()].find(pindex) != paths_[track->path()].end()) {
+            if (enqueueOnlyOnce_ &&
+                paths_[track->path()].find(pindex) != paths_[track->path()].end()) {
                 paths_[track->path()].erase(pindex);
                 for (auto it = queue_.begin(); it != queue_.end(); ++it)
                     if (*it == queue_elem) {
@@ -33,13 +30,12 @@ void Queue::pushTracks(PModel playlistModel, QModelIndexList tracks)
         }
     }
     std::vector<QPersistentModelIndex> persistent;
-    for (const auto& index : tracks)
+    for (const auto &index : tracks)
         persistent.push_back(QPersistentModelIndex(index));
     playlistModel->notifyQueueStatusChanged(persistent);
 }
 
-std::pair<PModel, QPersistentModelIndex> Queue::getFirst(bool pop)
-{
+std::pair<PModel, QPersistentModelIndex> Queue::getFirst(bool pop) {
     PModel playlistModel;
     QPersistentModelIndex index;
     QString path;
@@ -56,8 +52,7 @@ std::pair<PModel, QPersistentModelIndex> Queue::getFirst(bool pop)
     return {playlistModel, index};
 }
 
-std::pair<PModel, QPersistentModelIndex> Queue::getNextTrack(bool pop)
-{
+std::pair<PModel, QPersistentModelIndex> Queue::getNextTrack(bool pop) {
     while (!queue_.empty()) {
         auto item = getFirst(pop);
         if (!item.second.isValid())
@@ -67,15 +62,13 @@ std::pair<PModel, QPersistentModelIndex> Queue::getNextTrack(bool pop)
     return {nullptr, QPersistentModelIndex(QModelIndex())};
 }
 
-std::pair<PModel, QPersistentModelIndex> Queue::peekTrack()
-{
+std::pair<PModel, QPersistentModelIndex> Queue::peekTrack() {
     auto result = getNextTrack(false);
     peeked_ = result.second.isValid();
     return result;
 }
 
-std::pair<PModel, QPersistentModelIndex> Queue::popTrack()
-{
+std::pair<PModel, QPersistentModelIndex> Queue::popTrack() {
     peeked_ = false;
     std::pair<PModel, QPersistentModelIndex> p = getNextTrack(true);
     if (p.first)
@@ -83,8 +76,7 @@ std::pair<PModel, QPersistentModelIndex> Queue::popTrack()
     return p;
 }
 
-void Queue::popPeekedTrack()
-{
+void Queue::popPeekedTrack() {
     peeked_ = false;
     if (queue_.empty())
         return;
@@ -92,8 +84,7 @@ void Queue::popPeekedTrack()
     p.first->notifyQueueStatusChanged({p.second});
 }
 
-bool Queue::isQueued(PModel playlistModel, QModelIndex index)
-{
+bool Queue::isQueued(PModel playlistModel, QModelIndex index) {
     Q_UNUSED(playlistModel);
     PTrack track = index.data(TrackRole).value<PTrack>();
     auto it = paths_.find(track->path());
@@ -102,18 +93,11 @@ bool Queue::isQueued(PModel playlistModel, QModelIndex index)
     return it->second.find(QPersistentModelIndex(index)) != it->second.end();
 }
 
-bool Queue::isEmpty()
-{
-    return queue_.empty();
-}
+bool Queue::isEmpty() { return queue_.empty(); }
 
-bool Queue::peeked()
-{
-    return peeked_;
-}
+bool Queue::peeked() { return peeked_; }
 
-void Queue::clear()
-{
+void Queue::clear() {
     peeked_ = false;
     std::map<PModel, std::vector<QPersistentModelIndex>> tracks;
     while (!queue_.empty()) {
@@ -128,12 +112,11 @@ void Queue::clear()
         queue_.pop_front();
     }
     paths_.clear();
-    for (const auto& kv : tracks)
+    for (const auto &kv : tracks)
         kv.first->notifyQueueStatusChanged(kv.second);
 }
 
-void Queue::removePlaylistModel(PModel playlistModel)
-{
+void Queue::removePlaylistModel(PModel playlistModel) {
     auto it = queue_.begin();
     while (it != queue_.end()) {
         PModel p;

@@ -3,8 +3,7 @@
 #include "audiostate.h"
 #include <QObject>
 
-class AudioOutput : public QObject
-{
+class AudioOutput : public QObject {
     Q_OBJECT
 public:
     AudioOutput() {}
@@ -33,7 +32,7 @@ public:
     virtual AudioState state() const = 0;
     virtual qint64 currentTime() const = 0;
     virtual qint64 totalTime() const = 0;
-    virtual void setCurrentSource(const QString& source) = 0;
-    virtual void enqueue(const QString& source) = 0;
+    virtual void setCurrentSource(const QString &source) = 0;
+    virtual void enqueue(const QString &source) = 0;
     virtual void clearQueue() = 0;
 };

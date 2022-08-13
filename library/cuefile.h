@@ -1,12 +1,11 @@
 #pragma once
-#include <QString>
 #include <QMap>
+#include <QString>
 #include <cstdio>
 
 struct Cd;
 
-class CueFile
-{
+class CueFile {
 public:
     CueFile(QString path);
     ~CueFile();
@@ -19,6 +18,6 @@ public:
     QMap<QString, QString> getMetadata(int trackno);
 
 private:
-    FILE* f_;
-    Cd* cd_;
+    FILE *f_;
+    Cd *cd_;
 };

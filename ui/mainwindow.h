@@ -1,19 +1,19 @@
 #pragma once
 
 #include "audioplayer.h"
-#include "playlistmodel_forward.h"
-#include "ui/ui_mainwindow.h"
 #include "config.h"
-#include "statusbar.h"
-#include "seekslider.h"
+#include "playlistmodel_forward.h"
 #include "pluginspreferences.h"
-#include <QtWidgets/QMainWindow>
-#include <QModelIndex>
+#include "seekslider.h"
+#include "statusbar.h"
+#include "ui/ui_mainwindow.h"
 #include <QKeySequence>
+#include <QModelIndex>
 #include <QSystemTrayIcon>
+#include <QtWidgets/QMainWindow>
 #include <boost/bimap.hpp>
-#include <memory>
 #include <deque>
+#include <memory>
 
 class PlaylistTab;
 class Library;
@@ -22,24 +22,24 @@ class QDockWidget;
 class QPlainTextEdit;
 class MPRISPlayer;
 
-class MainWindow : public QMainWindow, private Ui::MainWindowClass
-{
+class MainWindow : public QMainWindow, private Ui::MainWindowClass {
     Q_OBJECT
 public:
-    MainWindow(AudioPlayer& player, QWidget *parent = 0);
+    MainWindow(AudioPlayer &player, QWidget *parent = 0);
     ~MainWindow();
 
     static MainWindow *instance;
 
     bool cursorFollowsPlayback() { return cursorFollowsPlayback_; }
 
-    Config& getConfig() { return config_; }
+    Config &getConfig() { return config_; }
 
     // Returns the playlist that is the active tab
-    PlaylistTab* getActivePlaylist();
+    PlaylistTab *getActivePlaylist();
     PModel getActivePlaylistModel();
 
-    PlaylistTab* addPlaylist(PModel playlistTab, QString name = "Unnamed playlist", bool makeCurrent = true);
+    PlaylistTab *
+    addPlaylist(PModel playlistTab, QString name = "Unnamed playlist", bool makeCurrent = true);
 
     void enqueueTracks(PModel playlistModel, QModelIndexList tracks);
 
@@ -47,9 +47,9 @@ public:
     QModelIndex getFilteredIndex(PModel playlistModel, QModelIndex current, int offset);
     QModelIndex getCurrentIndex(PModel playlistModel);
 
-    bool isEnqueued(PlaylistTab* playlistTab, QModelIndex index);
+    bool isEnqueued(PlaylistTab *playlistTab, QModelIndex index);
 
-    bool eventFilter(QObject* watched, QEvent* event);
+    bool eventFilter(QObject *watched, QEvent *event);
 
 public slots:
     void playbackOrderChanged(PlaybackOrder newPlaybackOrder);
@@ -60,7 +60,7 @@ public slots:
     void lyricsUpdated(PTrack track);
 
 protected:
-    virtual void closeEvent(QCloseEvent* );
+    virtual void closeEvent(QCloseEvent *);
 
 private slots:
     void on_newPlaylistAction_triggered();
@@ -81,7 +81,7 @@ private slots:
     void on_repeatPlaylistAction_triggered();
 
     void menuFileAboutToShow();
-    void on_mainToolBar_actionTriggered(QAction* action);
+    void on_mainToolBar_actionTriggered(QAction *action);
 
     void on_showLyricsAction_triggered();
     void dockVisibilityChanged(bool visible);
@@ -113,19 +113,21 @@ private slots:
     void timeoutFired();
 
 private:
-    void readDockSettings(QDockWidget* dock, QString name);
-    void writeDockSettings(QDockWidget* dock, QString name, bool isVisible);
+    void readDockSettings(QDockWidget *dock, QString name);
+    void writeDockSettings(QDockWidget *dock, QString name, bool isVisible);
     void setDockSize(QDockWidget *dock, QSize size);
     std::deque<std::function<void()>> dockHackFunctions_;
 
-    PlaylistTab* getPlayingPlaylistTab();
-    PlaylistTab* getPlaylistTab(PModel playlistModel);
+    PlaylistTab *getPlayingPlaylistTab();
+    PlaylistTab *getPlaylistTab(PModel playlistModel);
 
     void setTrayIcon(bool playing);
 
     void setShortcuts();
-    void addGlobalShortcut(QKeySequence shortcut, QObject* object, const char* slot, QString name);
-    void addShortcut(QKeySequence shortcut, const char* func, Qt::ShortcutContext context = Qt::WindowShortcut);
+    void addGlobalShortcut(QKeySequence shortcut, QObject *object, const char *slot, QString name);
+    void addShortcut(QKeySequence shortcut,
+                     const char *func,
+                     Qt::ShortcutContext context = Qt::WindowShortcut);
 
     void writeSettings(bool lastPosition);
     void readSettings();
@@ -136,19 +138,19 @@ private:
     StatusBar statusBar_;
     QSystemTrayIcon *trayIcon_;
 
-    ConsoleWindow* console_;
+    ConsoleWindow *console_;
     bool consoleEnabled_ = false;
     bool lyricsDockEnabled_ = false;
     Config config_;
 
-    QDockWidget* lyricsDock_;
-    QPlainTextEdit* lyricsWidget_;
+    QDockWidget *lyricsDock_;
+    QPlainTextEdit *lyricsWidget_;
 
-    AudioPlayer& player_;
+    AudioPlayer &player_;
 
-    MPRISPlayer* mprisPlayer_;
+    MPRISPlayer *mprisPlayer_;
 
-    boost::bimap<PModel, PlaylistTab*> playlistModels_;
+    boost::bimap<PModel, PlaylistTab *> playlistModels_;
 
     // If true, settings won't be read/written and shortcuts will be disabled.
     // useful for unit testing

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "track_forward.h"
 #include "libraryeventtype.h"
+#include "track_forward.h"
 
+#include <QList>
+#include <QMap>
+#include <QMutex>
 #include <QString>
 #include <QStringList>
 #include <QThread>
-#include <QMutex>
 #include <QWaitCondition>
-#include <QList>
-#include <QMap>
 
 class Directory;
 class DirectoryWatcher;
@@ -24,11 +24,10 @@ struct LibraryEvent {
     std::string op2str();
 };
 
-class Library : public QThread
-{
+class Library : public QThread {
     Q_OBJECT
 public:
-    Library(QObject * parent = 0);
+    Library(QObject *parent = 0);
     ~Library();
 
     void dumpDatabase() const;
@@ -77,12 +76,12 @@ private:
     void rescan();
     void stopRescanning();
     bool stopRescan() { return quit_ || !should_be_working_; }
-    void scanDirectory(const QString& path);
-    PTrack scanFile(const QString& path);
-    PTrack scanCue(const QString& path);
+    void scanDirectory(const QString &path);
+    PTrack scanFile(const QString &path);
+    PTrack scanCue(const QString &path);
 
     void addDirectory(std::shared_ptr<Directory> directory);
-    void addFile(PTrack track, bool loading=false);
+    void addFile(PTrack track, bool loading = false);
     void removeFile(QString path);
     void removeDirectory(QString path);
 
@@ -105,8 +104,8 @@ private:
 
     QMutex stop_rescan_mutex_, pause_monitoring_mutex_;
     QWaitCondition stop_rescan_, pause_monitoring_;
-    bool rescanning_; // library is rescanning folders
-    bool watching_;   // library is handling inotify events
+    bool rescanning_;        // library is rescanning folders
+    bool watching_;          // library is handling inotify events
     bool should_be_working_; // library should be working on something
 
     bool dirty_; // library was modified since stored to disk

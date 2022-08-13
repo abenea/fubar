@@ -2,16 +2,15 @@
 
 #include "audioplayer.h"
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
-#include <memory>
 
 class QPluginLoader;
 
-class PluginManager
-{
+class PluginManager {
 public:
-    PluginManager(AudioPlayer& player);
+    PluginManager(AudioPlayer &player);
 
     static PluginManager *instance;
 
@@ -23,7 +22,7 @@ public:
     bool isEnabled(QString name);
 
 private:
-    AudioPlayer& player_;
+    AudioPlayer &player_;
     typedef std::map<QString, std::shared_ptr<QPluginLoader>> PluginMap;
     std::set<QString> enabled_;
     PluginMap plugins_;

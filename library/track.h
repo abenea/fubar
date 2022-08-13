@@ -1,16 +1,15 @@
 #pragma once
 
-#include <QString>
-#include <QMap>
-#include <memory>
 #include <QList>
+#include <QMap>
+#include <QString>
+#include <memory>
 
 namespace proto {
-    class Track;
+class Track;
 }
 
-class Track
-{
+class Track {
 public:
     QString location;
     struct AudioProperties {
@@ -28,14 +27,14 @@ public:
     QString path() const { return location; }
     QString audioFormat() const;
 
-    void fillProtoTrack(proto::Track& ptrack);
+    void fillProtoTrack(proto::Track &ptrack);
 
     void dump();
 
     // Url hax
     bool isUrl();
     bool updateDuration(int duration);
-    bool updateMetadata(const QString& title, const QString& audioFormat, int sampleRate);
+    bool updateMetadata(const QString &title, const QString &audioFormat, int sampleRate);
 
     // CUE TRAX HAX
     bool isCueTrack();

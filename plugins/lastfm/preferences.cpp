@@ -1,10 +1,7 @@
 #include "preferences.h"
 #include <QSettings>
 
-Preferences::Preferences(LastfmPlugin& plugin, QWidget* parent)
-    : QDialog(parent)
-    , plugin_(plugin)
-{
+Preferences::Preferences(LastfmPlugin &plugin, QWidget *parent) : QDialog(parent), plugin_(plugin) {
     setupUi(this);
     QSettings settings;
     old_username_ = settings.value("lastfm/username").toString();
@@ -13,8 +10,7 @@ Preferences::Preferences(LastfmPlugin& plugin, QWidget* parent)
     passwordField->setText(old_password_);
 }
 
-void Preferences::on_saveButton_clicked()
-{
+void Preferences::on_saveButton_clicked() {
     if (old_username_ != usernameField->text() || old_password_ != passwordField->text()) {
         QSettings settings;
         settings.setValue("lastfm/username", usernameField->text());

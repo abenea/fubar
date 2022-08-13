@@ -1,33 +1,32 @@
 #pragma once
 #include "ui/ui_configwindow.h"
 #include <QDialog>
-#include <QStandardItemModel>
 #include <QSortFilterProxyModel>
+#include <QStandardItemModel>
 
 class Config;
 
-class ConfigFilter : public QSortFilterProxyModel
-{
+class ConfigFilter : public QSortFilterProxyModel {
     Q_OBJECT
 public:
-    bool filterAcceptsRow(int source_row, const QModelIndex & source_parent) const;
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
     void setFilter(QString filter);
+
 private:
     QStringList filter_;
 };
 
-class ConfigWindow : public QDialog, private Ui::ConfigWindow
-{
+class ConfigWindow : public QDialog, private Ui::ConfigWindow {
     Q_OBJECT
 public:
-    ConfigWindow(Config& config, QWidget *parent = 0);
+    ConfigWindow(Config &config, QWidget *parent = 0);
 
 private slots:
-    void itemChanged(QStandardItem* item);
+    void itemChanged(QStandardItem *item);
     void changedFilter(QString filter);
 
 private:
     QStandardItemModel model_;
     ConfigFilter configFilter_;
-    Config& config_;
+    Config &config_;
 };

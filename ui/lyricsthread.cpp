@@ -1,9 +1,9 @@
 #include "lyricsthread.h"
 #include "library/track.h"
 #include "ui/mainwindow.h"
-#include <glyr/glyr.h>
-#include <boost/scope_exit.hpp>
 #include <QDebug>
+#include <boost/scope_exit.hpp>
+#include <glyr/glyr.h>
 
 void fetchLyrics(PTrack track) {
     GlyrQuery my_query;

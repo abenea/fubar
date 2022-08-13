@@ -1,12 +1,12 @@
 #include "playlist.h"
-#include "library/track.pb.h"
 #include "library/track.h"
+#include "library/track.pb.h"
 #include <QDebug>
 #include <QDir>
 #include <QUrl>
-#include <sstream>
-#include <fstream>
 #include <exception>
+#include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
@@ -65,8 +65,8 @@ void Playlist::addM3u(const QString &path) {
     }
 }
 
-void Playlist::addUrls(const QList<QUrl>& urls) {
-    for (const auto& url: urls) {
+void Playlist::addUrls(const QList<QUrl> &urls) {
+    for (const auto &url : urls) {
         if (url.isLocalFile()) {
             QFileInfo info(url.toLocalFile());
             if (info.isDir())

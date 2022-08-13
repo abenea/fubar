@@ -1,33 +1,27 @@
 #include "playlistfilter.h"
-#include "playlistmodel.h"
 #include "library/track.h"
+#include "playlistmodel.h"
 
 #include <boost/cast.hpp>
 using namespace std;
 
-PlaylistFilter::PlaylistFilter(QObject *parent) :
-        QSortFilterProxyModel(parent)
-{
-    connect(this, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
-            this, SLOT(invalidateGrouping()));
-    connect(this, SIGNAL(layoutChanged()),
-            this, SLOT(invalidateGrouping()));
-    connect(this, SIGNAL(modelReset()),
-            this, SLOT(invalidateGrouping()));
-    connect(this, SIGNAL(rowsInserted(const QModelIndex&, int, int)),
-            this, SLOT(invalidateGrouping()));
-    connect(this, SIGNAL(rowsRemoved(const QModelIndex&, int, int)),
-            this, SLOT(invalidateGrouping()));
+PlaylistFilter::PlaylistFilter(QObject *parent) : QSortFilterProxyModel(parent) {
+    connect(this, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), this,
+            SLOT(invalidateGrouping()));
+    connect(this, SIGNAL(layoutChanged()), this, SLOT(invalidateGrouping()));
+    connect(this, SIGNAL(modelReset()), this, SLOT(invalidateGrouping()));
+    connect(this, SIGNAL(rowsInserted(const QModelIndex &, int, int)), this,
+            SLOT(invalidateGrouping()));
+    connect(this, SIGNAL(rowsRemoved(const QModelIndex &, int, int)), this,
+            SLOT(invalidateGrouping()));
 }
 
-void PlaylistFilter::setFilter(const QString& filter)
-{
+void PlaylistFilter::setFilter(const QString &filter) {
     filter_ = filter.split(" ", Qt::SkipEmptyParts);
     invalidateFilter();
 }
 
-bool PlaylistFilter::filterAcceptsRow(int source_row, const QModelIndex &/*source_parent*/) const
-{
+bool PlaylistFilter::filterAcceptsRow(int source_row, const QModelIndex & /*source_parent*/) const {
     PlaylistModel *pm = boost::polymorphic_cast<PlaylistModel *>(sourceModel());
     shared_ptr<Track> track = pm->playlist().tracks[source_row];
 
@@ -49,21 +43,20 @@ bool PlaylistFilter::filterAcceptsRow(int source_row, const QModelIndex &/*sourc
     return true;
 }
 
-bool PlaylistFilter::sameGroup(shared_ptr<Track> track1, shared_ptr<Track> track2)
-{
+bool PlaylistFilter::sameGroup(shared_ptr<Track> track1, shared_ptr<Track> track2) {
     if (track1 && track2) {
         return (track1->metadata["artist"] == track2->metadata["artist"] ||
-            (track1->metadata.value("album artist", "") == track2->metadata.value("album artist", "") &&
-                !track1->metadata.value("album artist", "").isEmpty())) &&
-            track1->metadata["album"] == track2->metadata["album"] &&
-            track1->metadata["year"] == track2->metadata["year"];
+                (track1->metadata.value("album artist", "") ==
+                     track2->metadata.value("album artist", "") &&
+                 !track1->metadata.value("album artist", "").isEmpty())) &&
+               track1->metadata["album"] == track2->metadata["album"] &&
+               track1->metadata["year"] == track2->metadata["year"];
     } else {
         return false;
     }
 }
 
-Grouping::Mode PlaylistFilter::groupingMode(const QModelIndex& index) const
-{
+Grouping::Mode PlaylistFilter::groupingMode(const QModelIndex &index) const {
     Grouping::Mode mode = groupingMode_.value(index.row(), Grouping::Invalid);
     if (mode != Grouping::Invalid)
         return mode;
@@ -93,14 +86,10 @@ Grouping::Mode PlaylistFilter::groupingMode(const QModelIndex& index) const
     return mode;
 }
 
-void PlaylistFilter::invalidateGrouping()
-{
-    groupingMode_.clear();
-}
+void PlaylistFilter::invalidateGrouping() { groupingMode_.clear(); }
 
-QVariant PlaylistFilter::data(const QModelIndex& index, int role) const
-{
-    if(!index.isValid())
+QVariant PlaylistFilter::data(const QModelIndex &index, int role) const {
+    if (!index.isValid())
         return QVariant();
 
     if (role == GroupingModeRole) {
@@ -112,11 +101,11 @@ QVariant PlaylistFilter::data(const QModelIndex& index, int role) const
     return QSortFilterProxyModel::data(index, role);
 }
 
-bool PlaylistFilter::lessThan(const QModelIndex& left, const QModelIndex& right) const
-{
+bool PlaylistFilter::lessThan(const QModelIndex &left, const QModelIndex &right) const {
     PTrack leftTrack = left.data(TrackRole).value<shared_ptr<Track>>();
     PTrack rightTrack = right.data(TrackRole).value<shared_ptr<Track>>();
-    if (leftTrack->location == rightTrack->location && leftTrack->isCueTrack() && rightTrack->isCueTrack())
+    if (leftTrack->location == rightTrack->location && leftTrack->isCueTrack() &&
+        rightTrack->isCueTrack())
         return leftTrack->metadata["track"].toInt() < rightTrack->metadata["track"].toInt();
     return leftTrack->location < rightTrack->location;
 }

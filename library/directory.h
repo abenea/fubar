@@ -1,16 +1,16 @@
 #pragma once
 
 #include "track_forward.h"
-#include <QString>
 #include <QList>
 #include <QMap>
 #include <QSet>
+#include <QString>
 #include <memory>
 
 namespace proto {
-    class Directory;
-    class Library;
-}
+class Directory;
+class Library;
+} // namespace proto
 
 class Directory {
 public:
@@ -31,7 +31,7 @@ public:
     QSet<QString> getSubdirectoriesPathsSet();
     void clearFiles();
 
-    void addFilesToProto(proto::Library& library);
+    void addFilesToProto(proto::Library &library);
     void dump();
 
     QString path() { return location_; }
@@ -48,4 +48,3 @@ private:
     SubdirectoryMap subdirs_;
     FileMap files_;
 };
-

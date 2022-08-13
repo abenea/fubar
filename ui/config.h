@@ -6,8 +6,7 @@
 
 class ConfigWindow;
 
-class Config : public QObject
-{
+class Config : public QObject {
     Q_OBJECT
 public:
     void set(QString key, QVariant value);

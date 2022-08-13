@@ -1,33 +1,22 @@
 #include "directory.h"
 #include "track.h"
 #include "track.pb.h"
-#include <QFileInfo>
-#include <QDir>
 #include <QDebug>
+#include <QDir>
+#include <QFileInfo>
 
 using namespace std;
 
-
 Directory::Directory(proto::Directory pDirectory)
-    : location_(QString::fromUtf8(pDirectory.location().c_str())),
-    mtime_(pDirectory.mtime())
-{
+    : location_(QString::fromUtf8(pDirectory.location().c_str())), mtime_(pDirectory.mtime()) {}
 
-}
+Directory::Directory(QString path, int mtime) : location_(path), mtime_(mtime) {}
 
-Directory::Directory(QString path, int mtime)
-    : location_(path),
-    mtime_(mtime)
-{
-}
-
-void Directory::addFile(shared_ptr<Track> file)
-{
+void Directory::addFile(shared_ptr<Track> file) {
     files_.insert(QFileInfo(file->location).fileName(), file);
 }
 
-PTrack Directory::removeFile(QString fileName)
-{
+PTrack Directory::removeFile(QString fileName) {
     PTrack track;
     FileMap::iterator it = files_.find(fileName);
     if (it != files_.end()) {
@@ -40,13 +29,11 @@ PTrack Directory::removeFile(QString fileName)
     return track;
 }
 
-void Directory::addSubdirectory(shared_ptr<Directory> directory)
-{
+void Directory::addSubdirectory(shared_ptr<Directory> directory) {
     subdirs_.insert(QFileInfo(directory->location_).fileName(), directory);
 }
 
-void Directory::removeSubdirectory(QString subdirName)
-{
+void Directory::removeSubdirectory(QString subdirName) {
     SubdirectoryMap::iterator it = subdirs_.find(subdirName);
     if (it != subdirs_.end())
         subdirs_.erase(it);
@@ -54,16 +41,14 @@ void Directory::removeSubdirectory(QString subdirName)
         qDebug() << location_ << " wanted to remove subdir " << subdirName << ". No dice";
 }
 
-void Directory::addFilesToProto(proto::Library& library)
-{
+void Directory::addFilesToProto(proto::Library &library) {
     for (FileMap::const_iterator it = files_.begin(); it != files_.end(); ++it) {
-        proto::Track* track = library.add_tracks();
+        proto::Track *track = library.add_tracks();
         it.value()->fillProtoTrack(*track);
     }
 }
 
-void Directory::dump()
-{
+void Directory::dump() {
     foreach (FileMap::mapped_type p, files_) {
         printf("%s\n", p->location.toStdString().c_str());
     }
@@ -73,13 +58,11 @@ void Directory::dump()
     }
 }
 
-void Directory::addFilesFromDirectory(shared_ptr<Directory> directory)
-{
+void Directory::addFilesFromDirectory(shared_ptr<Directory> directory) {
     files_ = directory->files_;
 }
 
-QList<QString> Directory::getSubdirectoriesNames()
-{
+QList<QString> Directory::getSubdirectoriesNames() {
     QList<QString> subdirs;
     subdirs.reserve(subdirs_.size());
     foreach (QString dir, subdirs_.keys()) {
@@ -88,8 +71,7 @@ QList<QString> Directory::getSubdirectoriesNames()
     return subdirs;
 }
 
-shared_ptr<Track> Directory::getFile(QString name)
-{
+shared_ptr<Track> Directory::getFile(QString name) {
     shared_ptr<Track> result;
     FileMap::iterator it = files_.find(name);
     if (it != files_.end())
@@ -97,8 +79,7 @@ shared_ptr<Track> Directory::getFile(QString name)
     return result;
 }
 
-shared_ptr<Directory> Directory::getSubdirectory(QString name)
-{
+shared_ptr<Directory> Directory::getSubdirectory(QString name) {
     shared_ptr<Directory> result;
     SubdirectoryMap::iterator it = subdirs_.find(name);
     if (it != subdirs_.end())
@@ -106,8 +87,7 @@ shared_ptr<Directory> Directory::getSubdirectory(QString name)
     return result;
 }
 
-QList<PTrack> Directory::getTracks()
-{
+QList<PTrack> Directory::getTracks() {
     QList<PTrack> tracks;
     foreach (PTrack track, files_) {
         tracks.append(track);
@@ -115,8 +95,7 @@ QList<PTrack> Directory::getTracks()
     return tracks;
 }
 
-QSet<QString> Directory::getFileSet()
-{
+QSet<QString> Directory::getFileSet() {
     QSet<QString> files;
     foreach (PTrack track, files_) {
         files.insert(track->location);
@@ -124,8 +103,7 @@ QSet<QString> Directory::getFileSet()
     return files;
 }
 
-QSet<QString> Directory::getSubdirectoriesPathsSet()
-{
+QSet<QString> Directory::getSubdirectoriesPathsSet() {
     QSet<QString> subdirectories;
     foreach (QString path, subdirs_.keys()) {
         subdirectories.insert(QFileInfo(QDir(location_), path).absoluteFilePath());
@@ -133,7 +111,4 @@ QSet<QString> Directory::getSubdirectoriesPathsSet()
     return subdirectories;
 }
 
-void Directory::clearFiles()
-{
-    files_.clear();
-}
+void Directory::clearFiles() { files_.clear(); }

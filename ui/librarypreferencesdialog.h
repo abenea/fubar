@@ -1,14 +1,13 @@
 #pragma once
 
-#include "ui/ui_librarypreferences.h"
 #include "library/library.h"
+#include "ui/ui_librarypreferences.h"
 #include <QDialog>
 
-class LibraryPreferencesDialog : public QDialog, private Ui::LibraryPreferences
-{
+class LibraryPreferencesDialog : public QDialog, private Ui::LibraryPreferences {
     Q_OBJECT
 public:
-    LibraryPreferencesDialog(Library& library, QWidget *parent = 0);
+    LibraryPreferencesDialog(Library &library, QWidget *parent = 0);
 
 private slots:
     void accept();
@@ -19,5 +18,5 @@ private slots:
 
 private:
     QStringList getCurrentList();
-    Library& library_;
+    Library &library_;
 };

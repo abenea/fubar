@@ -4,43 +4,32 @@
 #include <QDBusConnection>
 #include <QtDBus/QtDBus>
 
-
-MPRISPlayer::MPRISPlayer(MainWindow* mainWindow, AudioPlayer* audioPlayer) : QDBusAbstractAdaptor(mainWindow), mainWindow_(mainWindow), audioplayer_(audioPlayer) {
+MPRISPlayer::MPRISPlayer(MainWindow *mainWindow, AudioPlayer *audioPlayer)
+    : QDBusAbstractAdaptor(mainWindow), mainWindow_(mainWindow), audioplayer_(audioPlayer) {
     if (!QDBusConnection::sessionBus().registerService("org.mpris.MediaPlayer2.fubar")) {
-        qDebug() << "Exposing DBUS service failed: " << QDBusConnection::sessionBus().lastError().message();
+        qDebug() << "Exposing DBUS service failed: "
+                 << QDBusConnection::sessionBus().lastError().message();
         return;
     }
 
-    if (!QDBusConnection::sessionBus().registerObject("/org/mpris/MediaPlayer2", this, QDBusConnection::ExportAllSlots)) {
-        qDebug() << "Exposing DBUS object failed: " << QDBusConnection::sessionBus().lastError().message();
+    if (!QDBusConnection::sessionBus().registerObject("/org/mpris/MediaPlayer2", this,
+                                                      QDBusConnection::ExportAllSlots)) {
+        qDebug() << "Exposing DBUS object failed: "
+                 << QDBusConnection::sessionBus().lastError().message();
         return;
     }
 }
 
-void MPRISPlayer::Play() {
-    audioplayer_->play();
-}
+void MPRISPlayer::Play() { audioplayer_->play(); }
 
-void MPRISPlayer::PlayPause() {
-    audioplayer_->playPause();
-}
+void MPRISPlayer::PlayPause() { audioplayer_->playPause(); }
 
-void MPRISPlayer::Pause() {
-    audioplayer_->pause();
-}
+void MPRISPlayer::Pause() { audioplayer_->pause(); }
 
-void MPRISPlayer::Stop() {
-    audioplayer_->stop();
-}
+void MPRISPlayer::Stop() { audioplayer_->stop(); }
 
-void MPRISPlayer::Next() {
-    audioplayer_->next();
-}
+void MPRISPlayer::Next() { audioplayer_->next(); }
 
-void MPRISPlayer::Previous() {
-    audioplayer_->prev();
-}
+void MPRISPlayer::Previous() { audioplayer_->prev(); }
 
-void MPRISPlayer::ShowHide() {
-    mainWindow_->showHide();
-}
+void MPRISPlayer::ShowHide() { mainWindow_->showHide(); }

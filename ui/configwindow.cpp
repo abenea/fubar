@@ -3,15 +3,12 @@
 #include <QDebug>
 #include <boost/type_traits/detail/is_mem_fun_pointer_impl.hpp>
 
-ConfigWindow::ConfigWindow(Config& config, QWidget* parent)
-    : QDialog(parent),
-    config_(config)
-{
+ConfigWindow::ConfigWindow(Config &config, QWidget *parent) : QDialog(parent), config_(config) {
     setupUi(this);
     tableView->verticalHeader()->hide();
     tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     model_.setHorizontalHeaderLabels({"Preference name", "Type", "Value"});
-    for (auto& kv : config_.config_) {
+    for (auto &kv : config_.config_) {
         // name
         auto name_item = new QStandardItem(kv.first);
         name_item->setFlags(Qt::NoItemFlags);
@@ -29,39 +26,34 @@ ConfigWindow::ConfigWindow(Config& config, QWidget* parent)
     }
     configFilter_.setSourceModel(&model_);
     tableView->setModel(&configFilter_);
-    connect(&model_, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(itemChanged(QStandardItem*)));
+    connect(&model_, SIGNAL(itemChanged(QStandardItem *)), this,
+            SLOT(itemChanged(QStandardItem *)));
     connect(filter, SIGNAL(textChanged(QString)), this, SLOT(changedFilter(QString)));
 }
 
-void ConfigWindow::changedFilter(QString filter)
-{
-    configFilter_.setFilter(filter);
-}
+void ConfigWindow::changedFilter(QString filter) { configFilter_.setFilter(filter); }
 
-void ConfigWindow::itemChanged(QStandardItem* item)
-{
+void ConfigWindow::itemChanged(QStandardItem *item) {
     config_.set(item->whatsThis(), item->data(Qt::EditRole));
 }
 
-bool ConfigFilter::filterAcceptsRow(int source_row, const QModelIndex& /*source_parent*/) const
-{
+bool ConfigFilter::filterAcceptsRow(int source_row, const QModelIndex & /*source_parent*/) const {
     if (filter_.empty())
         return true;
-    QStandardItemModel* model = qobject_cast<QStandardItemModel*>(sourceModel());
+    QStandardItemModel *model = qobject_cast<QStandardItemModel *>(sourceModel());
     if (!model)
         return true;
-    QStandardItem* item = model->item(source_row, 2);
+    QStandardItem *item = model->item(source_row, 2);
     if (!item)
         return true;
-    for (const auto& keyword : filter_) {
+    for (const auto &keyword : filter_) {
         if (!item->whatsThis().contains(keyword))
             return false;
     }
     return true;
 }
 
-void ConfigFilter::setFilter(QString filter)
-{
+void ConfigFilter::setFilter(QString filter) {
     filter_ = filter.split(" ", Qt::SkipEmptyParts);
     invalidateFilter();
 }

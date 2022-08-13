@@ -1,33 +1,33 @@
 #include "mainwindow.h"
-#include "library/track.h"
-#include "player/audiooutput.h"
-#include "playlistmodel.h"
-#include "playlisttab.h"
-#include "playlistfilter.h"
-#include "ui_mainwindow.h"
-#include "librarypreferencesdialog.h"
-#include "consolewindow.h"
 #include "configwindow.h"
+#include "consolewindow.h"
+#include "library/track.h"
+#include "librarypreferencesdialog.h"
 #include "lyricsthread.h"
 #include "lyricsthreaddeleter.h"
 #include "mprisplayer.h"
-#include <Qt>
-#include <QTableView>
-#include <QSettings>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QShortcut>
-#include <QFileInfo>
-#include <QTextStream>
+#include "player/audiooutput.h"
+#include "playlistfilter.h"
+#include "playlistmodel.h"
+#include "playlisttab.h"
+#include "ui_mainwindow.h"
 #include <QDebug>
-#include <QUrl>
 #include <QDockWidget>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
 #include <QPlainTextEdit>
-#include <QVariant>
-#include <QtCore/qmath.h>
+#include <QSettings>
+#include <QShortcut>
+#include <QTableView>
+#include <QTextStream>
 #include <QTimer>
-#include <kwindowsystem.h>
+#include <QUrl>
+#include <QVariant>
+#include <Qt>
+#include <QtCore/qmath.h>
 #include <kglobalaccel.h>
+#include <kwindowsystem.h>
 #include <netwm_def.h>
 
 MainWindow *MainWindow::instance = 0;
@@ -225,10 +225,7 @@ void MainWindow::tick(qint64 /*pos*/) {
     }
 }
 
-void MainWindow::timeoutFired()
-{
-    writeSettings(false);
-}
+void MainWindow::timeoutFired() { writeSettings(false); }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
     player_.stop();

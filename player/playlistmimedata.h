@@ -1,10 +1,9 @@
 #pragma once
-#include <QMimeData>
-#include <QList>
 #include "library/track_forward.h"
+#include <QList>
+#include <QMimeData>
 
-class PlaylistMimeData : public QMimeData
-{
+class PlaylistMimeData : public QMimeData {
     Q_OBJECT
 public:
     PlaylistMimeData(QList<PTrack> tracks);

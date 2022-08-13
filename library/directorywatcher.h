@@ -1,21 +1,20 @@
 #pragma once
 
 #include "libraryeventtype.h"
-#include <QString>
 #include <QMutex>
+#include <QString>
 #include <QWaitCondition>
-#include <boost/function.hpp>
 #include <boost/bimap.hpp>
+#include <boost/function.hpp>
 
 struct inotify_event;
 
-class DirectoryWatcher
-{
+class DirectoryWatcher {
 public:
     DirectoryWatcher();
     virtual ~DirectoryWatcher();
 
-    typedef boost::function<void (QString, LibraryEventType)> WatchCallback;
+    typedef boost::function<void(QString, LibraryEventType)> WatchCallback;
     void setDirectoryCallback(WatchCallback callback) { directory_callback_ = callback; }
     void setFileCallback(WatchCallback callback) { file_callback_ = callback; }
 

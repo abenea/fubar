@@ -1,15 +1,13 @@
 #include "pluginmanager.h"
 #include "plugins/PluginInterface.h"
+#include <QCoreApplication>
+#include <QDebug>
 #include <QDir>
 #include <QPluginLoader>
-#include <QDebug>
-#include <QCoreApplication>
 
 PluginManager *PluginManager::instance = 0;
 
-PluginManager::PluginManager(AudioPlayer& player)
-    : player_(player)
-{
+PluginManager::PluginManager(AudioPlayer &player) : player_(player) {
     auto pluginDirs = QVector<QString>{
         QCoreApplication::applicationDirPath() + "/../lib/fubar/",
         QCoreApplication::applicationDirPath() + "/lib/",
@@ -37,14 +35,13 @@ PluginManager::PluginManager(AudioPlayer& player)
     instance = this;
 }
 
-void PluginManager::disablePlugin(QString name)
-{
+void PluginManager::disablePlugin(QString name) {
     if (!isEnabled(name))
         return;
     PluginMap::iterator it = plugins_.find(name);
     if (it != plugins_.end()) {
         qDebug() << "Disable plugin" << it->second->fileName();
-        PluginInterface *fubarPlugin = qobject_cast<PluginInterface*>(it->second->instance());
+        PluginInterface *fubarPlugin = qobject_cast<PluginInterface *>(it->second->instance());
         if (fubarPlugin) {
             fubarPlugin->deinit();
             enabled_.erase(name);
@@ -54,8 +51,7 @@ void PluginManager::disablePlugin(QString name)
     }
 }
 
-void PluginManager::enablePlugin(QString name)
-{
+void PluginManager::enablePlugin(QString name) {
     if (isEnabled(name))
         return;
     PluginMap::iterator it = plugins_.find(name);
@@ -63,7 +59,7 @@ void PluginManager::enablePlugin(QString name)
         qDebug() << "Enable plugin" << it->second->fileName();
         QObject *plugin = it->second->instance();
         if (plugin) {
-            PluginInterface *fubarPlugin = qobject_cast<PluginInterface*>(plugin);
+            PluginInterface *fubarPlugin = qobject_cast<PluginInterface *>(plugin);
             if (fubarPlugin) {
                 fubarPlugin->init(player_);
                 enabled_.insert(name);
@@ -74,14 +70,13 @@ void PluginManager::enablePlugin(QString name)
     }
 }
 
-void PluginManager::configurePlugin(QString name)
-{
+void PluginManager::configurePlugin(QString name) {
     PluginMap::iterator it = plugins_.find(name);
     if (it != plugins_.end()) {
         if (it->second->isLoaded()) {
             QObject *plugin = it->second->instance();
             if (plugin) {
-                PluginInterface *fubarPlugin = qobject_cast<PluginInterface*>(plugin);
+                PluginInterface *fubarPlugin = qobject_cast<PluginInterface *>(plugin);
                 if (fubarPlugin) {
                     fubarPlugin->configure();
                 } else {
@@ -98,8 +93,7 @@ void PluginManager::configurePlugin(QString name)
     }
 }
 
-std::vector<QString> PluginManager::getPlugins()
-{
+std::vector<QString> PluginManager::getPlugins() {
     std::vector<QString> plugins;
     for (PluginMap::const_iterator it = plugins_.begin(); it != plugins_.end(); ++it) {
         plugins.push_back(it->first);
@@ -107,7 +101,4 @@ std::vector<QString> PluginManager::getPlugins()
     return plugins;
 }
 
-bool PluginManager::isEnabled(QString name)
-{
-    return enabled_.find(name) != enabled_.end();
-}
+bool PluginManager::isEnabled(QString name) { return enabled_.find(name) != enabled_.end(); }

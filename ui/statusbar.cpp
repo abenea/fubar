@@ -1,13 +1,8 @@
 #include "statusbar.h"
 
-StatusBar::StatusBar(QWidget* parent)
-    : QStatusBar(parent)
-{
-}
+StatusBar::StatusBar(QWidget *parent) : QStatusBar(parent) {}
 
-void StatusBar::mouseDoubleClickEvent(QMouseEvent* event)
-{
+void StatusBar::mouseDoubleClickEvent(QMouseEvent *event) {
     QWidget::mouseDoubleClickEvent(event);
     emit statusBarDoubleClicked();
 }
-

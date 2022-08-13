@@ -1,21 +1,20 @@
 #pragma once
 
-#include "playlistmodel_forward.h"
 #include "playlistfilter.h"
+#include "playlistmodel_forward.h"
 #include "ui_playlist.h"
-#include <QWidget>
-#include <QStringList>
 #include <QList>
+#include <QStringList>
+#include <QWidget>
 #include <memory>
 
 class PlaylistView;
 class QDragEnterEvent;
 
-class PlaylistTab : public QWidget
-{
+class PlaylistTab : public QWidget {
     Q_OBJECT
 public:
-    PlaylistTab(PModel model, QWidget* parent = 0);
+    PlaylistTab(PModel model, QWidget *parent = 0);
 
     // Can the user edit it?
     bool isEditable() const;
@@ -24,12 +23,12 @@ public:
     void updateCursorAndScroll(QModelIndex index);
     void focusFilter();
 
-    void addUrls(const QList<QUrl>& urls);
+    void addUrls(const QList<QUrl> &urls);
     void addTracks(const QList<PTrack> &tracks);
     void removeTracks(QModelIndexList trackList);
-    void serialize(QByteArray& data) const;
-    void deserialize(const QByteArray& data);
-    bool dropMimeData(const QMimeData* data);
+    void serialize(QByteArray &data) const;
+    void deserialize(const QByteArray &data);
+    bool dropMimeData(const QMimeData *data);
 
     QModelIndex getRandomFilteredIndex();
     QModelIndex getFilteredIndex(QModelIndex current, int offset);

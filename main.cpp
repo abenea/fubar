@@ -1,17 +1,17 @@
-#include "util.h"
 #include "library/library.h"
 #include "ui/audioplayer.h"
-#include "ui/pluginmanager.h"
 #include "ui/mainwindow.h"
+#include "ui/pluginmanager.h"
 #include "ui/unixsignalshandler.h"
-#include <glyr/glyr.h>
-#include <QtWidgets/QApplication>
-#include <QFileInfo>
-#include <QDir>
+#include "util.h"
 #include <QDebug>
-#include <sys/file.h>
-#include <fcntl.h>
+#include <QDir>
+#include <QFileInfo>
+#include <QtWidgets/QApplication>
 #include <cstring>
+#include <fcntl.h>
+#include <glyr/glyr.h>
+#include <sys/file.h>
 
 int main(int argc, char *argv[]) {
     QCoreApplication::setApplicationName("fubar");
