@@ -26,7 +26,6 @@ MpvAudioOutput::MpvAudioOutput()
     if (static_cast<mpv_handle *>(handle_) == nullptr)
         qDebug() << "Cannot mpv_create()";
     set_option("video", "no");
-    set_option("softvol", "yes");
     set_option("ytdl", "yes");
     set_property("audio-client-name", "fubar");
     int r = mpv_initialize(handle_);
