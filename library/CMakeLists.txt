@@ -1,4 +1,6 @@
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS track.proto)
+set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES SKIP_AUTOMOC ON)            
+
 include_directories(${TAGLIB_INCLUDE_DIR} ${CUE_INCLUDE_DIRS})
 add_library(library
             directorywatcher.cpp
