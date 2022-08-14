@@ -1,14 +1,19 @@
 #include "ui/librarypreferencesdialog.h"
+
 #include <QDebug>
 #include <QFileInfo>
 
+#include "ui/ui_librarypreferences.h"
+
 const QString FOLDER_SEPARATOR = ";";
 LibraryPreferencesDialog::LibraryPreferencesDialog(Library &library, QWidget *parent)
-    : QDialog(parent), library_(library) {
-    setupUi(this);
+    : QDialog(parent), ui_(new Ui::LibraryPreferences), library_(library) {
+    ui_->setupUi(this);
     QStringList folders = library_.getMusicFolders();
-    libraryPaths->setText(folders.join(FOLDER_SEPARATOR));
+    ui_->libraryPaths->setText(folders.join(FOLDER_SEPARATOR));
 }
+
+LibraryPreferencesDialog::~LibraryPreferencesDialog() {}
 
 void LibraryPreferencesDialog::accept() {
     QSet<QString> current_set;
@@ -40,7 +45,7 @@ void LibraryPreferencesDialog::on_actionRescanLibrary_clicked() {
 }
 
 QStringList LibraryPreferencesDialog::getCurrentList() {
-    QStringList current_list = libraryPaths->text().split(FOLDER_SEPARATOR);
+    QStringList current_list = ui_->libraryPaths->text().split(FOLDER_SEPARATOR);
     QStringList result;
     foreach (QString path, current_list) {
         if (path.size() > 0) {

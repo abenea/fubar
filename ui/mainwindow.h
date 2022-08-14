@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ui/ui_mainwindow.h"
 #include <QKeySequence>
 #include <QModelIndex>
 #include <QSystemTrayIcon>
@@ -22,7 +21,11 @@ class QDockWidget;
 class QPlainTextEdit;
 class MPRISPlayer;
 
-class MainWindow : public QMainWindow, private Ui::MainWindowClass {
+namespace Ui {
+class MainWindowClass;
+}
+
+class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     MainWindow(AudioPlayer &player, QWidget *parent = 0);
@@ -132,6 +135,7 @@ private:
     void writeSettings(bool lastPosition);
     void readSettings();
 
+    std::unique_ptr<Ui::MainWindowClass> ui_;
     SeekSlider *seekSlider_;
     QSlider *volumeSlider_;
 

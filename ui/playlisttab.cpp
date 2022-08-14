@@ -1,41 +1,47 @@
 #include "ui/playlisttab.h"
-#include "library/library.h"
-#include "ui/mainwindow.h"
-#include "ui/playlistmodel.h"
+
 #include <QDebug>
 #include <QUrl>
 #include <memory>
 
+#include "library/library.h"
+#include "ui/mainwindow.h"
+#include "ui/playlistmodel.h"
+#include "ui/ui_playlist.h"
+
 using std::shared_ptr;
 
-PlaylistTab::PlaylistTab(PModel model, QWidget *parent) : QWidget(parent), model_(model) {
-    ui_.setupUi(this);
+PlaylistTab::PlaylistTab(PModel model, QWidget *parent)
+    : QWidget(parent), ui_(new Ui::PlaylistFrame), model_(model) {
+    ui_->setupUi(this);
     filterModel_.setSourceModel(model_.get());
     filterModel_.setDynamicSortFilter(model_->playlist().synced);
     if (model_->playlist().synced)
         filterModel_.sort(0);
-    ui_.playlist->setModel(&filterModel_);
+    ui_->playlist->setModel(&filterModel_);
 
     connect(model_.get(), SIGNAL(queueStatusChanged(std::vector<QPersistentModelIndex>)), this,
             SLOT(repaintTracks(std::vector<QPersistentModelIndex>)));
-    connect(ui_.filter, SIGNAL(textChanged(QString)), this, SLOT(changedFilter(QString)));
-    connect(ui_.filter, SIGNAL(returnPressed()), this, SLOT(clearFilterAndPlay()));
-    connect(ui_.playlist, SIGNAL(doubleClicked(const QModelIndex &)), this,
+    connect(ui_->filter, SIGNAL(textChanged(QString)), this, SLOT(changedFilter(QString)));
+    connect(ui_->filter, SIGNAL(returnPressed()), this, SLOT(clearFilterAndPlay()));
+    connect(ui_->playlist, SIGNAL(doubleClicked(const QModelIndex &)), this,
             SLOT(doubleClicked(const QModelIndex &)));
-    connect(ui_.playlist, SIGNAL(returnPressed(QModelIndex)), this,
+    connect(ui_->playlist, SIGNAL(returnPressed(QModelIndex)), this,
             SLOT(doubleClicked(const QModelIndex &)));
 
-    ui_.playlist->setDragEnabled(true);
-    ui_.playlist->setDropIndicatorShown(isEditable());
-    ui_.playlist->setAcceptDrops(isEditable());
+    ui_->playlist->setDragEnabled(true);
+    ui_->playlist->setDropIndicatorShown(isEditable());
+    ui_->playlist->setAcceptDrops(isEditable());
 }
+
+PlaylistTab::~PlaylistTab() {}
 
 bool PlaylistTab::isEditable() const { return !model_->playlist().synced; }
 
 void PlaylistTab::changedFilter(const QString &filter) {
     QPersistentModelIndex modelIndex;
     if (filter.isEmpty()) {
-        QModelIndex filterIndex = ui_.playlist->currentIndex();
+        QModelIndex filterIndex = ui_->playlist->currentIndex();
         modelIndex = QPersistentModelIndex(filterModel_.mapToSource(filterIndex));
     }
     filterModel_.setFilter(filter);
@@ -43,16 +49,16 @@ void PlaylistTab::changedFilter(const QString &filter) {
     if (!filter.isEmpty()) {
         QModelIndex filterIndex = filterModel_.index(0, 0);
         if (filterIndex.isValid()) {
-            ui_.playlist->setCurrentIndex(filterIndex);
+            ui_->playlist->setCurrentIndex(filterIndex);
         }
     } else {
         QModelIndex filterIndex = filterModel_.mapFromSource(modelIndex);
         if (filterIndex.isValid()) {
-            ui_.playlist->scrollTo(filterIndex, QAbstractItemView::PositionAtCenter);
-            ui_.playlist->setCurrentIndex(filterIndex);
+            ui_->playlist->scrollTo(filterIndex, QAbstractItemView::PositionAtCenter);
+            ui_->playlist->setCurrentIndex(filterIndex);
             // Lame code: Second time's the charm
             // No clue why first time does not paint the track as selected
-            ui_.playlist->setCurrentIndex(filterIndex);
+            ui_->playlist->setCurrentIndex(filterIndex);
         }
     }
 }
@@ -65,28 +71,29 @@ void PlaylistTab::doubleClicked(const QModelIndex &filterIndex) {
 
 void PlaylistTab::clearFilterAndPlay() {
     auto index = filterModel_.mapToSource(filterModel_.index(0, 0));
-    ui_.filter->clear();
-    ui_.playlist->setFocus();
+    ui_->filter->clear();
+    ui_->playlist->setFocus();
     if (index.isValid()) {
         AudioPlayer::instance->play(model_, index);
-        ui_.playlist->scrollTo(filterModel_.mapFromSource(index), QAbstractItemView::PositionAtTop);
+        ui_->playlist->scrollTo(filterModel_.mapFromSource(index),
+                                QAbstractItemView::PositionAtTop);
     }
 }
 
-void PlaylistTab::focusFilter() { ui_.filter->setFocus(); }
+void PlaylistTab::focusFilter() { ui_->filter->setFocus(); }
 
 void PlaylistTab::updateCursor(QModelIndex index) {
-    ui_.playlist->setCurrentIndex(filterModel_.mapFromSource(index));
+    ui_->playlist->setCurrentIndex(filterModel_.mapFromSource(index));
 }
 
 void PlaylistTab::updateCursorAndScroll(QModelIndex index) {
     updateCursor(index);
-    ui_.playlist->scrollTo(filterModel_.mapFromSource(index), QAbstractItemView::PositionAtCenter);
+    ui_->playlist->scrollTo(filterModel_.mapFromSource(index), QAbstractItemView::PositionAtCenter);
 }
 
 void PlaylistTab::repaintTracks(std::vector<QPersistentModelIndex> indexes) {
     for (const auto &index : indexes)
-        ui_.playlist->update(filterModel_.mapFromSource(index));
+        ui_->playlist->update(filterModel_.mapFromSource(index));
 }
 
 void PlaylistTab::addUrls(const QList<QUrl> &urls) {
@@ -113,7 +120,7 @@ QModelIndex PlaylistTab::mapToSource(QModelIndex index) const {
 }
 
 QModelIndex PlaylistTab::getCurrentIndex() {
-    return filterModel_.mapToSource(ui_.playlist->currentIndex());
+    return filterModel_.mapToSource(ui_->playlist->currentIndex());
 }
 
 QModelIndex PlaylistTab::getFilteredIndex(QModelIndex current, int offset) {

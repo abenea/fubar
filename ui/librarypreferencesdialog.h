@@ -1,13 +1,17 @@
 #pragma once
 
 #include "library/library.h"
-#include "ui/ui_librarypreferences.h"
 #include <QDialog>
 
-class LibraryPreferencesDialog : public QDialog, private Ui::LibraryPreferences {
+namespace Ui {
+class LibraryPreferences;
+}
+
+class LibraryPreferencesDialog : public QDialog {
     Q_OBJECT
 public:
     LibraryPreferencesDialog(Library &library, QWidget *parent = 0);
+    virtual ~LibraryPreferencesDialog();
 
 private slots:
     void accept();
@@ -17,6 +21,7 @@ private slots:
     void on_actionRescanLibrary_clicked();
 
 private:
+    std::unique_ptr<Ui::LibraryPreferences> ui_;
     QStringList getCurrentList();
     Library &library_;
 };

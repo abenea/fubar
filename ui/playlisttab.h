@@ -1,20 +1,25 @@
 #pragma once
 
-#include "ui/playlistfilter.h"
-#include "ui/playlistmodel_forward.h"
-#include "ui/ui_playlist.h"
 #include <QList>
 #include <QStringList>
 #include <QWidget>
 #include <memory>
 
+#include "ui/playlistfilter.h"
+#include "ui/playlistmodel_forward.h"
+
 class PlaylistView;
 class QDragEnterEvent;
+
+namespace Ui {
+class PlaylistFrame;
+}
 
 class PlaylistTab : public QWidget {
     Q_OBJECT
 public:
     PlaylistTab(PModel model, QWidget *parent = 0);
+    virtual ~PlaylistTab();
 
     // Can the user edit it?
     bool isEditable() const;
@@ -49,7 +54,7 @@ protected slots:
     void repaintTracks(std::vector<QPersistentModelIndex> indexes);
 
 private:
-    Ui::PlaylistFrame ui_;
+    std::unique_ptr<Ui::PlaylistFrame> ui_;
     PModel model_;
     PlaylistFilter filterModel_;
 

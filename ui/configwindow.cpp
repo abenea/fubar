@@ -1,13 +1,15 @@
 #include "ui/configwindow.h"
 
-#include "ui/config.h"
 #include <QDebug>
 #include <boost/type_traits/detail/is_mem_fun_pointer_impl.hpp>
 
-ConfigWindow::ConfigWindow(Config &config, QWidget *parent) : QDialog(parent), config_(config) {
-    setupUi(this);
-    tableView->verticalHeader()->hide();
-    tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+#include "ui/ui_configwindow.h"
+
+ConfigWindow::ConfigWindow(Config &config, QWidget *parent)
+    : QDialog(parent), ui_(new Ui::ConfigWindow), config_(config) {
+    ui_->setupUi(this);
+    ui_->tableView->verticalHeader()->hide();
+    ui_->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     model_.setHorizontalHeaderLabels({"Preference name", "Type", "Value"});
     for (auto &kv : config_.config_) {
         // name
@@ -26,11 +28,13 @@ ConfigWindow::ConfigWindow(Config &config, QWidget *parent) : QDialog(parent), c
         model_.appendRow({name_item, type_item, value_item});
     }
     configFilter_.setSourceModel(&model_);
-    tableView->setModel(&configFilter_);
+    ui_->tableView->setModel(&configFilter_);
     connect(&model_, SIGNAL(itemChanged(QStandardItem *)), this,
             SLOT(itemChanged(QStandardItem *)));
-    connect(filter, SIGNAL(textChanged(QString)), this, SLOT(changedFilter(QString)));
+    connect(ui_->filter, SIGNAL(textChanged(QString)), this, SLOT(changedFilter(QString)));
 }
+
+ConfigWindow::~ConfigWindow() {}
 
 void ConfigWindow::changedFilter(QString filter) { configFilter_.setFilter(filter); }
 

@@ -35,17 +35,18 @@ MainWindow *MainWindow::instance = 0;
 
 MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
     : QMainWindow(parent),
+      ui_(new Ui::MainWindowClass),
       statusBar_(this),
       player_(player),
       cursorFollowsPlayback_(false),
       saveTabs_(false) {
-    setupUi(this);
+    ui_->setupUi(this);
     // Not saving a pointer to this
     QActionGroup *playbackOrderGroup = new QActionGroup(this);
-    playbackOrderGroup->addAction(defaultAction);
-    playbackOrderGroup->addAction(randomAction);
-    playbackOrderGroup->addAction(repeatTrackAction);
-    playbackOrderGroup->addAction(repeatPlaylistAction);
+    playbackOrderGroup->addAction(ui_->defaultAction);
+    playbackOrderGroup->addAction(ui_->randomAction);
+    playbackOrderGroup->addAction(ui_->repeatTrackAction);
+    playbackOrderGroup->addAction(ui_->repeatPlaylistAction);
     installEventFilter(this);
 
     player.setMainWindow(this);
@@ -66,8 +67,8 @@ MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
     volumeSlider_->setValue(player_.volume() * 100);
     volumeSlider_->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     QObject::connect(volumeSlider_, SIGNAL(valueChanged(int)), this, SLOT(volumeChanged(int)));
-    mainToolBar->addWidget(seekSlider_);
-    mainToolBar->addWidget(volumeSlider_);
+    ui_->mainToolBar->addWidget(seekSlider_);
+    ui_->mainToolBar->addWidget(volumeSlider_);
 
     trayIcon_ = new QSystemTrayIcon(this);
     setTrayIcon(false);
@@ -88,12 +89,11 @@ MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
     QObject::connect(lyricsDock_, SIGNAL(visibilityChanged(bool)), this,
                      SLOT(dockVisibilityChanged(bool)));
 
-    //     playlistTabs->setTabsClosable(true);
-    QObject::connect(playlistTabs, SIGNAL(tabCloseRequested(int)), this,
+    QObject::connect(ui_->playlistTabs, SIGNAL(tabCloseRequested(int)), this,
                      SLOT(removePlaylistTab(int)));
-    QObject::connect(playlistTabs, SIGNAL(newTabRequested()), this, SLOT(newTabRequested()));
+    QObject::connect(ui_->playlistTabs, SIGNAL(newTabRequested()), this, SLOT(newTabRequested()));
 
-    QObject::connect(menu_File, SIGNAL(aboutToShow()), this, SLOT(menuFileAboutToShow()));
+    QObject::connect(ui_->menu_File, SIGNAL(aboutToShow()), this, SLOT(menuFileAboutToShow()));
 
     setWindowIcon(QIcon(":/icon/logo22.png"));
 
@@ -179,17 +179,17 @@ void MainWindow::decreaseVolume() {
 void MainWindow::playbackOrderChanged(PlaybackOrder newPlaybackOrder) {
     switch (newPlaybackOrder) {
     case PlaybackOrder::Random:
-        randomAction->setChecked(true);
+        ui_->randomAction->setChecked(true);
         break;
     case PlaybackOrder::RepeatTrack:
-        repeatTrackAction->setChecked(true);
+        ui_->repeatTrackAction->setChecked(true);
         break;
     case PlaybackOrder::RepeatPlaylist:
-        repeatPlaylistAction->setChecked(true);
+        ui_->repeatPlaylistAction->setChecked(true);
         break;
     case PlaybackOrder::Default:
     default:
-        defaultAction->setChecked(true);
+        ui_->defaultAction->setChecked(true);
     }
 }
 
@@ -234,12 +234,12 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     QWidget::closeEvent(event);
 }
 
-void MainWindow::removeActivePlaylist() { removePlaylistTab(playlistTabs->currentIndex()); }
+void MainWindow::removeActivePlaylist() { removePlaylistTab(ui_->playlistTabs->currentIndex()); }
 
 void MainWindow::menuFileAboutToShow() {
     PlaylistTab *current = getActivePlaylist();
-    addFilesAction->setEnabled(current && current->isEditable());
-    addDirectoryAction->setEnabled(current && current->isEditable());
+    ui_->addFilesAction->setEnabled(current && current->isEditable());
+    ui_->addDirectoryAction->setEnabled(current && current->isEditable());
 }
 
 void MainWindow::on_addDirectoryAction_triggered() {
@@ -277,21 +277,21 @@ PlaylistTab *MainWindow::addPlaylist(PModel playlistModel, QString name, bool ma
         return nullptr;
     PlaylistTab *tab = new PlaylistTab(playlistModel);
     playlistModels_.insert({playlistModel, tab});
-    playlistTabs->addTab(tab, name);
+    ui_->playlistTabs->addTab(tab, name);
     if (makeCurrent)
-        playlistTabs->setCurrentWidget(tab);
+        ui_->playlistTabs->setCurrentWidget(tab);
     return tab;
 }
 
 void MainWindow::removePlaylistTab(int index) {
-    QWidget *widget = playlistTabs->widget(index);
+    QWidget *widget = ui_->playlistTabs->widget(index);
     if (!widget)
         return;
     PlaylistTab *playlistTab = qobject_cast<PlaylistTab *>(widget);
     if (!playlistTab)
         return;
 
-    playlistTabs->removeTab(index);
+    ui_->playlistTabs->removeTab(index);
     PModel playlistModel = playlistModels_.right.at(playlistTab);
     playlistModels_.left.erase(playlistModel);
     player_.deletePlaylist(playlistModel);
@@ -380,7 +380,7 @@ void MainWindow::readSettings() {
 
     cursorFollowsPlayback_ =
         settings.value("mainwindow/cursorFollowsPlayback", cursorFollowsPlayback_).toBool();
-    cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
+    ui_->cursorFollowsPlaybackAction->setChecked(cursorFollowsPlayback_);
 
     saveTabs_ = settings.value("mainwindow/saveTabs", saveTabs_).toBool();
     if (!saveTabs_)
@@ -403,7 +403,7 @@ void MainWindow::readSettings() {
             }
             int lastTab = settings.value("mainwindow/lastPlayingTab", 0).toInt();
             if (lastTab != -1)
-                playlistTabs->setCurrentIndex(lastTab);
+                ui_->playlistTabs->setCurrentIndex(lastTab);
         }
     }
 
@@ -429,9 +429,9 @@ void MainWindow::writeSettings(bool lastPosition) {
     if (saveTabs_) {
         QList<QVariant> names;
         QList<QVariant> data;
-        for (int i = 0; i < playlistTabs->count(); ++i) {
-            names.append(playlistTabs->tabText(i));
-            PlaylistTab *tab = dynamic_cast<PlaylistTab *>(playlistTabs->widget(i));
+        for (int i = 0; i < ui_->playlistTabs->count(); ++i) {
+            names.append(ui_->playlistTabs->tabText(i));
+            PlaylistTab *tab = dynamic_cast<PlaylistTab *>(ui_->playlistTabs->widget(i));
             if (tab->isEditable()) {
                 QByteArray tabData;
                 tab->serialize(tabData);
@@ -451,7 +451,7 @@ void MainWindow::writeSettings(bool lastPosition) {
     if (lastPlayed.first && lastPlayed.second.isValid()) {
         auto playlistTab = playlistModels_.left.at(lastPlayed.first);
         position = playlistTab->getUnfilteredPosition(lastPlayed.second);
-        lastTab = playlistTabs->indexOf(playlistTab);
+        lastTab = ui_->playlistTabs->indexOf(playlistTab);
     }
     settings.setValue("mainwindow/lastPlayingTab", lastTab);
     settings.setValue("mainwindow/lastPlayingPosition", position);
@@ -472,11 +472,11 @@ void MainWindow::on_mainToolBar_actionTriggered(QAction *action) {
 }
 
 PlaylistTab *MainWindow::getActivePlaylist() {
-    return dynamic_cast<PlaylistTab *>(playlistTabs->currentWidget());
+    return dynamic_cast<PlaylistTab *>(ui_->playlistTabs->currentWidget());
 }
 
 PModel MainWindow::getActivePlaylistModel() {
-    auto playlistTab = dynamic_cast<PlaylistTab *>(playlistTabs->currentWidget());
+    auto playlistTab = dynamic_cast<PlaylistTab *>(ui_->playlistTabs->currentWidget());
     if (!playlistTab)
         return nullptr;
     return playlistModels_.right.at(playlistTab);
@@ -508,7 +508,7 @@ void MainWindow::showHide() {
 void MainWindow::statusBarDoubleClicked() {
     auto playlistTab = getPlayingPlaylistTab();
     if (playlistTab) {
-        playlistTabs->setCurrentWidget(playlistTab);
+        ui_->playlistTabs->setCurrentWidget(playlistTab);
         playlistTab->updateCursorAndScroll(AudioPlayer::instance->getPlayingIndex());
     }
 }
