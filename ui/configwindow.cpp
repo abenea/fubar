@@ -1,8 +1,5 @@
 #include "ui/configwindow.h"
 
-#include <QDebug>
-#include <boost/type_traits/detail/is_mem_fun_pointer_impl.hpp>
-
 #include "ui/ui_configwindow.h"
 
 ConfigWindow::ConfigWindow(Config &config, QWidget *parent)

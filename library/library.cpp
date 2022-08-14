@@ -12,7 +12,6 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QTimer>
-#include <boost/bind.hpp>
 #include <boost/scoped_array.hpp>
 #include <cstdio>
 #include <set>
@@ -107,8 +106,8 @@ void Library::run() {
         waitForMonitoringStart();
         qDebug() << "Scanning media files";
         watcher_.reset(new DirectoryWatcher);
-        watcher_->setFileCallback(boost::bind(&Library::fileCallback, this, _1, _2));
-        watcher_->setDirectoryCallback(boost::bind(&Library::directoryCallback, this, _1, _2));
+        watcher_->setFileCallback([this](auto f, auto e) { this->fileCallback(f, e); });
+        watcher_->setDirectoryCallback([this](auto f, auto e) { this->directoryCallback(f, e); });
 
         if (!quit_) {
             rescan();

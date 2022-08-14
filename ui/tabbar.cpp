@@ -73,7 +73,7 @@ void TabBar::editFinished() {
 
 void TabBar::mousePressEvent(QMouseEvent *event) {
     int index = tabAt(event->pos());
-    if (event->button() == Qt::MidButton) {
+    if (event->button() == Qt::MiddleButton) {
         event->accept();
         if (index != -1)
             emit tabCloseRequested(index);
