@@ -48,7 +48,7 @@ void PlayerTest::deletePlaylist(int pos) { mw_->removePlaylistTab(pos); }
 
 void PlayerTest::init() {
     audio_ = new MockAudioOutput();
-    player_ = new AudioPlayer(nullptr, Backend::mpv, /*testing=*/true);
+    player_ = new AudioPlayer(nullptr, /*testing=*/true);
     mw_ = new MainWindow(*player_);
     player_->setMainWindow(mw_);
 }

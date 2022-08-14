@@ -33,10 +33,6 @@ void SeekSlider::sliderReleasedAction() {
     pressed_ = false;
 }
 
-/*
- * Copypasta from Phonon::SwiftSlider
- */
-
 // Function copied from qslider.cpp
 inline int SeekSlider::pick(const QPoint &pt) const {
     return orientation() == Qt::Horizontal ? pt.x() : pt.y();

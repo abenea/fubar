@@ -1,18 +1,19 @@
 #include "ui/audioplayer.h"
 
-#include "library/library.h"
-#include "library/track.h"
-#include "player/mpvaudiooutput.h"
-#include "ui/playlistmodel.h"
-#include "ui/mainwindow.h"
 #include <QDebug>
 #include <QSettings>
 #include <QtCore/qmath.h>
 #include <cstdlib>
 
+#include "library/library.h"
+#include "library/track.h"
+#include "player/mpvaudiooutput.h"
+#include "ui/mainwindow.h"
+#include "ui/playlistmodel.h"
+
 AudioPlayer *AudioPlayer::instance = nullptr;
 
-AudioPlayer::AudioPlayer(Library *library, Backend backend, bool testing, QObject *parent)
+AudioPlayer::AudioPlayer(Library *library, bool testing, QObject *parent)
     : QObject(parent),
       library_(library),
       mainWindow_(nullptr),
@@ -37,10 +38,6 @@ AudioPlayer::AudioPlayer(Library *library, Backend backend, bool testing, QObjec
                      SIGNAL(metadataChanged(QString, QString, int)),
                      this,
                      SLOT(metadataChanged(QString, QString, int)));
-    // Not using Phono totalTimeChanged() signal because it returns 0 when used with enqueue()
-    // TODO: report bug to phonon
-    //    QObject::connect(audioOutput_, SIGNAL(totalTimeChanged(qint64)), this,
-    //    SLOT(totalTimeChanged(qint64)));
     readSettings();
     instance = this;
 }

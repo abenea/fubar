@@ -12,13 +12,11 @@ class MainWindow;
 class AudioOutput;
 
 enum PlaybackOrder { Default, RepeatTrack, RepeatPlaylist, Random };
-enum class Backend { mpv, phonon };
 
 class AudioPlayer : public QObject {
     Q_OBJECT
 public:
     AudioPlayer(Library *library,
-                Backend backend = Backend::mpv,
                 bool testing = false,
                 QObject *parent = 0);
     virtual ~AudioPlayer();

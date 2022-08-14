@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     atexit(glyr_cleanup);
 
     Library library;
-    AudioPlayer player(&library, Backend::mpv);
+    AudioPlayer player(&library);
     MainWindow w(player);
     w.show();
 
