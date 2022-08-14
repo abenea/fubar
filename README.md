@@ -12,26 +12,22 @@ fubar is a Qt media player. It has the following features:
 
 fubar requires:
 
-* Qt >= 4.8
+* Qt >= 5
 * kdelibs (for global shortcuts)
-* phonon
 * boost
 * liblastfm >= 1.0.7
 * [TagLib](http://taglib.github.com/) >= 1.8
-* cmake >= 2.6
+* cmake >= 3.13
 * libmpv >= 0.8.0
 * libcue
 
 
 ## Compiling fubar
 
-    mkdir build
-    cd build
-    cmake ..
-    make -j4
+    cmake -B build
+    cmake --build build -j16
 
 You can run `build/fubar` directly or install it using `make install`.
-
 
 ## Using fubar
 
