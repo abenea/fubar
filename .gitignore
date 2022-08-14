@@ -3,5 +3,3 @@ build
 *kdev4*
 .vscode/c_cpp_properties.json
 .vscode/settings.json
-lib/liblastfm.so
-lib/libscreensaver.so

@@ -9,8 +9,11 @@ PluginManager *PluginManager::instance = 0;
 
 PluginManager::PluginManager(AudioPlayer &player) : player_(player) {
     auto pluginDirs = QVector<QString>{
+        // Install path
         QCoreApplication::applicationDirPath() + "/../lib/fubar/",
-        QCoreApplication::applicationDirPath() + "/lib/",
+        // Build tree paths
+        QCoreApplication::applicationDirPath() + "/plugins/lastfm",
+        QCoreApplication::applicationDirPath() + "/plugins/screensaver",
     };
     for (QString dirName : pluginDirs) {
         auto dir = QDir(dirName);
