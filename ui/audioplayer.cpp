@@ -13,28 +13,28 @@
 
 AudioPlayer *AudioPlayer::instance = nullptr;
 
-AudioPlayer::AudioPlayer(Library *library, bool testing, QObject *parent)
+AudioPlayer::AudioPlayer(Library *library, AudioOutput *audioOutput, bool testing, QObject *parent)
     : QObject(parent),
       library_(library),
+      audioOutput_(audioOutput),
       mainWindow_(nullptr),
       replaygain_(ReplayGainMode::None),
       preamp_with_rg_(10),
       playbackOrder_(PlaybackOrder::Default),
       lengthHack_(false),
       testing_(testing) {
-    audioOutput_.reset(new MpvAudioOutput);
-    QObject::connect(audioOutput_.get(), SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
+    QObject::connect(audioOutput_, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
     QObject::connect(
-        audioOutput_.get(), SIGNAL(currentSourceChanged()), this, SLOT(currentSourceChanged()));
-    QObject::connect(audioOutput_.get(), SIGNAL(tick(qint64)), this, SLOT(slotTick(qint64)));
-    QObject::connect(audioOutput_.get(),
+        audioOutput_, SIGNAL(currentSourceChanged()), this, SLOT(currentSourceChanged()));
+    QObject::connect(audioOutput_, SIGNAL(tick(qint64)), this, SLOT(slotTick(qint64)));
+    QObject::connect(audioOutput_,
                      SIGNAL(stateChanged(AudioState)),
                      this,
                      SLOT(slotAudioStateChanged(AudioState)));
-    QObject::connect(audioOutput_.get(), SIGNAL(finished()), this, SLOT(slotFinished()));
+    QObject::connect(audioOutput_, SIGNAL(finished()), this, SLOT(slotFinished()));
     QObject::connect(
-        audioOutput_.get(), SIGNAL(durationChanged(double)), this, SLOT(durationChanged(double)));
-    QObject::connect(audioOutput_.get(),
+        audioOutput_, SIGNAL(durationChanged(double)), this, SLOT(durationChanged(double)));
+    QObject::connect(audioOutput_,
                      SIGNAL(metadataChanged(QString, QString, int)),
                      this,
                      SLOT(metadataChanged(QString, QString, int)));

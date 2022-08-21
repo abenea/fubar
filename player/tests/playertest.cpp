@@ -3,15 +3,14 @@
 #include <QDebug>
 
 #include "library/track.h"
-#include "player/tests/mockaudiooutput.h"
 #include "ui/mainwindow.h"
 #include "ui/playlistmodel.h"
 
 #define verify(track)                                                                              \
     {                                                                                              \
-        if (audio_->currentSource() != track)                                                      \
-            qDebug() << "Current source is" << audio_->currentSource() << "!=" << track;           \
-        QVERIFY(audio_->currentSource() == track);                                                 \
+        if (audioOutput_.currentSource() != track)                                                 \
+            qDebug() << "Current source is" << audioOutput_.currentSource() << "!=" << track;      \
+        QVERIFY(audioOutput_.currentSource() == track);                                            \
     }
 
 QList<PTrack> generateTracks(int start, int no) {
@@ -47,8 +46,7 @@ void PlayerTest::enqueue(PModel p, int pos) {
 void PlayerTest::deletePlaylist(int pos) { mw_->removePlaylistTab(pos); }
 
 void PlayerTest::init() {
-    audio_ = new MockAudioOutput();
-    player_ = new AudioPlayer(nullptr, /*testing=*/true);
+    player_ = new AudioPlayer(nullptr, &audioOutput_, /*testing=*/true);
     mw_ = new MainWindow(*player_);
     player_->setMainWindow(mw_);
 }
@@ -56,7 +54,6 @@ void PlayerTest::init() {
 void PlayerTest::cleanup() {
     delete mw_;
     delete player_;
-    delete audio_;
 }
 
 void PlayerTest::noPlaylists() { player_->play(); }
@@ -87,11 +84,11 @@ void PlayerTest::prevNext() {
 void PlayerTest::autoEnqueueNext() {
     newPlaylist(generateTracks(2));
     player_->play();
-    audio_->triggerAboutToFinish();
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerAboutToFinish();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("1");
-    audio_->triggerAboutToFinish();
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerAboutToFinish();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("");
     player_->play();
     verify("1");
@@ -100,9 +97,9 @@ void PlayerTest::autoEnqueueNext() {
 void PlayerTest::autoEnqueueNextDeletedHelper() {
     auto p = newPlaylist(generateTracks(3));
     player_->play();
-    audio_->triggerAboutToFinish();
+    audioOutput_.triggerAboutToFinish();
     removeAt(p, 1);
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("1");
 }
 
@@ -121,12 +118,12 @@ void PlayerTest::autoEnqueueNextDeletedPrev() {
 void PlayerTest::autoEnqueueNextDeletedThenAutoEnqueue() {
     auto p = newPlaylist(generateTracks(3));
     player_->play();
-    audio_->triggerAboutToFinish();
+    audioOutput_.triggerAboutToFinish();
     removeAt(p, 1);
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("1");
-    audio_->triggerAboutToFinish();
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerAboutToFinish();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("2");
 }
 
@@ -139,8 +136,8 @@ void PlayerTest::enqueue() {
     enqueue(p2, 1);
     player_->next();
     verify("2");
-    audio_->triggerAboutToFinish();
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerAboutToFinish();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("4");
     player_->next();
     verify("5");
@@ -166,9 +163,9 @@ void PlayerTest::enqueueDeleted() {
     player_->next();
     verify("2");
     enqueue(p1, 1);
-    audio_->triggerAboutToFinish();
+    audioOutput_.triggerAboutToFinish();
     removeAt(p1, 1);
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("2");
     player_->play();
     verify("0");
@@ -187,9 +184,9 @@ void PlayerTest::enqueueDeletedPlaylist() {
     // Delete playlist after buffering
     p2 = newPlaylist(generateTracks(3, 3));
     enqueue(p2, 1);
-    audio_->triggerAboutToFinish();
+    audioOutput_.triggerAboutToFinish();
     deletePlaylist(1);
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("4");
     player_->next();
     verify("2");
@@ -200,8 +197,8 @@ void PlayerTest::enqueueDeletedPlaylist() {
     p2 = newPlaylist(generateTracks(3, 3));
     enqueue(p2, 1);
     deletePlaylist(1);
-    audio_->triggerAboutToFinish();
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerAboutToFinish();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("2");
 
     // Delete same playlist before buffering
@@ -209,8 +206,8 @@ void PlayerTest::enqueueDeletedPlaylist() {
     verify("1");
     enqueue(p1, 0);
     deletePlaylist(0);
-    audio_->triggerAboutToFinish();
-    audio_->triggerCurrentSourceChanged();
+    audioOutput_.triggerAboutToFinish();
+    audioOutput_.triggerCurrentSourceChanged();
     verify("");
 }
 

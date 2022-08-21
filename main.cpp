@@ -1,4 +1,5 @@
 #include "library/library.h"
+#include "player/mpvaudiooutput.h"
 #include "ui/audioplayer.h"
 #include "ui/mainwindow.h"
 #include "ui/pluginmanager.h"
@@ -52,7 +53,8 @@ int main(int argc, char *argv[]) {
     atexit(glyr_cleanup);
 
     Library library;
-    AudioPlayer player(&library);
+    MpvAudioOutput audioOutput;
+    AudioPlayer player(&library, &audioOutput);
     MainWindow w(player);
     w.show();
 

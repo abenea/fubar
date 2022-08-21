@@ -1,5 +1,6 @@
 #pragma once
 
+#include "player/tests/mockaudiooutput.h"
 #include <QtTest/QTest>
 #include <ui/audioplayer.h>
 
@@ -36,7 +37,7 @@ private:
     void removeAt(PModel p, int pos);
     void enqueue(PModel p, int pos);
 
+    MockAudioOutput audioOutput_;
     AudioPlayer *player_;
-    MockAudioOutput *audio_;
     MainWindow *mw_;
 };

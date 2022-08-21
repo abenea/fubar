@@ -17,6 +17,7 @@ class AudioPlayer : public QObject {
     Q_OBJECT
 public:
     AudioPlayer(Library *library,
+                AudioOutput *audioOutput,
                 bool testing = false,
                 QObject *parent = 0);
     virtual ~AudioPlayer();
@@ -91,7 +92,7 @@ private:
     void readSettings();
 
     Library *library_;
-    std::unique_ptr<AudioOutput> audioOutput_;
+    AudioOutput *audioOutput_;
     MainWindow *mainWindow_;
 
     // legal values in [0..1]
