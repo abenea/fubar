@@ -1,19 +1,14 @@
-#include "player/tests/playertest.h"
-
+#include <QApplication>
 #include <QDebug>
 
 #include "library/track.h"
+#include "player/tests/mockaudiooutput.h"
+#include "ui/audioplayer.h"
 #include "ui/mainwindow.h"
 #include "ui/playlistmodel.h"
+#include "gtest/gtest.h"
 
-#define verify(track)                                                                              \
-    {                                                                                              \
-        if (audioOutput_.currentSource() != track)                                                 \
-            qDebug() << "Current source is" << audioOutput_.currentSource() << "!=" << track;      \
-        QVERIFY(audioOutput_.currentSource() == track);                                            \
-    }
-
-QList<PTrack> generateTracks(int start, int no) {
+QList<PTrack> generateTracks(int no, int start = 0) {
     QList<PTrack> result;
     for (int i = start; i < start + no; ++i) {
         auto track = new Track();
@@ -23,163 +18,159 @@ QList<PTrack> generateTracks(int start, int no) {
     return result;
 }
 
-QList<PTrack> generateTracks(int no) { return generateTracks(0, no); }
+class PlayerTest : public testing::Test {
+protected:
+    PlayerTest() : player_(nullptr, &audioOutput_, /*testing=*/true), mw_(player_) {
+        player_.setMainWindow(&mw_);
+    }
 
-PModel PlayerTest::newPlaylist() {
-    auto p = player_->createPlaylist(false);
-    mw_->addPlaylist(p, "", false);
-    return p;
-}
+    void autoEnqueueNextDeletedHelper() {
+        auto p = newPlaylist(generateTracks(3));
+        player_.play();
+        audioOutput_.triggerAboutToFinish();
+        removeAt(p, 1);
+        audioOutput_.triggerCurrentSourceChanged();
+        EXPECT_EQ(audioOutput_.currentSource(), "1");
+    }
 
-PModel PlayerTest::newPlaylist(QList<PTrack> tracks) {
-    auto p = newPlaylist();
-    p->addTracks(tracks);
-    return p;
-}
+    PModel newPlaylist() {
+        auto p = player_.createPlaylist(false);
+        mw_.addPlaylist(p, "", false);
+        return p;
+    }
 
-void PlayerTest::removeAt(PModel p, int pos) { p->removeIndexes({p->index(pos, 0)}); }
+    PModel newPlaylist(QList<PTrack> tracks) {
+        auto p = newPlaylist();
+        p->addTracks(tracks);
+        return p;
+    }
 
-void PlayerTest::enqueue(PModel p, int pos) {
-    player_->enqueueTracks(p, {QModelIndex(p->index(pos, 0))});
-}
+    void deletePlaylist(int pos) { mw_.removePlaylistTab(pos); }
 
-void PlayerTest::deletePlaylist(int pos) { mw_->removePlaylistTab(pos); }
+    void removeAt(PModel p, int pos) { p->removeIndexes({p->index(pos, 0)}); }
 
-void PlayerTest::init() {
-    player_ = new AudioPlayer(nullptr, &audioOutput_, /*testing=*/true);
-    mw_ = new MainWindow(*player_);
-    player_->setMainWindow(mw_);
-}
+    void enqueue(PModel p, int pos) { player_.enqueueTracks(p, {QModelIndex(p->index(pos, 0))}); }
 
-void PlayerTest::cleanup() {
-    delete mw_;
-    delete player_;
-}
+    MockAudioOutput audioOutput_;
+    AudioPlayer player_;
+    MainWindow mw_;
+};
 
-void PlayerTest::noPlaylists() { player_->play(); }
+TEST_F(PlayerTest, noPlaylists) { player_.play(); }
 
-void PlayerTest::oneEmptyPlaylist() {
+TEST_F(PlayerTest, oneEmptyPlaylist) {
     newPlaylist();
-    player_->play();
+    player_.play();
 }
 
-void PlayerTest::oneTrack() {
+TEST_F(PlayerTest, oneTrack) {
     newPlaylist(generateTracks(1));
-    player_->play();
-    verify("0");
-    player_->next();
-    player_->prev();
+    player_.play();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
+    player_.next();
+    player_.prev();
 }
 
-void PlayerTest::prevNext() {
+TEST_F(PlayerTest, prevNext) {
     newPlaylist(generateTracks(2));
-    player_->play();
-    verify("0");
-    player_->next();
-    verify("1");
-    player_->prev();
-    verify("0");
+    player_.play();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "1");
+    player_.prev();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
 }
 
-void PlayerTest::autoEnqueueNext() {
+TEST_F(PlayerTest, autoEnqueueNext) {
     newPlaylist(generateTracks(2));
-    player_->play();
+    player_.play();
     audioOutput_.triggerAboutToFinish();
     audioOutput_.triggerCurrentSourceChanged();
-    verify("1");
+    EXPECT_EQ(audioOutput_.currentSource(), "1");
     audioOutput_.triggerAboutToFinish();
     audioOutput_.triggerCurrentSourceChanged();
-    verify("");
-    player_->play();
-    verify("1");
+    EXPECT_EQ(audioOutput_.currentSource(), "");
+    player_.play();
+    EXPECT_EQ(audioOutput_.currentSource(), "1");
 }
 
-void PlayerTest::autoEnqueueNextDeletedHelper() {
+TEST_F(PlayerTest, autoEnqueueNextDeletedNext) {
+    autoEnqueueNextDeletedHelper();
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "2");
+}
+
+TEST_F(PlayerTest, autoEnqueueNextDeletedPrev) {
+    autoEnqueueNextDeletedHelper();
+    player_.prev();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
+}
+
+TEST_F(PlayerTest, autoEnqueueNextDeletedThenAutoEnqueue) {
     auto p = newPlaylist(generateTracks(3));
-    player_->play();
+    player_.play();
     audioOutput_.triggerAboutToFinish();
     removeAt(p, 1);
     audioOutput_.triggerCurrentSourceChanged();
-    verify("1");
-}
-
-void PlayerTest::autoEnqueueNextDeletedNext() {
-    autoEnqueueNextDeletedHelper();
-    player_->next();
-    verify("2");
-}
-
-void PlayerTest::autoEnqueueNextDeletedPrev() {
-    autoEnqueueNextDeletedHelper();
-    player_->prev();
-    verify("0");
-}
-
-void PlayerTest::autoEnqueueNextDeletedThenAutoEnqueue() {
-    auto p = newPlaylist(generateTracks(3));
-    player_->play();
-    audioOutput_.triggerAboutToFinish();
-    removeAt(p, 1);
-    audioOutput_.triggerCurrentSourceChanged();
-    verify("1");
+    EXPECT_EQ(audioOutput_.currentSource(), "1");
     audioOutput_.triggerAboutToFinish();
     audioOutput_.triggerCurrentSourceChanged();
-    verify("2");
+    EXPECT_EQ(audioOutput_.currentSource(), "2");
 }
 
-void PlayerTest::enqueue() {
+TEST_F(PlayerTest, enqueue) {
     auto p1 = newPlaylist(generateTracks(3));
     auto p2 = newPlaylist(generateTracks(3, 3));
-    player_->play();
-    verify("0");
+    player_.play();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
     enqueue(p1, 2);
     enqueue(p2, 1);
-    player_->next();
-    verify("2");
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "2");
     audioOutput_.triggerAboutToFinish();
     audioOutput_.triggerCurrentSourceChanged();
-    verify("4");
-    player_->next();
-    verify("5");
+    EXPECT_EQ(audioOutput_.currentSource(), "4");
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "5");
 
     enqueue(p1, 0);
     enqueue(p1, 0);
     enqueue(p1, 0);
-    player_->next();
-    verify("0");
-    player_->next();
-    verify("0");
-    player_->clearQueue();
-    player_->next();
-    verify("1");
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
+    player_.clearQueue();
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "1");
 }
 
-void PlayerTest::enqueueDeleted() {
+TEST_F(PlayerTest, enqueueDeleted) {
     auto p1 = newPlaylist(generateTracks(3));
-    player_->play();
-    verify("0");
+    player_.play();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
     enqueue(p1, 1);
     removeAt(p1, 1);
-    player_->next();
-    verify("2");
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "2");
     enqueue(p1, 1);
     audioOutput_.triggerAboutToFinish();
     removeAt(p1, 1);
     audioOutput_.triggerCurrentSourceChanged();
-    verify("2");
-    player_->play();
-    verify("0");
+    EXPECT_EQ(audioOutput_.currentSource(), "2");
+    player_.play();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
 }
 
-void PlayerTest::enqueueDeletedPlaylist() {
+TEST_F(PlayerTest, enqueueDeletedPlaylist) {
     auto p1 = newPlaylist(generateTracks(3));
     auto p2 = newPlaylist(generateTracks(3, 3));
-    player_->play();
-    verify("0");
+    player_.play();
+    EXPECT_EQ(audioOutput_.currentSource(), "0");
     enqueue(p2, 1);
     deletePlaylist(1);
-    player_->next();
-    verify("1");
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "1");
 
     // Delete playlist after buffering
     p2 = newPlaylist(generateTracks(3, 3));
@@ -187,28 +178,32 @@ void PlayerTest::enqueueDeletedPlaylist() {
     audioOutput_.triggerAboutToFinish();
     deletePlaylist(1);
     audioOutput_.triggerCurrentSourceChanged();
-    verify("4");
-    player_->next();
-    verify("2");
+    EXPECT_EQ(audioOutput_.currentSource(), "4");
+    player_.next();
+    EXPECT_EQ(audioOutput_.currentSource(), "2");
 
     // Delete playlist before buffering
-    player_->prev();
-    verify("1");
+    player_.prev();
+    EXPECT_EQ(audioOutput_.currentSource(), "1");
     p2 = newPlaylist(generateTracks(3, 3));
     enqueue(p2, 1);
     deletePlaylist(1);
     audioOutput_.triggerAboutToFinish();
     audioOutput_.triggerCurrentSourceChanged();
-    verify("2");
+    EXPECT_EQ(audioOutput_.currentSource(), "2");
 
     // Delete same playlist before buffering
-    player_->prev();
-    verify("1");
+    player_.prev();
+    EXPECT_EQ(audioOutput_.currentSource(), "1");
     enqueue(p1, 0);
     deletePlaylist(0);
     audioOutput_.triggerAboutToFinish();
     audioOutput_.triggerCurrentSourceChanged();
-    verify("");
+    EXPECT_EQ(audioOutput_.currentSource(), "");
 }
 
-QTEST_MAIN(PlayerTest)
+int main(int argc, char **argv) {
+    testing::InitGoogleTest(&argc, argv);
+    QApplication app(argc, argv);
+    return RUN_ALL_TESTS();
+}

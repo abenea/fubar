@@ -5,4 +5,6 @@ add_library(player
     playlistmimedata.cpp)
 target_link_libraries(player PRIVATE library Qt5::Core MPV Taglib)
 
-add_subdirectory(tests)
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
