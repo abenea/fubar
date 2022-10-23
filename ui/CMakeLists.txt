@@ -26,3 +26,7 @@ add_library(ui
 target_link_libraries(ui
     PUBLIC Qt5::Widgets
     PRIVATE player Glyr KF5::WindowSystem KF5::GlobalAccel)
+
+if(BUILD_TESTING)
+  add_subdirectory(tests)
+endif()

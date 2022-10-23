@@ -1,5 +1,4 @@
 #include <QApplication>
-#include <QDebug>
 
 #include "library/track.h"
 #include "player/tests/mockaudiooutput.h"

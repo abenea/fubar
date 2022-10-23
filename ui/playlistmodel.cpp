@@ -114,85 +114,63 @@ void PlaylistModel::addUrls(const QList<QUrl> &urls) {
         endInsertRows();
     }
     for (const QUrl &url : youtubePlaylists) {
-        QProcess *ytdl = new QProcess();
-        youtubeDlBuffers[ytdl] = QString();
-        QObject::connect(ytdl, SIGNAL(readyReadStandardOutput()), this, SLOT(youtubeDlOutput()));
-        QObject::connect(ytdl, SIGNAL(finished(int)), this, SLOT(youtubeDlFinished(int)));
-        QObject::connect(ytdl, SIGNAL(errorOccurred(QProcess::ProcessError)), this,
-                         SLOT(youtubeDlError(QProcess::ProcessError)));
-        ytdl->start("youtube-dl -j --ignore-errors " + url.toString());
+        JsonProcess *ytdl = new JsonProcess;
+        if (fakeYoutubeDl_.isEmpty()) {
+            ytdl->start("yt-dlp", QStringList{"-j", "--ignore-errors", url.toString()});
+        } else {
+            ytdl->start("echo", QStringList{fakeYoutubeDl_});
+        }
+        connect(ytdl, &JsonProcess::document, this, &PlaylistModel::youtubeDocument);
+        connect(ytdl, &JsonProcess::parseError, this, &PlaylistModel::youtubeDlParseError);
+        connect(ytdl, &JsonProcess::finished, this, &PlaylistModel::youtubeDlFinished);
+        connect(ytdl, &JsonProcess::errorOccurred, this, &PlaylistModel::youtubeDlError);
     }
 }
 
-void PlaylistModel::processError(QProcess::ProcessError error, QString processName) {
-    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    qWarning() << processName << " process error " << error;
-    process->deleteLater();
-}
-
-void PlaylistModel::processFinished(int status, QString processName) {
-    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    if (status)
-        qWarning() << processName << " returned status " << status;
-    process->deleteLater();
+void PlaylistModel::youtubeDlParseError(QJsonParseError error) {
+    qWarning() << "Error parsing json from youtube-dl at offset:" << error.offset << ":"
+               << error.errorString();
 }
 
 void PlaylistModel::youtubeDlError(QProcess::ProcessError error) {
-    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    youtubeDlBuffers.erase(process);
-    processError(error, "youtube-dl");
+    qWarning() << "youtube-dl process error:" << error;
+    JsonProcess *process = qobject_cast<JsonProcess *>(QObject::sender());
+    finishYoutubeDl(process);
 }
 
 void PlaylistModel::youtubeDlFinished(int status) {
-    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    youtubeDlBuffers.erase(process);
-    processFinished(status, "youtube-dl");
+    JsonProcess *process = qobject_cast<JsonProcess *>(QObject::sender());
+    if (status)
+        qWarning() << "youtube-dl returned status:" << status;
+    if (!process->stderr().isEmpty())
+        qWarning() << process->stderr().constData();
+    finishYoutubeDl(process);
 }
 
-void PlaylistModel::youtubeDlOutput() {
-    QProcess *process = qobject_cast<QProcess *>(QObject::sender());
-    QTextStream stdoutStream(process->readAllStandardOutput());
-    int oldSize = playlist_.tracks.size();
+void PlaylistModel::finishYoutubeDl(JsonProcess *process) {
+    process->deleteLater();
+    emit youtubeDlDone();
+}
 
-    while (true) {
-        QString line = stdoutStream.readLine();
-        if (line.isNull())
-            break;
-        if (!youtubeDlBuffers[process].isEmpty()) {
-            line = youtubeDlBuffers[process] + line;
-            youtubeDlBuffers[process].clear();
-        }
+void PlaylistModel::youtubeDocument(const QJsonDocument &doc) {
+    if (!doc.isObject() || !doc.object().contains("webpage_url"))
+        return;
 
-        QJsonParseError parseError;
-        auto jsonDoc = QJsonDocument::fromJson(line.toUtf8(), &parseError);
-        if (parseError.error != QJsonParseError::NoError) {
-            qWarning() << "Error parsing json from youtube-dl at offset " << parseError.offset
-                       << ": " << parseError.errorString();
-            if (stdoutStream.atEnd())
-                youtubeDlBuffers[process] = line;
-            continue;
-        }
-        if (!jsonDoc.isObject() || !jsonDoc.object().contains("webpage_url"))
-            continue;
-
-        QVariantMap track_info = jsonDoc.object().toVariantMap();
-        shared_ptr<Track> track(new Track());
-        track->location = track_info["webpage_url"].toString();
-        if (track_info.count("artist"))
-            track->metadata["artist"] = track_info["artist"].toString();
-        if (track_info.count("album"))
-            track->metadata["album"] = track_info["album"].toString();
-        if (track_info.count("track"))
-            track->metadata["title"] = track_info["track"].toString();
-        track->audioproperties.length = track_info["duration"].toInt();
-        playlist_.tracks.append(track);
-    }
-
-    int newSize = playlist_.tracks.size();
-    if (newSize > oldSize) {
-        beginInsertRows(QModelIndex(), oldSize, newSize - 1);
-        endInsertRows();
-    }
+    QVariantMap track_info = doc.object().toVariantMap();
+    shared_ptr<Track> track(new Track());
+    track->location = track_info["webpage_url"].toString();
+    if (track_info.count("artist"))
+        track->metadata["artist"] = track_info["artist"].toString();
+    if (track_info.count("album"))
+        track->metadata["album"] = track_info["album"].toString();
+    if (track_info.count("track"))
+        track->metadata["title"] = track_info["track"].toString();
+    if (track_info.count("playlist_index"))
+        track->metadata["track"] = track_info["playlist_index"].toString();
+    track->audioproperties.length = track_info["duration"].toInt();
+    beginInsertRows(QModelIndex(), playlist_.tracks.size(), playlist_.tracks.size());
+    playlist_.tracks.append(track);
+    endInsertRows();
 }
 
 void PlaylistModel::deserialize(const QByteArray &data) {

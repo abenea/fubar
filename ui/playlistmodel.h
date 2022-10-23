@@ -1,8 +1,10 @@
 #pragma once
 
+#include "player/jsonprocess.h"
 #include "player/playlist.h"
 
 #include <QAbstractTableModel>
+#include <QJsonDocument>
 #include <QProcess>
 #include <QStringList>
 #include <map>
@@ -45,25 +47,28 @@ public:
 
     void notifyQueueStatusChanged(std::vector<QPersistentModelIndex> indexes);
 
+    void setFakeYoutubeDl(QString output) { fakeYoutubeDl_ = output; }
+
 public slots:
     void libraryChanged(LibraryEvent event);
 
 signals:
     void queueStatusChanged(std::vector<QPersistentModelIndex> indexes);
+    void youtubeDlDone();
 
 protected slots:
     void libraryChanged(QList<PTrack> tracks);
-    void youtubeDlOutput();
+    void youtubeDocument(const QJsonDocument &doc);
     void youtubeDlFinished(int status);
     void youtubeDlError(QProcess::ProcessError error);
+    void youtubeDlParseError(QJsonParseError error);
 
 private:
-    void processFinished(int status, QString processName);
-    void processError(QProcess::ProcessError error, QString processName);
+    void finishYoutubeDl(JsonProcess *process);
 
     Playlist playlist_;
     Qt::DropActions dropActions_;
-    std::map<QProcess *, QString> youtubeDlBuffers;
+    QString fakeYoutubeDl_;
 };
 
 enum PlaylistRoles { TrackRole = Qt::UserRole, GroupingModeRole, GroupItemsRole };

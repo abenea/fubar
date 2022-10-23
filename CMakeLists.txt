@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 project(fubar)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-find_package(Qt5 5.0 REQUIRED Core Gui Widgets)
+find_package(Qt5 5.0 REQUIRED Core Gui Widgets Test)
 find_package(KF5WindowSystem)
 find_package(KF5GlobalAccel)
 find_package(Cue REQUIRED)

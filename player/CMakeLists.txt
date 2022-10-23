@@ -2,8 +2,9 @@ add_library(player
     audiooutput.cpp
     mpvaudiooutput.cpp
     playlist.cpp
-    playlistmimedata.cpp)
-target_link_libraries(player PRIVATE library Qt5::Core MPV Taglib)
+    playlistmimedata.cpp
+    jsonprocess.cpp)
+target_link_libraries(player PUBLIC Qt5::Core PRIVATE library MPV Taglib)
 
 if(BUILD_TESTING)
   add_subdirectory(tests)
