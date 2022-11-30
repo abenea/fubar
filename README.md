@@ -20,6 +20,7 @@ fubar requires:
 * cmake >= 3.13
 * libmpv >= 0.8.0
 * libcue
+* googletest
 
 
 ## Compiling fubar
