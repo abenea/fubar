@@ -17,22 +17,23 @@ class PlaylistModel : public QAbstractItemModel {
 public:
     PlaylistModel(bool editable, QObject *parent = 0);
 
-    virtual int rowCount(const QModelIndex &) const;
-    virtual int columnCount(const QModelIndex &) const;
-    virtual QModelIndex parent(const QModelIndex &index) const;
-    virtual bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
-    virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-    virtual QVariant data(const QModelIndex &index, int role) const;
+    int rowCount(const QModelIndex &) const override;
+    int columnCount(const QModelIndex &) const override;
+    QModelIndex parent(const QModelIndex &index) const override;
+    bool hasChildren(const QModelIndex &parent = QModelIndex()) const override;
+    QModelIndex
+    index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
 
-    Qt::DropActions supportedDropActions() const;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    QStringList mimeTypes() const;
-    QMimeData *mimeData(const QModelIndexList &indexes) const;
+    Qt::DropActions supportedDropActions() const override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    QStringList mimeTypes() const override;
+    QMimeData *mimeData(const QModelIndexList &indexes) const override;
     bool dropMimeData(const QMimeData *data,
                       Qt::DropAction action,
                       int row,
                       int column,
-                      const QModelIndex &parent);
+                      const QModelIndex &parent) override;
 
     Playlist &playlist() { return playlist_; }
     void addUrls(const QList<QUrl> &urls);
