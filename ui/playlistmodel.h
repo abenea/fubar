@@ -53,9 +53,6 @@ signals:
 
 protected slots:
     void libraryChanged(QList<PTrack> tracks);
-    void youtubeCueOutput();
-    void youtubeCueFinished(int status);
-    void youtubeCueError(QProcess::ProcessError error);
     void youtubeDlOutput();
     void youtubeDlFinished(int status);
     void youtubeDlError(QProcess::ProcessError error);
