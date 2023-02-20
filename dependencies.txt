@@ -1,1 +1,1 @@
-libboost-all-dev protobuf-compiler libprotobuf-dev qtbase5-dev libtag1-dev liblastfm5-dev libkf5globalaccel-dev libkf5windowsystem-dev libcue-dev libglyr-dev libmpv-dev
+libboost-all-dev protobuf-compiler libprotobuf-dev qtbase5-dev libtag1-dev liblastfm5-dev libkf5globalaccel-dev libkf5windowsystem-dev libcue-dev libglyr-dev libmpv-dev libgmock-dev
