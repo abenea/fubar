@@ -86,7 +86,11 @@ void TabBar::mousePressEvent(QMouseEvent *event) {
 void TabBar::dragEnterEvent(QDragEnterEvent *event) { event->acceptProposedAction(); }
 
 void TabBar::dragMoveEvent(QDragMoveEvent *event) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     int index = tabAt(event->pos());
+#else
+    int index = tabAt(event->position().toPoint());
+#endif
     if (index == -1)
         emit newTabRequested();
     else
@@ -94,7 +98,11 @@ void TabBar::dragMoveEvent(QDragMoveEvent *event) {
 }
 
 void TabBar::dropEvent(QDropEvent *event) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     int index = tabAt(event->pos());
+#else
+    int index = tabAt(event->position().toPoint());
+#endif
     if (index != -1)
         emit dropRequested(index, event->mimeData());
 }

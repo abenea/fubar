@@ -24,8 +24,8 @@ add_library(ui
     queue.cpp)
 
 target_link_libraries(ui
-    PUBLIC Qt5::Widgets
-    PRIVATE player Glyr KF5::WindowSystem KF5::GlobalAccel)
+    PUBLIC Qt::Widgets
+    PRIVATE player Glyr KF::WindowSystem KF::GlobalAccel)
 
 if(BUILD_TESTING)
   add_subdirectory(tests)

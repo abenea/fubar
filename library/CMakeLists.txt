@@ -7,4 +7,4 @@ add_library(library
             cuefile.cpp
             library.cpp
             ${PROTO_SRCS} ${PROTO_HDRS})
-target_link_libraries(library PRIVATE util Qt5::Core protobuf::libprotobuf Cue Taglib)
+target_link_libraries(library PRIVATE util Qt::Core protobuf::libprotobuf Cue Taglib)

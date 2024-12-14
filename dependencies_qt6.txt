@@ -1,0 +1,1 @@
+libboost-system-dev protobuf-compiler libprotobuf-dev libtag1-dev libkf6globalaccel-dev libkf6windowsystem-dev libcue-dev libglyr-dev libmpv-dev libgmock-dev

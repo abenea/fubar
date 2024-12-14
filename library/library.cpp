@@ -47,7 +47,6 @@ string LibraryEvent::op2str() {
 
 Library::Library(QObject *parent)
     : QThread(parent),
-      mutex_(QMutex::Recursive),
       quit_(false),
       rescanning_(false),
       watching_(false),
@@ -304,7 +303,7 @@ void Library::scanDirectory(const QString &path) {
     // This mtime may be currentTime() because of god-knows-how-stat-and-move-dir-works-in-linux.
     // So we use an incorrect mtime. Not a problem since we use <= to determine if the the directory
     // changed.
-    uint mtime = QFileInfo(path).lastModified().toTime_t();
+    auto mtime = QFileInfo(path).lastModified().toSecsSinceEpoch();
 
     if (it != directories_.end()) {
         shared_ptr<Directory> directory = it.value();
@@ -333,7 +332,7 @@ void Library::scanDirectory(const QString &path) {
                     if (info.isFile()) {
                         shared_ptr<Track> file = directory->getFile(info.fileName());
                         if (file) {
-                            if (file->mtime != info.lastModified().toTime_t()) {
+                            if (file->mtime != info.lastModified().toSecsSinceEpoch()) {
                                 file = scanFile(info.filePath());
                                 emitLibraryChanged(file, MODIFY);
                             }
@@ -374,7 +373,8 @@ void Library::scanDirectory(const QString &path) {
                     removeDirectory(deleted_dir);
                 }
                 // Add subdirectories so we can set mtime and be done with this directory
-                foreach (QFileInfo info, newly_created_subdirs) {
+                foreach (QString path, newly_created_subdirs) {
+                    QFileInfo info(path);
                     addDirectory(shared_ptr<Directory>(new Directory(info.filePath(), 0)));
                 }
                 new_directory->setMtime(mtime);
@@ -407,7 +407,8 @@ void Library::scanDirectory(const QString &path) {
             QMutexLocker locker(&mutex_);
             directory->setMtime(mtime);
         }
-        foreach (QFileInfo info, subdirs) {
+        foreach (QString path, subdirs) {
+            QFileInfo info(path);
             scanDirectory(info.filePath());
         }
     }
@@ -512,7 +513,7 @@ PTrack Library::scanFile(const QString &path) {
         track->audioproperties.channels = audioProperties->channels();
     }
 
-    track->mtime = QFileInfo(path).lastModified().toTime_t();
+    track->mtime = QFileInfo(path).lastModified().toSecsSinceEpoch();
     /*        qDebug() << "LIBRARY: " << track->metadata["artist"] << " " <<
        track->metadata["title"] << " " << track->audioproperties.length;*/
     return track;
@@ -525,7 +526,7 @@ PTrack Library::scanCue(const QString &path) {
         CueFile cue(path);
         track.reset(new Track());
         track->location = path;
-        track->mtime = QFileInfo(path).lastModified().toTime_t();
+        track->mtime = QFileInfo(path).lastModified().toSecsSinceEpoch();
         track->metadata = cue.getMetadata();
         QList<PTrack> tracks;
         for (int i = 1; i <= cue.tracks(); ++i) {
@@ -634,7 +635,7 @@ void Library::fileCallback(QString path, LibraryEventType event) {
             PTrack oldTrack = it.value()->getFile(fileInfo.fileName());
             if (oldTrack) {
                 //                    qDebug() << "FILE MODIFY " << path;
-                if (oldTrack->mtime <= fileInfo.lastModified().toTime_t()) {
+                if (oldTrack->mtime <= fileInfo.lastModified().toSecsSinceEpoch()) {
                     PTrack track = scanFile(path);
                     if (track) {
                         it.value()->addFile(track);

@@ -1,17 +1,18 @@
 #include "ui/mainwindow.h"
+#include "library/track.h"
+#include "player/audiooutput.h"
 #include "ui/configwindow.h"
 #include "ui/consolewindow.h"
-#include "library/track.h"
 #include "ui/librarypreferencesdialog.h"
 #include "ui/lyricsthread.h"
 #include "ui/lyricsthreaddeleter.h"
 #include "ui/mprisplayer.h"
-#include "player/audiooutput.h"
 #include "ui/playlistfilter.h"
 #include "ui/playlistmodel.h"
 #include "ui/playlisttab.h"
 #include "ui/pluginspreferences.h"
 #include "ui/ui_mainwindow.h"
+#include <QActionGroup>
 #include <QDebug>
 #include <QDockWidget>
 #include <QFileDialog>
@@ -29,6 +30,8 @@
 #include <QtCore/qmath.h>
 #include <kglobalaccel.h>
 #include <kwindowsystem.h>
+#include <kwindowsystem_version.h>
+#include <kx11extras.h>
 #include <netwm_def.h>
 
 MainWindow *MainWindow::instance = 0;
@@ -144,23 +147,23 @@ void MainWindow::addShortcut(QKeySequence shortcut, const char *func, Qt::Shortc
 
 void MainWindow::setShortcuts() {
     // Global shortcuts
-    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_W), this, SLOT(showHide()), "Show/Hide");
-    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_P), this, SLOT(showHide()), "Show/Hide");
-    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_X), &player_, SLOT(play()), "Play");
-    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_C), &player_, SLOT(playPause()),
+    addGlobalShortcut(QKeySequence(Qt::META | Qt::Key_W), this, SLOT(showHide()), "Show/Hide");
+    addGlobalShortcut(QKeySequence(Qt::META | Qt::Key_P), this, SLOT(showHide()), "Show/Hide");
+    addGlobalShortcut(QKeySequence(Qt::META | Qt::Key_X), &player_, SLOT(play()), "Play");
+    addGlobalShortcut(QKeySequence(Qt::META | Qt::Key_C), &player_, SLOT(playPause()),
                       "Play/Pause");
-    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_A), &player_, SLOT(prev()), "Prev");
-    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_Z), &player_, SLOT(next()), "Next");
-    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_V), &player_, SLOT(stop()), "Stop");
-    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_PageUp), this, SLOT(increaseVolume()),
+    addGlobalShortcut(QKeySequence(Qt::META | Qt::Key_A), &player_, SLOT(prev()), "Prev");
+    addGlobalShortcut(QKeySequence(Qt::META | Qt::Key_Z), &player_, SLOT(next()), "Next");
+    addGlobalShortcut(QKeySequence(Qt::META | Qt::Key_V), &player_, SLOT(stop()), "Stop");
+    addGlobalShortcut(QKeySequence(Qt::META | Qt::Key_PageUp), this, SLOT(increaseVolume()),
                       "Increase volume");
-    addGlobalShortcut(QKeySequence(Qt::META + Qt::Key_PageDown), this, SLOT(decreaseVolume()),
+    addGlobalShortcut(QKeySequence(Qt::META | Qt::Key_PageDown), this, SLOT(decreaseVolume()),
                       "Decrease volume");
 
     // App shortcuts
-    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_J), SLOT(focusFilter()));
-    //     addShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), SLOT(removeActivePlaylist()));
-    addShortcut(QKeySequence(Qt::CTRL + Qt::Key_D), SLOT(showHideConsole()),
+    addShortcut(QKeySequence(Qt::CTRL | Qt::Key_J), SLOT(focusFilter()));
+    //     addShortcut(QKeySequence(Qt::CTRL | Qt::Key_W), SLOT(removeActivePlaylist()));
+    addShortcut(QKeySequence(Qt::CTRL | Qt::Key_D), SLOT(showHideConsole()),
                 Qt::ApplicationShortcut);
 }
 
@@ -436,8 +439,9 @@ void MainWindow::writeSettings(bool lastPosition) {
                 QByteArray tabData;
                 tab->serialize(tabData);
                 data.append(tabData);
-            } else
-                data.append(QVariant::Invalid);
+            } else {
+                data.append(QVariant());
+            }
         }
         settings.setValue("mainwindow/tabsNames", QVariant(names));
         settings.setValue("mainwindow/tabsData", QVariant(data));
@@ -488,16 +492,16 @@ void MainWindow::setTrayIcon(bool playing) {
 
 void MainWindow::showHide() {
     static bool consoleIsVisible = false;
-    int currentDesktop = KWindowSystem::currentDesktop();
-    WId activeWindow = KWindowSystem::activeWindow();
+    int currentDesktop = KX11Extras::currentDesktop();
+    WId activeWindow = KX11Extras::activeWindow();
     if (!isVisible() || isMinimized() ||
         (activeWindow != winId() && activeWindow != console_->winId())) {
         setWindowState(windowState() & ~Qt::WindowMinimized);
-        KWindowSystem::setOnDesktop(winId(), currentDesktop);
+        KX11Extras::setOnDesktop(winId(), currentDesktop);
         if (consoleIsVisible)
             console_->show();
         setVisible(true);
-        KWindowSystem::forceActiveWindow(winId());
+        KX11Extras::forceActiveWindow(winId());
     } else {
         consoleIsVisible = console_->isVisible();
         console_->hide();
@@ -646,8 +650,13 @@ void MainWindow::returnToOldMaxMinSizes() {
 
 void MainWindow::restoreMaximizedState() {
     QSettings qsettings;
-    if (qsettings.value("mainwindow/maximized", true).toBool())
+    if (qsettings.value("mainwindow/maximized", true).toBool()) {
+#if KWINDOWSYSTEM_VERSION_MAJOR == 5
         KWindowSystem::setState(winId(), NET::Max);
+#else
+        KX11Extras::setState(winId(), NET::Max);
+#endif
+    }
 }
 
 void MainWindow::dockVisibilityChanged(bool visible) {

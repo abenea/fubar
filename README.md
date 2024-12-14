@@ -25,7 +25,7 @@ fubar requires:
 
 ## Compiling fubar
 
-    cmake -B build
+    cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -B build
     cmake --build build -j16
 
 You can run `build/fubar` directly or install it using `make install`.

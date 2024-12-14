@@ -99,7 +99,7 @@ private:
     DirectoryMap directories_;
 
     std::shared_ptr<DirectoryWatcher> watcher_;
-    QMutex mutex_;
+    QRecursiveMutex mutex_;
     bool quit_;
 
     QMutex stop_rescan_mutex_, pause_monitoring_mutex_;
