@@ -1,5 +1,6 @@
 #include "player/jsonprocess.h"
 #include <iostream>
+#include <QDebug>
 
 void JsonProcess::start(const QString &program, const QStringList &arguments) {
     qWarning() << program << arguments.join(" ");
