@@ -466,6 +466,7 @@ PTrack Library::scanFile(const QString &path) {
         if (fileref.isNull())
             return track;
         tag = fileref.tag();
+        properties = tag->properties();
         audioProperties = fileref.audioProperties();
     }
 
