@@ -34,6 +34,15 @@ You can run `build/fubar` directly or install it using `make install`.
 
 To watch a directory with music, add it from Preferences->Library.
 
+### Wayland
+
+If running under KWin>=6 and Wayland, optionally install the KWin script to
+create a global shortcut for Show/Hide (configure it under System Settings >
+Shortcuts > Window Management > Show/Hide fubar):
+
+    kpackagetool6 --type=KWin/Script --install kwin/fubar
+    kwriteconfig6 --file kwinrc --group Plugins --key fubarEnabled true
+    qdbus6 org.kde.KWin /KWin reconfigure
 
 ## License
 

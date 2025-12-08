@@ -1,0 +1,20 @@
+{
+    "KPlugin": {
+        "Name": "fubar",
+        "Description": "Show/Hide global shortcut for fubar on KWin/Wayland",
+        "Icon": "preferences-system-windows-move",
+        "Authors": [
+            {
+                "Email": "abenea@gmail.com",
+                "Name": "Andrei Benea"
+            }
+        ],
+        "Id": "fubar",
+        "Version": "0.1",
+        "License": "GPLv3",
+        "Website": "https://github.com/abenea/fubar"
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js",
+    "KPackageStructure": "KWin/Script"
+}
