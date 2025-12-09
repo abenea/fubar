@@ -442,16 +442,14 @@ PTrack Library::scanFile(const QString &path) {
     shared_ptr<Track> track;
 
     if (path.toLower().endsWith(".mp3")) {
-        TagLib::MPEG::File *mpegFile =
-            new TagLib::MPEG::File(&stream, TagLib::ID3v2::FrameFactory::instance());
+        TagLib::MPEG::File *mpegFile = new TagLib::MPEG::File(&stream);
         file.reset(mpegFile);
         if (!file->isValid())
             return track;
         set_tag_and_properties(mpegFile->ID3v2Tag(), &tag, properties);
         set_tag_and_properties(mpegFile->ID3v1Tag(), &tag, properties);
     } else if (path.toLower().endsWith(".flac")) {
-        TagLib::FLAC::File *flacFile =
-            new TagLib::FLAC::File(&stream, TagLib::ID3v2::FrameFactory::instance());
+        TagLib::FLAC::File *flacFile = new TagLib::FLAC::File(&stream);
         file.reset(flacFile);
         if (!file->isValid())
             return track;
@@ -508,7 +506,7 @@ PTrack Library::scanFile(const QString &path) {
         }
     }
     if (audioProperties) {
-        track->audioproperties.length = audioProperties->length();
+        track->audioproperties.length = audioProperties->lengthInSeconds();
         track->audioproperties.bitrate = audioProperties->bitrate();
         track->audioproperties.samplerate = audioProperties->sampleRate();
         track->audioproperties.channels = audioProperties->channels();

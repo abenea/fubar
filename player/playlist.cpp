@@ -46,7 +46,7 @@ void Playlist::addFile(const QString &path) {
             track->metadata["track"] = QString::number(tag->track());
         }
         if (TagLib::AudioProperties *audioProperties = fileref.audioProperties()) {
-            track->audioproperties.length = audioProperties->length();
+            track->audioproperties.length = audioProperties->lengthInSeconds();
             track->audioproperties.bitrate = audioProperties->bitrate();
             track->audioproperties.samplerate = audioProperties->sampleRate();
             track->audioproperties.channels = audioProperties->channels();
