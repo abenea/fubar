@@ -491,21 +491,21 @@ void MainWindow::setTrayIcon(bool playing) {
 }
 
 void MainWindow::showHide() {
-    static bool consoleIsVisible = false;
-    int currentDesktop = KX11Extras::currentDesktop();
-    WId activeWindow = KX11Extras::activeWindow();
-    if (!isVisible() || isMinimized() ||
-        (activeWindow != winId() && activeWindow != console_->winId())) {
-        setWindowState(windowState() & ~Qt::WindowMinimized);
-        KX11Extras::setOnDesktop(winId(), currentDesktop);
-        if (consoleIsVisible)
-            console_->show();
-        setVisible(true);
-        KX11Extras::forceActiveWindow(winId());
+    bool hidden = !isVisible() || isMinimized();
+    if (KWindowSystem::isPlatformX11()) {
+        WId activeWindow = KX11Extras::activeWindow();
+        hidden = hidden || (activeWindow != winId());
+        if (hidden) {
+            KX11Extras::setOnDesktop(winId(), KX11Extras::currentDesktop());
+            setVisible(true);
+            KX11Extras::forceActiveWindow(winId());
+        } else {
+            setVisible(false);
+        }
     } else {
-        consoleIsVisible = console_->isVisible();
-        console_->hide();
-        setVisible(false);
+        // If the window is visible on another workspace this will hide the
+        // window, so you have to press the shortcut twice :(
+        setVisible(hidden);
     }
 }
 
@@ -559,6 +559,7 @@ void MainWindow::updateUI(PTrack track) {
 }
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason) {
+    qDebug() << "trigger? " << reason;
     if (reason == QSystemTrayIcon::Trigger) {
         showHide();
     }
@@ -651,11 +652,7 @@ void MainWindow::returnToOldMaxMinSizes() {
 void MainWindow::restoreMaximizedState() {
     QSettings qsettings;
     if (qsettings.value("mainwindow/maximized", true).toBool()) {
-#if KWINDOWSYSTEM_VERSION_MAJOR == 5
-        KWindowSystem::setState(winId(), NET::Max);
-#else
-        KX11Extras::setState(winId(), NET::Max);
-#endif
+        showMaximized();
     }
 }
 
