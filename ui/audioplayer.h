@@ -33,6 +33,8 @@ public:
     PModel getPlayingPlaylistModel();
     QModelIndex getPlayingIndex();
 
+    AudioState state();
+
     qint64 currentTime();
     void setVolume(qreal value);
     qreal volume() { return volume_; }
@@ -63,7 +65,10 @@ signals:
     void trackPositionChanged(qint64 position, bool userSeek);
 
 public slots:
+    // Play from the beginning of the track
     void play();
+    // Resume playing from the current position when paused or from the beginning when stopped
+    void resume();
     void pause();
     void playPause();
     void stop();

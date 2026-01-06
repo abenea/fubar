@@ -3,11 +3,11 @@
 #include <QDebug>
 #include <QSettings>
 #include <QtCore/qmath.h>
-#include <cstdlib>
 
 #include "library/library.h"
 #include "library/track.h"
-#include "player/mpvaudiooutput.h"
+#include "player/audiooutput.h"
+#include "player/audiostate.h"
 #include "ui/mainwindow.h"
 #include "ui/playlistmodel.h"
 
@@ -41,6 +41,8 @@ AudioPlayer::AudioPlayer(Library *library, AudioOutput *audioOutput, bool testin
     readSettings();
     instance = this;
 }
+
+AudioState AudioPlayer::state() { return audioOutput_->state(); }
 
 AudioPlayer::~AudioPlayer() { writeSettings(); }
 
@@ -208,6 +210,16 @@ QModelIndex AudioPlayer::getPlayingIndex() { return playingIndex_; }
 
 void AudioPlayer::play() { playNext(0); }
 
+void AudioPlayer::resume() {
+    if (audioOutput_->state() == AudioState::Playing)
+        return;
+    if (audioOutput_->state() == AudioState::Paused) {
+        audioOutput_->play();
+    } else {
+        play();
+    }
+}
+
 void AudioPlayer::playPause() {
     if (audioOutput_->state() == AudioState::Paused) {
         audioOutput_->play();
@@ -318,7 +330,8 @@ void AudioPlayer::play(PModel playlistModel, const QModelIndex &index) {
         currentlyPlayingTrack->isCueTrack() && playingTrack_->isCueTrack() &&
         currentlyPlayingTrack->location == playingTrack_->location) {
         // Playing in the same cue file
-        if (currentlyPlayingTrack->metadata["track"].toInt() + 1 != playingTrack_->metadata["track"].toInt())
+        if (currentlyPlayingTrack->metadata["track"].toInt() + 1 !=
+            playingTrack_->metadata["track"].toInt())
             // Don't seek if we're going to the next track
             audioOutput_->seek(playingTrack_->cueOffset());
         emit trackPlaying(playingTrack_);
@@ -371,7 +384,7 @@ bool AudioPlayer::isEnqueued(PModel playlistModel, QModelIndex index) {
 }
 
 qint64 AudioPlayer::currentTime() {
-    return audioOutput_->currentTime() - playingTrack_->cueOffset();
+    return playingTrack_ ? audioOutput_->currentTime() - playingTrack_->cueOffset() : 0;
 }
 
 void AudioPlayer::seek(qint64 pos) {

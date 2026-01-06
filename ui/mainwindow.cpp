@@ -559,7 +559,6 @@ void MainWindow::updateUI(PTrack track) {
 }
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason) {
-    qDebug() << "trigger? " << reason;
     if (reason == QSystemTrayIcon::Trigger) {
         showHide();
     }
