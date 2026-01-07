@@ -100,7 +100,10 @@ void MpvAudioOutput::setVolume() {
 
 AudioState MpvAudioOutput::state() const { return state_; }
 
-void MpvAudioOutput::stop() { command(QVariantList({"stop"})); }
+void MpvAudioOutput::stop() {
+    setState(AudioState::Stopped);
+    command(QVariantList({"stop"}));
+}
 
 qint64 MpvAudioOutput::totalTime() const {
     auto d = get_property("duration");
