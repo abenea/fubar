@@ -18,6 +18,10 @@ signals:
     void finished();
     void durationChanged(double);
     void metadataChanged(QString title, QString audioFormat, int sampleRate);
+    // Loading a source failed and nothing is left to play; emitted right before finished().
+    // `reason` never contains the source. Failures aren't tied to a load: one already reported
+    // when setCurrentSource() is called is received after it.
+    void loadFailed(QString reason);
 
 public slots:
     virtual void setVolume(qreal newVolume) = 0;

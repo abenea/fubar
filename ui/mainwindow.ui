@@ -48,6 +48,8 @@
     </property>
     <addaction name="newPlaylistAction"/>
     <addaction name="newLibraryViewAction"/>
+    <addaction name="newNavidromeLibraryViewAction"/>
+    <addaction name="refreshNavidromeLibraryAction"/>
     <addaction name="separator"/>
     <addaction name="addDirectoryAction"/>
     <addaction name="addFilesAction"/>
@@ -72,6 +74,7 @@
     </property>
     <addaction name="pluginsAction"/>
     <addaction name="libraryPreferencesAction"/>
+    <addaction name="navidromePreferencesAction"/>
     <addaction name="configAction"/>
     <addaction name="showLyricsAction"/>
    </widget>
@@ -167,6 +170,16 @@
     <string>New library &amp;view</string>
    </property>
   </action>
+  <action name="newNavidromeLibraryViewAction">
+   <property name="text">
+    <string>New &amp;Navidrome library view</string>
+   </property>
+  </action>
+  <action name="refreshNavidromeLibraryAction">
+   <property name="text">
+    <string>Refresh Navidrome library</string>
+   </property>
+  </action>
   <action name="addFilesAction">
    <property name="text">
     <string>Add &amp;files</string>
@@ -201,6 +214,11 @@
   <action name="libraryPreferencesAction">
    <property name="text">
     <string>&amp;Library</string>
+   </property>
+  </action>
+  <action name="navidromePreferencesAction">
+   <property name="text">
+    <string>&amp;Navidrome…</string>
    </property>
   </action>
   <action name="quitAction">

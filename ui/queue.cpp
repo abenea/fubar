@@ -9,22 +9,22 @@ void Queue::pushTracks(PModel playlistModel, QModelIndexList tracks) {
     for (const auto &index : tracks) {
         auto track = index.data(TrackRole).value<PTrack>();
         auto pindex = QPersistentModelIndex(index);
-        auto it = paths_.find(track->path());
-        auto queue_elem = std::make_tuple(playlistModel, pindex, track->path());
+        auto it = paths_.find(track->location);
+        auto queue_elem = std::make_tuple(playlistModel, pindex, track->location);
         if (it == paths_.end()) {
-            paths_.insert({track->path(), {{pindex, 1}}});
+            paths_.insert({track->location, {{pindex, 1}}});
             queue_.push_back(queue_elem);
         } else {
             if (enqueueOnlyOnce_ &&
-                paths_[track->path()].find(pindex) != paths_[track->path()].end()) {
-                paths_[track->path()].erase(pindex);
+                paths_[track->location].find(pindex) != paths_[track->location].end()) {
+                paths_[track->location].erase(pindex);
                 for (auto it = queue_.begin(); it != queue_.end(); ++it)
                     if (*it == queue_elem) {
                         queue_.erase(it);
                         break;
                     }
             } else {
-                paths_[track->path()][pindex]++;
+                paths_[track->location][pindex]++;
                 queue_.push_back(queue_elem);
             }
         }
@@ -42,14 +42,20 @@ std::pair<PModel, QPersistentModelIndex> Queue::getFirst(bool pop) {
     std::tie(playlistModel, index, path) = queue_.front();
     if (!index.isValid() || (index.isValid() && pop)) {
         queue_.pop_front();
-        auto it = paths_.find(path);
-        if (!--it->second[index]) {
-            it->second.erase(index);
-            if (!it->second.size())
-                paths_.erase(it);
-        }
+        forget(path, index);
     }
     return {playlistModel, index};
+}
+
+void Queue::forget(const QString &path, const QPersistentModelIndex &index) {
+    auto it = paths_.find(path);
+    if (it == paths_.end())
+        return;
+    auto count = it->second.find(index);
+    if (count != it->second.end() && !--count->second)
+        it->second.erase(count);
+    if (it->second.empty())
+        paths_.erase(it);
 }
 
 std::pair<PModel, QPersistentModelIndex> Queue::getNextTrack(bool pop) {
@@ -87,7 +93,7 @@ void Queue::popPeekedTrack() {
 bool Queue::isQueued(PModel playlistModel, QModelIndex index) {
     Q_UNUSED(playlistModel);
     PTrack track = index.data(TrackRole).value<PTrack>();
-    auto it = paths_.find(track->path());
+    auto it = paths_.find(track->location);
     if (it == paths_.end())
         return false;
     return it->second.find(QPersistentModelIndex(index)) != it->second.end();
@@ -127,7 +133,7 @@ void Queue::removePlaylistModel(PModel playlistModel) {
             if (it == queue_.begin())
                 peeked_ = false;
             it = queue_.erase(it);
-            paths_.erase(path);
+            forget(path, index);
         } else
             ++it;
     }

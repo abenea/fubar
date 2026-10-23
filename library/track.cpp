@@ -1,11 +1,12 @@
 #include "library/track.h"
 #include "library/track.pb.h"
 #include "library/track_forward.h"
+#include "util.h"
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
 
-Track::Track(proto::Track ptrack) {
+Track::Track(const proto::Track &ptrack) {
     location = QString::fromUtf8(ptrack.location().c_str());
     if (ptrack.has_audioproperties()) {
         const proto::AudioProperties ap = ptrack.audioproperties();
@@ -43,6 +44,12 @@ void Track::fillProtoTrack(proto::Track &ptrack) {
         item->set_name(it.key().toUtf8());
         item->set_value(it.value().toUtf8());
     }
+}
+
+QString Track::displayTitle() const {
+    QString title = metadata.value(QStringLiteral("title"));
+    // The file name of a URL track can come from its query
+    return title.isEmpty() ? QFileInfo(redactUrlCredentials(path())).completeBaseName() : title;
 }
 
 QString Track::audioFormat() const {
@@ -109,6 +116,8 @@ void Track::dump() {
     for (QMap<QString, QString>::const_iterator it = metadata.begin(); it != metadata.end(); ++it)
         qDebug() << "    " << it.key().toUtf8() << "=" << it.value().toUtf8();
 }
+
+bool Track::isLocalFile() const { return QDir::isAbsolutePath(location); }
 
 bool Track::isUrl() { return location.startsWith("http"); }
 

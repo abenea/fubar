@@ -41,6 +41,7 @@ target_link_libraries(util PUBLIC Qt::Core)
 
 add_subdirectory(library)
 add_subdirectory(player)
+add_subdirectory(navidrome)
 add_subdirectory(ui)
 add_subdirectory(plugins)
 

@@ -8,6 +8,7 @@ add_library(ui
     consolewindow.cpp
     config.cpp
     configwindow.cpp
+    elidedlabel.cpp
     tabwidget.cpp
     tabbar.cpp
     playlisttab.cpp
@@ -21,11 +22,12 @@ add_library(ui
     lyricsthread.cpp
     lyricsthreaddeleter.cpp
     mprisplayer.cpp
+    navidromepreferences.cpp
     queue.cpp)
 
 target_link_libraries(ui
     PUBLIC Qt::Widgets
-    PRIVATE player Glyr KF::WindowSystem KF::GlobalAccel)
+    PRIVATE player navidrome util Glyr KF::WindowSystem KF::GlobalAccel)
 
 if(BUILD_TESTING)
   add_subdirectory(tests)

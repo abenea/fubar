@@ -38,6 +38,7 @@ AudioPlayer::AudioPlayer(Library *library, AudioOutput *audioOutput, bool testin
                      SIGNAL(metadataChanged(QString, QString, int)),
                      this,
                      SLOT(metadataChanged(QString, QString, int)));
+    connect(audioOutput_, &AudioOutput::loadFailed, this, &AudioPlayer::slotLoadFailed);
     readSettings();
     instance = this;
 }
@@ -149,7 +150,12 @@ void AudioPlayer::bufferTrack(PModel playlistModel, QModelIndex index) {
         return;
     if (!bufferingTrack_->isCueTrack()) {
         audioOutput_->clearQueue();
-        audioOutput_->enqueue(bufferingTrack_->location);
+        QString error;
+        QString source = resolveSource(bufferingTrack_->location, &error);
+        // An unplayable track is reported by play() once it is its turn
+        if (source.isEmpty())
+            return;
+        audioOutput_->enqueue(source);
         qDebug() << "Enqueue " << bufferingTrack_->location;
     }
 }
@@ -157,6 +163,10 @@ void AudioPlayer::bufferTrack(PModel playlistModel, QModelIndex index) {
 void AudioPlayer::currentSourceChanged() {
     //     qDebug() << "currentSourceChanged() " << audioOutput_->currentTime() << " " <<
     //     audioOutput_->totalTime();
+    // Queued before stop()
+    if (sourceState_ == SourceState::Stopped)
+        return;
+    sourceState_ = SourceState::Loaded;
     if (queue_.peeked()) {
         auto p = queue_.peekTrack();
         if (p.first == bufferingTrackPlaylist_ && p.second == bufferingIndex_)
@@ -184,7 +194,7 @@ void AudioPlayer::slotTick(qint64 pos) {
     // If the pos > length, set length = position
     // This ugly uber lame hack exists because I'm too lazy to fix taglib
     // (taglib reports 0 length sometimes)
-    if (lengthHack_ && !playingTrack_->isCueTrack() &&
+    if (lengthHack_ && library_ && !playingTrack_->isCueTrack() && playingTrack_->isLocalFile() &&
         playingTrack_->audioproperties.length + 1 < pos / 1000) {
         qDebug() << "Setting" << playingTrack_->path() << "length to " << pos / 1000 << "(was"
                  << playingTrack_->audioproperties.length << ")";
@@ -194,10 +204,12 @@ void AudioPlayer::slotTick(qint64 pos) {
     // Cue hack: if we're past the cue track position, go to next track
     if (playingTrack_ && playingTrack_->isCueTrack() && playingTrack_->audioproperties.length &&
         playingTrack_->audioproperties.length * 1000 + 1000 <= trackpos) {
-        if (!bufferingTrack_)
-            // If there's no track to go to, stop
-            stop();
         aboutToFinish();
+        // If there's no track to go to, stop
+        if (!bufferingTrack_) {
+            stop();
+            return;
+        }
         slotFinished();
     }
 }
@@ -250,6 +262,7 @@ void AudioPlayer::next() {
 void AudioPlayer::prev() { playNext(-1); }
 
 void AudioPlayer::stop() {
+    sourceState_ = SourceState::Stopped;
     setBuffering(PModel(), QModelIndex(), true);
     audioOutput_->stop();
 }
@@ -269,6 +282,12 @@ PModel AudioPlayer::createPlaylist(bool synced) {
                          model.get(),
                          SLOT(libraryChanged(QList<PTrack>)));
     }
+    playlists_.insert(model);
+    return model;
+}
+
+PModel AudioPlayer::createReadOnlyPlaylist() {
+    PModel model(new PlaylistModel(false));
     playlists_.insert(model);
     return model;
 }
@@ -320,6 +339,8 @@ std::pair<PModel, QModelIndex> AudioPlayer::getLastPlayed() {
 void AudioPlayer::play(PModel playlistModel, const QModelIndex &index) {
     if (!index.isValid())
         return;
+    if (sourceState_ == SourceState::Stopped)
+        sourceState_ = SourceState::Loaded;
     PTrack currentlyPlayingTrack = playingTrack_;
     setPlaying(playlistModel, index);
     setBuffering(PModel(), QModelIndex());
@@ -338,7 +359,15 @@ void AudioPlayer::play(PModel playlistModel, const QModelIndex &index) {
         emit trackPositionChanged(0, true);
     } else {
         audioOutput_->clearQueue();
-        audioOutput_->setCurrentSource(playingTrack_->location);
+        QString error;
+        QString source = resolveSource(playingTrack_->location, &error);
+        if (source.isEmpty()) {
+            stop();
+            emit playbackError(playingTrack_, error.isEmpty() ? "no source" : error);
+            return;
+        }
+        sourceState_ = SourceState::Loading;
+        audioOutput_->setCurrentSource(source);
         setVolume(volume_);
         if (playingTrack_->isCueTrack()) {
             audioOutput_->play(playingTrack_->cueOffset());
@@ -424,7 +453,8 @@ void AudioPlayer::slotAudioStateChanged(AudioState newState) {
 }
 
 void AudioPlayer::slotFinished() {
-    if (!bufferingTrack_)
+    // A finished() from an idle before stop() or play() (queued across threads) is stale
+    if (sourceState_ != SourceState::Loaded || !bufferingTrack_)
         return;
     if (bufferingTrack_->isCueTrack() && bufferingTrack_->location == playingTrack_->location &&
         bufferingTrack_->metadata["track"].toInt() ==
@@ -459,6 +489,31 @@ void AudioPlayer::metadataChanged(QString title, QString audioFormat, int sample
         // Update UI
         emit trackPlaying(playingTrack_);
     }
+}
+
+void AudioPlayer::slotLoadFailed(QString reason) {
+    // Once the playing track is loaded, the output can only fail on the enqueued one
+    PTrack track =
+        sourceState_ != SourceState::Loading && bufferingTrack_ ? bufferingTrack_ : playingTrack_;
+    stop();
+    if (track)
+        emit playbackError(track, reason);
+}
+
+void AudioPlayer::registerSourceResolver(const QString &prefix, SourceResolver resolver) {
+    sourceResolvers_.insert(prefix, resolver);
+}
+
+void AudioPlayer::unregisterSourceResolver(const QString &prefix) {
+    sourceResolvers_.remove(prefix);
+}
+
+QString AudioPlayer::resolveSource(const QString &location, QString *error) {
+    for (auto it = sourceResolvers_.constBegin(); it != sourceResolvers_.constEnd(); ++it) {
+        if (location.startsWith(it.key()))
+            return it.value()(location, error);
+    }
+    return location;
 }
 
 AudioPlayer::ReplayGainMode AudioPlayer::replayGainFromString(QString str) {

@@ -3,7 +3,9 @@
 #include "player/audiostate.h"
 #include "ui/playlistmodel_forward.h"
 #include "ui/queue.h"
+#include <QMap>
 #include <QObject>
+#include <functional>
 #include <memory>
 #include <set>
 
@@ -41,6 +43,8 @@ public:
     void seek(qint64 pos);
 
     PModel createPlaylist(bool synced);
+    // A read-only, sorted playlist not connected to the local library.
+    PModel createReadOnlyPlaylist();
     void deletePlaylist(PModel model);
 
     void clearQueue();
@@ -55,6 +59,14 @@ public:
 
     bool isEnqueued(PModel playlistModel, QModelIndex index);
 
+    // Maps track locations starting with prefix (e.g. "navidrome:") to a source the audio
+    // output can play. Resolved sources are handed to the output only, never stored or logged.
+    // An empty result makes the track unplayable: playbackError() reports `*error` (never null),
+    // or "no source" if left empty.
+    using SourceResolver = std::function<QString(const QString &location, QString *error)>;
+    void registerSourceResolver(const QString &prefix, SourceResolver resolver);
+    void unregisterSourceResolver(const QString &prefix);
+
 signals:
     void playbackOrderChanged(PlaybackOrder newPlaybackOrder);
 
@@ -63,6 +75,8 @@ signals:
     void trackPlaying(PTrack track);
     void stopped(qint64 /*ms*/ finalPosition, qint64 /*ms*/ trackLength);
     void trackPositionChanged(qint64 position, bool userSeek);
+    // Playback stopped because `track` cannot be played. `reason` never contains a source URL.
+    void playbackError(PTrack track, QString reason);
 
 public slots:
     // Play from the beginning of the track
@@ -84,6 +98,7 @@ private slots:
     void configChanged(QString key, QVariant value);
     void durationChanged(double duration);
     void metadataChanged(QString title, QString audioFormat, int sampleRate);
+    void slotLoadFailed(QString reason);
 
 private:
     void setBuffering(PModel playlistModel, QModelIndex index, bool clearTrack = false);
@@ -95,6 +110,10 @@ private:
 
     void writeSettings();
     void readSettings();
+
+    // "" if a resolver matched but returned nothing.
+    QString resolveSource(const QString &location, QString *error);
+    QMap<QString, SourceResolver> sourceResolvers_;
 
     Library *library_;
     AudioOutput *audioOutput_;
@@ -125,6 +144,11 @@ private:
     PModel bufferingTrackPlaylist_;
     QPersistentModelIndex bufferingIndex_;
     PTrack bufferingTrack_;
+
+    // Stopped: stop() was called and no play() since. Loading: play() handed a new source to
+    // the output that has not been loaded yet.
+    enum class SourceState { Stopped, Loading, Loaded };
+    SourceState sourceState_ = SourceState::Loaded;
 
     bool lengthHack_;
 

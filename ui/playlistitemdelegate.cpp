@@ -2,8 +2,8 @@
 #include "library/track.h"
 #include "ui/mainwindow.h"
 #include "ui/playlistmodel.h"
+#include "util.h"
 #include <QApplication>
-#include <QFileInfo>
 #include <QPainter>
 
 QSize PlaylistItemDelegate::sizeHint(const QStyleOptionViewItem &option,
@@ -88,17 +88,13 @@ void PlaylistItemDelegate::paint(QPainter *painter,
 
     painter->setFont(trackOption.font);
     QFontMetricsF tfm(trackOption.font);
-    QString title = track->metadata["title"];
-    if (title.size() == 0)
-        title = QFileInfo(track->path()).completeBaseName();
+    QString title = track->displayTitle();
     QString albumArtist = track->metadata.value("album artist", "");
     if (!albumArtist.isEmpty() && albumArtist != track->metadata["artist"] &&
         !track->metadata["artist"].isEmpty())
         title += " // " + track->metadata["artist"];
     QString leftText = QString("%1. %2").arg(track->metadata["track"], 2, QChar('0')).arg(title);
-    int minutes = track->audioproperties.length / 60;
-    int seconds = track->audioproperties.length % 60;
-    QString rightText = QString("%1:%2").arg(minutes).arg(seconds, 2, 10, QChar('0'));
+    QString rightText = formatDuration(track->audioproperties.length);
     painter->drawText(leftTextRect, tfm.elidedText(leftText, Qt::ElideRight, leftTextRect.width()));
     painter->drawText(rightTextRect, Qt::AlignRight, rightText);
 

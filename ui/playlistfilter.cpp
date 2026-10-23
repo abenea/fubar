@@ -24,9 +24,10 @@ void PlaylistFilter::setFilter(const QString &filter) {
 bool PlaylistFilter::filterAcceptsRow(int source_row, const QModelIndex & /*source_parent*/) const {
     PlaylistModel *pm = boost::polymorphic_cast<PlaylistModel *>(sourceModel());
     shared_ptr<Track> track = pm->playlist().tracks[source_row];
+    const QString path = track->path();
 
     foreach (const QString &keyword, filter_) {
-        if (track->location.contains(keyword, Qt::CaseInsensitive)) {
+        if (path.contains(keyword, Qt::CaseInsensitive)) {
             continue;
         }
         bool found = false;
@@ -102,10 +103,11 @@ QVariant PlaylistFilter::data(const QModelIndex &index, int role) const {
 }
 
 bool PlaylistFilter::lessThan(const QModelIndex &left, const QModelIndex &right) const {
-    PTrack leftTrack = left.data(TrackRole).value<shared_ptr<Track>>();
-    PTrack rightTrack = right.data(TrackRole).value<shared_ptr<Track>>();
+    PlaylistModel *pm = boost::polymorphic_cast<PlaylistModel *>(sourceModel());
+    const PTrack &leftTrack = pm->playlist().tracks.at(left.row());
+    const PTrack &rightTrack = pm->playlist().tracks.at(right.row());
     if (leftTrack->location == rightTrack->location && leftTrack->isCueTrack() &&
         rightTrack->isCueTrack())
         return leftTrack->metadata["track"].toInt() < rightTrack->metadata["track"].toInt();
-    return leftTrack->location < rightTrack->location;
+    return leftTrack->path() < rightTrack->path();
 }

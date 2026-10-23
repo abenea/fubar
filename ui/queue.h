@@ -37,8 +37,11 @@ public:
 private:
     std::pair<PModel, QPersistentModelIndex> getFirst(bool pop);
     std::pair<PModel, QPersistentModelIndex> getNextTrack(bool pop);
+    // Drops one queue entry of `index` from paths_
+    void forget(const QString &path, const QPersistentModelIndex &index);
 
     // TODO get rid of PModel
+    // Keyed by track location (stable even when a remote track's metadata is replaced)
     std::deque<std::tuple<PModel, QPersistentModelIndex, QString>> queue_;
     std::map<QString, std::map<QPersistentModelIndex, int>> paths_;
     bool peeked_;

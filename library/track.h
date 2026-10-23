@@ -19,12 +19,16 @@ public:
         int channels = 0;
     } audioproperties;
     QMap<QString, QString> metadata;
-    uint mtime;
+    uint mtime = 0;
 
     Track() {}
-    Track(proto::Track ptrack);
+    Track(const proto::Track &ptrack);
 
-    QString path() const { return location; }
+    QString path() const { return metadata.value(QStringLiteral("_path"), location); }
+    // The title, else the file name without its extension
+    QString displayTitle() const;
+    // An absolute path, not a URL or a server location
+    bool isLocalFile() const;
     QString audioFormat() const;
 
     void fillProtoTrack(proto::Track &ptrack);

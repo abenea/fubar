@@ -14,8 +14,13 @@ void MockAudioOutput::triggerCurrentSourceChanged() {
     emit currentSourceChanged();
 }
 
+void MockAudioOutput::triggerLoadFailed(const QString &reason) { emit loadFailed(reason); }
+
+void MockAudioOutput::triggerFinished() { emit finished(); }
+
 void MockAudioOutput::setCurrentSource(const QString &source) {
     //     qDebug() << "MockAudioOutput::setCurrentSource" << source;
+    received_.append(source);
     source_ = source;
 }
 
@@ -25,12 +30,20 @@ void MockAudioOutput::clearQueue() { nextSource_.clear(); }
 
 void MockAudioOutput::enqueue(const QString &source) {
     //     qDebug() << "MockAudioOutput::enqueue" << source;
+    received_.append(source);
     nextSource_ = source;
 }
 
-void MockAudioOutput::play() { emit currentSourceChanged(); }
+void MockAudioOutput::play() {
+    if (loadOnPlay_)
+        emit currentSourceChanged();
+}
 
-void MockAudioOutput::stop() {}
+void MockAudioOutput::stop() {
+    ++stopCount_;
+    source_.clear();
+    nextSource_.clear();
+}
 
 void MockAudioOutput::pause() {}
 

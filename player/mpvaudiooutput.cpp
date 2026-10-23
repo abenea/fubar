@@ -1,10 +1,12 @@
 #include "player/mpvaudiooutput.h"
 
 #include <QDebug>
+#include <QMutexLocker>
 #include <cassert>
 #include <mpv/client.h>
 
 #include "player/audiostate.h"
+#include "util.h"
 
 namespace mpv {
 namespace qt {
@@ -29,6 +31,13 @@ MpvAudioOutput::MpvAudioOutput()
         qDebug() << "Cannot mpv_create()";
     set_option("video", "no");
     set_option("ytdl", "yes");
+    // Never hand Subsonic stream URLs (they carry credentials) to youtube-dl.
+    set_option("script-opts", "ytdl_hook-exclude=/rest/stream%?");
+    // Nor to servers with a bad certificate: mpv does not check them by default.
+    set_option("tls-verify", "yes");
+    const QString ao = qEnvironmentVariable("FUBAR_MPV_AO");
+    if (!ao.isEmpty())
+        set_option("ao", ao);
     set_property("audio-client-name", "fubar");
     int r = mpv_initialize(handle_);
     if (r < 0) {
@@ -37,7 +46,7 @@ MpvAudioOutput::MpvAudioOutput()
     }
     thread_.reset(new std::thread([this] { event_loop(); }));
     observe_property("playback-time");
-    observe_property("idle", MPV_FORMAT_FLAG);
+    observe_property("idle-active", MPV_FORMAT_FLAG);
     observe_property("pause", MPV_FORMAT_FLAG);
     observe_property("duration", MPV_FORMAT_DOUBLE);
     observe_property("metadata", MPV_FORMAT_NODE);
@@ -53,6 +62,7 @@ MpvAudioOutput::~MpvAudioOutput() {
 }
 
 void MpvAudioOutput::setCurrentSource(const QString &source) {
+    setPendingError(QString());
     command(QVariantList({"loadfile", source}));
 }
 
@@ -103,6 +113,7 @@ AudioState MpvAudioOutput::state() const { return state_; }
 void MpvAudioOutput::stop() {
     setState(AudioState::Stopped);
     command(QVariantList({"stop"}));
+    setPendingError(QString());
 }
 
 qint64 MpvAudioOutput::totalTime() const {
@@ -126,6 +137,7 @@ void MpvAudioOutput::event_loop() {
             setState(AudioState::Buffering);
             break;
         case MPV_EVENT_FILE_LOADED:
+            setPendingError(QString());
             setState(AudioState::Playing);
             emit currentSourceChanged();
             setVolume();
@@ -136,13 +148,15 @@ void MpvAudioOutput::event_loop() {
             break;
         case MPV_EVENT_END_FILE: {
             auto end_ev = reinterpret_cast<mpv_event_end_file *>(event->data);
-            if (end_ev->reason == MPV_END_FILE_REASON_ERROR)
+            if (end_ev->reason == MPV_END_FILE_REASON_ERROR) {
                 qWarning() << "Ended file: " << mpv_error_string(end_ev->error);
+                setPendingError(QString::fromUtf8(mpv_error_string(end_ev->error)));
+            }
             break;
         }
         case MPV_EVENT_LOG_MESSAGE: {
             auto log = reinterpret_cast<mpv_event_log_message *>(event->data);
-            qDebug() << "mpv [" << log->prefix << "] " << log->text;
+            qDebug().noquote() << logMessage(log->prefix, log->text);
             break;
         }
         case MPV_EVENT_PROPERTY_CHANGE: {
@@ -153,13 +167,18 @@ void MpvAudioOutput::event_loop() {
                     emit tick(pos_to_qint64(pos));
                     if (volumeNeverSet_)
                         setVolume();
-                } else if (std::string(prop->name) == "idle") {
+                } else if (std::string(prop->name) == "idle-active") {
                     int idle = *reinterpret_cast<int *>(prop->data);
+                    // When leaving idle, START_FILE and FILE_LOADED set the state
                     if (idle) {
+                        // mpv's playlist is exhausted, so a load error can't be followed by a
+                        // successful entry any more
+                        QString error = takePendingError();
+                        if (!error.isEmpty())
+                            emit loadFailed(error);
                         setState(AudioState::Stopped);
                         emit finished();
-                    } else
-                        setState(AudioState::Playing);
+                    }
                 } else if (std::string(prop->name) == "pause") {
                     int pause = *reinterpret_cast<int *>(prop->data);
                     if (pause)
@@ -186,14 +205,14 @@ void MpvAudioOutput::event_loop() {
 void MpvAudioOutput::command(const QVariant &args) {
     int r = mpv::qt::command_variant2(handle_, args);
     if (r < 0)
-        qDebug() << "Command failed: " << args << " " << mpv_error_string(r);
+        qDebug().noquote() << "Command failed:" << debugString(args) << mpv_error_string(r);
 }
 
 bool MpvAudioOutput::set_property(const QString &name, const QVariant &v) {
     int r = set_property_variant(handle_, name, v);
     if (r < 0) {
-        qDebug() << "Failed to set property: " << name << " to " << v << ": "
-                 << mpv_error_string(r);
+        qDebug().noquote() << "Failed to set property:" << name << "to" << debugString(v) << ":"
+                           << mpv_error_string(r);
         return false;
     }
     return true;
@@ -213,6 +232,30 @@ void MpvAudioOutput::set_option(const QString &name, const QVariant &value) {
     auto r = mpv::qt::set_option_variant(handle_, name, value);
     if (r < 0)
         qDebug() << "Failed mpv_set_option " << name << ": " << mpv_error_string(r);
+}
+
+QString MpvAudioOutput::logMessage(const char *prefix, const char *text) {
+    return redactUrlCredentials(QStringLiteral("mpv [%1] %2")
+                                    .arg(QString::fromUtf8(prefix), QString::fromUtf8(text))
+                                    .trimmed());
+}
+
+QString MpvAudioOutput::debugString(const QVariant &value) {
+    QString text;
+    QDebug(&text).nospace() << value;
+    return redactUrlCredentials(text);
+}
+
+void MpvAudioOutput::setPendingError(const QString &error) {
+    QMutexLocker locker(&pendingErrorMutex_);
+    pendingError_ = error;
+}
+
+QString MpvAudioOutput::takePendingError() {
+    QMutexLocker locker(&pendingErrorMutex_);
+    QString error = pendingError_;
+    pendingError_.clear();
+    return error;
 }
 
 void MpvAudioOutput::setState(AudioState newState) {

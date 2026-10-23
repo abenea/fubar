@@ -3,10 +3,12 @@
 #include "library/track.h"
 #include "player/playlistmimedata.h"
 #include <QDebug>
+#include <QHash>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMimeData>
+#include <QSet>
 #include <QUrl>
 #include <cassert>
 #include <sstream>
@@ -64,6 +66,8 @@ bool PlaylistModel::dropMimeData(
     Q_UNUSED(row);
     Q_UNUSED(column);
     Q_UNUSED(parent);
+    if (playlist_.synced)
+        return false;
     if (action == Qt::IgnoreAction) {
         return true;
     }
@@ -227,16 +231,75 @@ void PlaylistModel::libraryChanged(QList<PTrack> tracks) {
 }
 
 void PlaylistModel::clear() {
+    if (playlist_.tracks.isEmpty())
+        return;
     beginRemoveRows(QModelIndex(), 0, playlist_.tracks.size() - 1);
     playlist_.tracks.clear();
     endRemoveRows();
 }
 
 void PlaylistModel::addTracks(QList<PTrack> tracks) {
+    if (tracks.isEmpty())
+        return;
     beginInsertRows(QModelIndex(), playlist_.tracks.size(),
                     playlist_.tracks.size() + tracks.size() - 1);
     playlist_.tracks.append(tracks);
     endInsertRows();
+}
+
+void PlaylistModel::updateTracks(const QList<PTrack> &tracks) {
+    if (playlist_.tracks.isEmpty()) {
+        addTracks(tracks);
+        return;
+    }
+    QHash<QString, PTrack> byLocation;
+    byLocation.reserve(tracks.size());
+    for (const PTrack &track : tracks)
+        byLocation.insert(track->location, track);
+
+    for (int last = playlist_.tracks.size() - 1; last >= 0; --last) {
+        if (byLocation.contains(playlist_.tracks.at(last)->location))
+            continue;
+        int first = last;
+        while (first > 0 && !byLocation.contains(playlist_.tracks.at(first - 1)->location))
+            --first;
+        beginRemoveRows(QModelIndex(), first, last);
+        playlist_.tracks.erase(playlist_.tracks.begin() + first,
+                               playlist_.tracks.begin() + last + 1);
+        endRemoveRows();
+        last = first;
+    }
+
+    QSet<QString> present;
+    present.reserve(playlist_.tracks.size());
+    // The rows from `changedFrom` on got another track
+    int changedFrom = -1;
+    for (int row = 0; row <= playlist_.tracks.size(); ++row) {
+        bool changed = false;
+        if (row < playlist_.tracks.size()) {
+            const PTrack &track = playlist_.tracks.at(row);
+            present.insert(track->location);
+            PTrack update = byLocation.value(track->location);
+            changed = update != track;
+            if (changed)
+                playlist_.tracks[row] = update;
+        }
+        if (changed && changedFrom < 0) {
+            changedFrom = row;
+        } else if (!changed && changedFrom >= 0) {
+            emit dataChanged(index(changedFrom, 0), index(row - 1, 0));
+            changedFrom = -1;
+        }
+    }
+
+    QList<PTrack> added;
+    for (const PTrack &track : tracks) {
+        if (!present.contains(track->location)) {
+            present.insert(track->location);
+            added.append(track);
+        }
+    }
+    addTracks(added);
 }
 
 void PlaylistModel::removeIndexes(QModelIndexList indexes) {

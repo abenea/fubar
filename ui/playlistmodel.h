@@ -40,6 +40,11 @@ public:
     Playlist &playlist() { return playlist_; }
     void addUrls(const QList<QUrl> &urls);
     void addTracks(QList<PTrack> tracks);
+    // Makes the model hold `tracks` (matched by location) while keeping the rows, and so the
+    // persistent indexes, of tracks that stay: rows whose location is not in `tracks` are
+    // removed, the others get the track of their location if it is another object, new
+    // locations are appended.
+    void updateTracks(const QList<PTrack> &tracks);
     void removeIndexes(QModelIndexList indexes);
     void clear();
     void deserialize(const QByteArray &data);
@@ -72,7 +77,3 @@ private:
 };
 
 enum PlaylistRoles { TrackRole = Qt::UserRole, GroupingModeRole, GroupItemsRole };
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-Q_DECLARE_METATYPE(PTrack)
-#endif

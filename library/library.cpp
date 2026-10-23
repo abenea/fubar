@@ -22,6 +22,7 @@
 #include <taglib/id3v2tag.h>
 #include <taglib/mpegfile.h>
 #include <taglib/tag.h>
+#include <taglib/taglib.h>
 #include <taglib/tfilestream.h>
 #include <taglib/tpropertymap.h>
 #include <taglib/xiphcomment.h>
@@ -442,14 +443,24 @@ PTrack Library::scanFile(const QString &path) {
     shared_ptr<Track> track;
 
     if (path.toLower().endsWith(".mp3")) {
+#if TAGLIB_MAJOR_VERSION >= 2
         TagLib::MPEG::File *mpegFile = new TagLib::MPEG::File(&stream);
+#else
+        TagLib::MPEG::File *mpegFile =
+            new TagLib::MPEG::File(&stream, TagLib::ID3v2::FrameFactory::instance());
+#endif
         file.reset(mpegFile);
         if (!file->isValid())
             return track;
         set_tag_and_properties(mpegFile->ID3v2Tag(), &tag, properties);
         set_tag_and_properties(mpegFile->ID3v1Tag(), &tag, properties);
     } else if (path.toLower().endsWith(".flac")) {
+#if TAGLIB_MAJOR_VERSION >= 2
         TagLib::FLAC::File *flacFile = new TagLib::FLAC::File(&stream);
+#else
+        TagLib::FLAC::File *flacFile =
+            new TagLib::FLAC::File(&stream, TagLib::ID3v2::FrameFactory::instance());
+#endif
         file.reset(flacFile);
         if (!file->isValid())
             return track;

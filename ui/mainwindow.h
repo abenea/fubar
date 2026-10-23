@@ -2,6 +2,8 @@
 
 #include <QKeySequence>
 #include <QModelIndex>
+#include <QPointer>
+#include <QSet>
 #include <QSystemTrayIcon>
 #include <QtWidgets/QMainWindow>
 #include <boost/bimap.hpp>
@@ -17,9 +19,15 @@
 class PlaylistTab;
 class Library;
 class ConsoleWindow;
+class ElidedLabel;
 class QDockWidget;
 class QPlainTextEdit;
+class QTimer;
 class MPRISPlayer;
+class NavidromeClient;
+class NavidromeLibrary;
+class NavidromePreferences;
+class NavidromeScrobbler;
 
 namespace Ui {
 class MainWindowClass;
@@ -68,12 +76,15 @@ protected:
 private slots:
     void on_newPlaylistAction_triggered();
     void on_newLibraryViewAction_triggered();
+    void on_newNavidromeLibraryViewAction_triggered();
+    void on_refreshNavidromeLibraryAction_triggered();
     void on_quitAction_triggered();
 
     void on_addDirectoryAction_triggered();
     void on_addFilesAction_triggered();
 
     void on_libraryPreferencesAction_triggered();
+    void on_navidromePreferencesAction_triggered();
     void on_pluginsAction_triggered();
     void on_configAction_triggered();
 
@@ -115,6 +126,10 @@ private slots:
 
     void timeoutFired();
 
+    void showPlaybackError(PTrack track, QString reason);
+    void navidromeConfigSaved(bool accountChanged);
+    void navidromeSyncFinished(int trackCount);
+
 private:
     void readDockSettings(QDockWidget *dock, QString name);
     void writeDockSettings(QDockWidget *dock, QString name, bool isVisible);
@@ -135,6 +150,15 @@ private:
     void writeSettings(bool lastPosition);
     void readSettings();
 
+    void setUpNavidrome();
+    // Syncs now if the cache is empty, else checks for updates soon. Run after readSettings().
+    void refreshNavidromeTabsAtStartup();
+    void addNavidromeTab(const QString &name, bool makeCurrent);
+    void showNavidromePreferences();
+    enum class StatusKind { Info, SyncError, PlaybackError };
+    // Shown until replaced; a playback error is also cleared when a track starts playing.
+    void showStatus(const QString &text, StatusKind kind = StatusKind::Info);
+
     std::unique_ptr<Ui::MainWindowClass> ui_;
     SeekSlider *seekSlider_;
     QSlider *volumeSlider_;
@@ -153,6 +177,22 @@ private:
     AudioPlayer &player_;
 
     MPRISPlayer *mprisPlayer_;
+
+    std::unique_ptr<NavidromeClient> navidromeClient_;
+    std::unique_ptr<NavidromeLibrary> navidromeLibrary_;
+    std::unique_ptr<NavidromeScrobbler> navidromeScrobbler_;
+    QPointer<NavidromePreferences> navidromePreferences_;
+    // The open dialog was opened by File -> New Navidrome library view.
+    bool navidromeTabRequested_ = false;
+    // Tabs showing navidromeLibrary_; their models follow its changes.
+    QSet<PlaylistTab *> navidromeTabs_;
+    // Hourly freshness check while a Navidrome tab exists.
+    QTimer *navidromeUpdateTimer_;
+    // Navidrome syncs and playback errors
+    ElidedLabel *statusLabel_;
+    StatusKind statusKind_ = StatusKind::Info;
+    // Incremented on every status change.
+    int statusSerial_ = 0;
 
     boost::bimap<PModel, PlaylistTab *> playlistModels_;
 

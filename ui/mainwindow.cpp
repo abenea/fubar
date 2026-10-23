@@ -1,28 +1,34 @@
 #include "ui/mainwindow.h"
 #include "library/track.h"
+#include "navidrome/navidromeclient.h"
+#include "navidrome/navidromeconfig.h"
+#include "navidrome/navidromelibrary.h"
+#include "navidrome/navidromescrobbler.h"
+#include "navidrome/navidrometrack.h"
 #include "player/audiooutput.h"
 #include "ui/configwindow.h"
 #include "ui/consolewindow.h"
+#include "ui/elidedlabel.h"
 #include "ui/librarypreferencesdialog.h"
 #include "ui/lyricsthread.h"
 #include "ui/lyricsthreaddeleter.h"
 #include "ui/mprisplayer.h"
+#include "ui/navidromepreferences.h"
 #include "ui/playlistfilter.h"
 #include "ui/playlistmodel.h"
 #include "ui/playlisttab.h"
 #include "ui/pluginspreferences.h"
 #include "ui/ui_mainwindow.h"
+#include "util.h"
 #include <QActionGroup>
 #include <QDebug>
 #include <QDockWidget>
 #include <QFileDialog>
-#include <QFileInfo>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QSettings>
 #include <QShortcut>
 #include <QTableView>
-#include <QTextStream>
 #include <QTimer>
 #include <QUrl>
 #include <QVariant>
@@ -35,6 +41,22 @@
 #include <netwm_def.h>
 
 MainWindow *MainWindow::instance = 0;
+
+namespace {
+
+// Values of the mainwindow/tabsKinds setting
+const char kPlaylistTab[] = "playlist";
+const char kLibraryTab[] = "library";
+const char kNavidromeTab[] = "navidrome";
+
+const char kNavidromeTabName[] = "Navidrome";
+constexpr int kStatusMaxWidth = 500;
+constexpr int kNavidromeStartupCheckDelayMs = 3000;
+constexpr int kNavidromeUpdateIntervalMs = 60 * 60 * 1000;
+// How long "Navidrome: <n> tracks" stays
+constexpr int kNavidromeSyncResultMs = 5000;
+
+} // namespace
 
 MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
     : QMainWindow(parent),
@@ -82,6 +104,14 @@ MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
     setStatusBar(&statusBar_);
     QObject::connect(&statusBar_, SIGNAL(statusBarDoubleClicked()), this,
                      SLOT(statusBarDoubleClicked()));
+    statusLabel_ = new ElidedLabel(kStatusMaxWidth, this);
+    statusLabel_->setObjectName("StatusLabel");
+    statusBar_.addPermanentWidget(statusLabel_);
+    connect(&player_, &AudioPlayer::playbackError, this, &MainWindow::showPlaybackError);
+    connect(&player_, &AudioPlayer::trackPlaying, this, [this]() {
+        if (statusKind_ == StatusKind::PlaybackError)
+            showStatus(QString());
+    });
 
     lyricsDock_ = new QDockWidget("Lyrics", this);
     lyricsDock_->setObjectName("LyricsDock");
@@ -107,7 +137,10 @@ MainWindow::MainWindow(AudioPlayer &player, QWidget *parent)
     QObject::connect(console_, SIGNAL(visibilityChanged(bool)), this,
                      SLOT(consoleVisibilityChanged(bool)));
 
+    setUpNavidrome();
+
     readSettings();
+    refreshNavidromeTabsAtStartup();
 
     config_.set("mainwindow.save_tabs", QVariant(saveTabs_));
     QObject::connect(&config_, SIGNAL(keySet(QString, QVariant)), this,
@@ -167,7 +200,144 @@ void MainWindow::setShortcuts() {
                 Qt::ApplicationShortcut);
 }
 
-MainWindow::~MainWindow() {}
+MainWindow::~MainWindow() {
+    player_.unregisterSourceResolver(navidrome::kLocationPrefix);
+    // It refers to the client
+    delete navidromePreferences_;
+}
+
+void MainWindow::setUpNavidrome() {
+    QSettings settings;
+    navidromeClient_.reset(new NavidromeClient);
+    // Before the library and the scrobbler, which drop their data when the account changes
+    navidromeClient_->setConfig(NavidromeConfig::load(settings));
+    navidromeLibrary_.reset(new NavidromeLibrary(*navidromeClient_, QString()));
+    navidromeScrobbler_.reset(new NavidromeScrobbler(*navidromeClient_, &player_));
+    QTimer::singleShot(0, navidromeScrobbler_.get(), &NavidromeScrobbler::flushPending);
+    player_.registerSourceResolver(
+        navidrome::kLocationPrefix, [this](const QString &location, QString *error) {
+            if (!navidromeClient_->isConfigured()) {
+                *error = "Navidrome is not configured (Preferences → Navidrome…)";
+                return QString();
+            }
+            QString songId = navidrome::songIdFromLocation(location);
+            return navidromeClient_->streamUrl(songId).toString(QUrl::FullyEncoded);
+        });
+
+    // The models of the tabs follow it themselves (addNavidromeTab())
+    NavidromeLibrary *library = navidromeLibrary_.get();
+    connect(library, &NavidromeLibrary::tracksReset, this, [this]() {
+        // A running sync was dropped
+        if (statusKind_ == StatusKind::Info)
+            showStatus(QString());
+    });
+    connect(library, &NavidromeLibrary::syncStarted, this,
+            [this]() { showStatus("Navidrome: syncing…"); });
+    connect(library, &NavidromeLibrary::syncFinished, this, &MainWindow::navidromeSyncFinished);
+    connect(library, &NavidromeLibrary::syncFailed, this, [this](const QString &error) {
+        showStatus("Navidrome: sync failed: " + error, StatusKind::SyncError);
+    });
+
+    navidromeUpdateTimer_ = new QTimer(this);
+    navidromeUpdateTimer_->setObjectName("NavidromeUpdateTimer");
+    navidromeUpdateTimer_->setInterval(kNavidromeUpdateIntervalMs);
+    connect(navidromeUpdateTimer_, &QTimer::timeout, library, &NavidromeLibrary::checkForUpdates);
+
+    ui_->refreshNavidromeLibraryAction->setEnabled(navidromeClient_->isConfigured());
+    connect(navidromeClient_.get(), &NavidromeClient::connectionChanged, this, [this]() {
+        ui_->refreshNavidromeLibraryAction->setEnabled(navidromeClient_->isConfigured());
+    });
+}
+
+void MainWindow::refreshNavidromeTabsAtStartup() {
+    if (navidromeTabs_.isEmpty() || !navidromeClient_->isConfigured())
+        return;
+    if (navidromeLibrary_->tracks().isEmpty()) {
+        navidromeLibrary_->sync();
+        return;
+    }
+    QTimer::singleShot(kNavidromeStartupCheckDelayMs, this, [this]() {
+        if (!navidromeTabs_.isEmpty())
+            navidromeLibrary_->checkForUpdates();
+    });
+}
+
+void MainWindow::addNavidromeTab(const QString &name, bool makeCurrent) {
+    PModel model = player_.createReadOnlyPlaylist();
+    model->addTracks(navidromeLibrary_->tracks());
+    NavidromeLibrary *library = navidromeLibrary_.get();
+    connect(library, &NavidromeLibrary::tracksUpdated, model.get(), &PlaylistModel::updateTracks);
+    connect(library, &NavidromeLibrary::tracksReset, model.get(), &PlaylistModel::updateTracks);
+    navidromeTabs_.insert(addPlaylist(model, name, makeCurrent));
+    if (!navidromeUpdateTimer_->isActive())
+        navidromeUpdateTimer_->start();
+}
+
+void MainWindow::showStatus(const QString &text, StatusKind kind) {
+    statusLabel_->setFullText(text);
+    statusKind_ = kind;
+    ++statusSerial_;
+}
+
+void MainWindow::navidromeSyncFinished(int trackCount) {
+    showStatus("Navidrome: " + countText(trackCount, "track", "tracks"));
+    int serial = statusSerial_;
+    QTimer::singleShot(kNavidromeSyncResultMs, this, [this, serial]() {
+        if (serial == statusSerial_)
+            showStatus(QString());
+    });
+}
+
+void MainWindow::showPlaybackError(PTrack track, QString reason) {
+    if (!track)
+        return;
+    QString name = track->displayTitle();
+    QString artist = track->metadata.value("artist");
+    if (!artist.isEmpty() && !track->metadata.value("title").isEmpty())
+        name = artist + " – " + name;
+    // The name of a URL track can come from its query
+    name = redactUrlCredentials(name);
+    showStatus(QString("Cannot play %1: %2").arg(name, reason), StatusKind::PlaybackError);
+    if (!navidrome::isNavidromeLocation(track->location) || !navidromeClient_->isConfigured())
+        return;
+    // mpv only knows that the stream did not play; the server may say why, e.g. a changed password
+    int serial = statusSerial_;
+    NavidromeClient::Params params{{"id", navidrome::songIdFromLocation(track->location)}};
+    navidromeClient_->get("getSong", params, this,
+                          [this, serial, name](const QJsonObject &, const QString &error) {
+                              if (error.isEmpty() || serial != statusSerial_)
+                                  return;
+                              showStatus(QString("Cannot play %1: %2").arg(name, error),
+                                         StatusKind::PlaybackError);
+                          });
+}
+
+void MainWindow::showNavidromePreferences() {
+    if (!navidromePreferences_) {
+        navidromePreferences_ = new NavidromePreferences(*navidromeClient_, this);
+        connect(navidromePreferences_, &NavidromePreferences::configSaved, this,
+                &MainWindow::navidromeConfigSaved);
+        connect(navidromePreferences_, &QObject::destroyed, this,
+                [this]() { navidromeTabRequested_ = false; });
+    }
+    navidromePreferences_->show();
+    navidromePreferences_->raise();
+    navidromePreferences_->activateWindow();
+}
+
+void MainWindow::navidromeConfigSaved(bool accountChanged) {
+    bool tabRequested = navidromeTabRequested_;
+    navidromeTabRequested_ = false;
+    if (statusKind_ != StatusKind::Info)
+        showStatus(QString());
+    if (!navidromeClient_->isConfigured())
+        return;
+    if (tabRequested || (accountChanged && navidromeTabs_.isEmpty()))
+        addNavidromeTab(kNavidromeTabName, true);
+    // An empty library can be a failed sync, e.g. with a wrong password for the same account
+    if (accountChanged || (!navidromeTabs_.isEmpty() && navidromeLibrary_->tracks().isEmpty()))
+        navidromeLibrary_->sync();
+}
 
 void MainWindow::increaseVolume() {
     QKeyEvent event(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier);
@@ -204,19 +374,11 @@ void MainWindow::slotAudioStateChanged(AudioState newState) {
     }
 }
 
-QString msToPrettyTime(qint64 pos) {
-    pos /= 1000;
-    QString status_message;
-    QTextStream(&status_message) << pos / 60 << ":" << qSetPadChar('0') << qSetFieldWidth(2)
-                                 << pos % 60;
-    return status_message;
-}
-
 void MainWindow::tick(qint64 /*pos*/) {
     PTrack track = player_.getCurrentTrack();
     if (track) {
-        QString progress = msToPrettyTime(player_.currentTime()) + " / " +
-                           msToPrettyTime(track->audioproperties.length * 1000);
+        QString progress = formatDuration(player_.currentTime() / 1000) + " / " +
+                           formatDuration(track->audioproperties.length);
         QString format = track->audioFormat();
         statusBar_.showMessage(format + " " +
                                (track->audioproperties.bitrate
@@ -297,6 +459,8 @@ void MainWindow::removePlaylistTab(int index) {
     ui_->playlistTabs->removeTab(index);
     PModel playlistModel = playlistModels_.right.at(playlistTab);
     playlistModels_.left.erase(playlistModel);
+    if (navidromeTabs_.remove(playlistTab) && navidromeTabs_.isEmpty())
+        navidromeUpdateTimer_->stop();
     player_.deletePlaylist(playlistModel);
     delete playlistTab;
 }
@@ -304,6 +468,22 @@ void MainWindow::removePlaylistTab(int index) {
 void MainWindow::on_newLibraryViewAction_triggered() {
     addPlaylist(player_.createPlaylist(true), "All");
 }
+
+void MainWindow::on_newNavidromeLibraryViewAction_triggered() {
+    if (!navidromeClient_->isConfigured()) {
+        // The tab is created when the dialog saves a configuration
+        showNavidromePreferences();
+        navidromeTabRequested_ = true;
+        return;
+    }
+    addNavidromeTab(kNavidromeTabName, true);
+    if (navidromeLibrary_->tracks().isEmpty())
+        navidromeLibrary_->sync();
+    else
+        navidromeLibrary_->checkForUpdates();
+}
+
+void MainWindow::on_refreshNavidromeLibraryAction_triggered() { navidromeLibrary_->sync(); }
 
 void MainWindow::on_newPlaylistAction_triggered() { addPlaylist(player_.createPlaylist(false)); }
 
@@ -316,6 +496,8 @@ void MainWindow::on_libraryPreferencesAction_triggered() {
         widget->show();
     }
 }
+
+void MainWindow::on_navidromePreferencesAction_triggered() { showNavidromePreferences(); }
 
 void MainWindow::on_pluginsAction_triggered() {
     PluginsPreferences *widget = new PluginsPreferences(this);
@@ -391,17 +573,23 @@ void MainWindow::readSettings() {
     else {
         QList<QVariant> names = settings.value("mainwindow/tabsNames").toList();
         QList<QVariant> data = settings.value("mainwindow/tabsData").toList();
+        // Older versions wrote no kinds: tabs without data are library views
+        QStringList kinds = settings.value("mainwindow/tabsKinds").toStringList();
+        if (kinds.size() != data.size())
+            kinds.clear();
         if (names.size() != data.size())
             qDebug() << "Tabs names and data have different sizes!";
         else {
             for (int i = 0; i < data.size(); ++i) {
                 QString tabName = names.at(i).toString();
-                if (!data.at(i).isValid()) {
-                    addPlaylist(player_.createPlaylist(true), tabName, false);
-                } else {
+                if (data.at(i).isValid()) {
                     QByteArray tabData = data.at(i).toByteArray();
                     auto tab = addPlaylist(player_.createPlaylist(false), tabName, false);
                     tab->deserialize(tabData);
+                } else if (kinds.value(i) == kNavidromeTab) {
+                    addNavidromeTab(tabName, false);
+                } else {
+                    addPlaylist(player_.createPlaylist(true), tabName, false);
                 }
             }
             int lastTab = settings.value("mainwindow/lastPlayingTab", 0).toInt();
@@ -432,6 +620,7 @@ void MainWindow::writeSettings(bool lastPosition) {
     if (saveTabs_) {
         QList<QVariant> names;
         QList<QVariant> data;
+        QStringList kinds;
         for (int i = 0; i < ui_->playlistTabs->count(); ++i) {
             names.append(ui_->playlistTabs->tabText(i));
             PlaylistTab *tab = dynamic_cast<PlaylistTab *>(ui_->playlistTabs->widget(i));
@@ -439,12 +628,16 @@ void MainWindow::writeSettings(bool lastPosition) {
                 QByteArray tabData;
                 tab->serialize(tabData);
                 data.append(tabData);
+                kinds.append(kPlaylistTab);
             } else {
+                // Restored as a library view by older versions
                 data.append(QVariant());
+                kinds.append(navidromeTabs_.contains(tab) ? kNavidromeTab : kLibraryTab);
             }
         }
         settings.setValue("mainwindow/tabsNames", QVariant(names));
         settings.setValue("mainwindow/tabsData", QVariant(data));
+        settings.setValue("mainwindow/tabsKinds", kinds);
     }
 
     if (!lastPosition)

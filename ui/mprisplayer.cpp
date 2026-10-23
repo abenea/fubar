@@ -86,7 +86,8 @@ QVariantMap MPRISPlayerAdaptor::Metadata() const {
         metadata.insert("xesam:title", track->metadata["title"]);
         metadata.insert("xesam:artist", QStringList() << track->metadata["artist"]);
         metadata.insert("xesam:album", track->metadata["album"]);
-        metadata.insert("xesam:url", QUrl::fromLocalFile(track->location).toString());
+        if (track->isLocalFile())
+            metadata.insert("xesam:url", QUrl::fromLocalFile(track->location).toString());
     }
     return metadata;
 }
